@@ -9,6 +9,6 @@ def pathGet():
     """
     # targetPath = sys.argv[0]
     targetPath = os.path.realpath(sys.argv[0])
-    targetPath = targetPath.split('uiautotest_excel')
-    targetPath = targetPath[0] + 'uiautotest_excel'
+    targetPath = targetPath.split('Newuiautotest')
+    targetPath = targetPath[0] + 'Newuiautotest'
     sys.path.append(targetPath)
