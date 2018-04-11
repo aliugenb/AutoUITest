@@ -254,7 +254,7 @@ class UITest(PhoneInfo, TA):
         # Id = self.codeUnify(Id)
         try:
             if self.desired_caps['platformName'] == 'Android':
-                if ins == None:
+                if ins is None:
                     re_text = self.__select_Id_Android(Id).text
                 else:
                     re_text = self.__select_Id_ins_Android(Id, ins).text
@@ -262,7 +262,7 @@ class UITest(PhoneInfo, TA):
                 self._LOGGER.debug(u"获取text: {}, 结束".format(re_text))
                 return re_text
         except AttributeError as e:
-            self._LOGGER.error(u"此页面找不到你输入的Id：" + Id + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
+            self._LOGGER.error(u"此页面找不到你输入的Id：{}, 请确认！".format(Id))
             Id_pic = Id.split('/')[1]
             self.screencap(Id_pic, CC.PHONE_PATH)
             self.set_ime()

@@ -32,6 +32,7 @@ class CommandContainer(object):
     SEARCH_APP_PRO = 'adb shell ps | grep'
     START_ADB = 'adb start-server'
     KILL_ADB = 'adb kill-server'
+    GET_SCREEN_DETAIL = 'adb shell dumpsys window displays | head -n 3'
 
     """
     包名/Activity名

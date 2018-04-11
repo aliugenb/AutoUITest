@@ -307,6 +307,24 @@ class BaseOn(object):
         os.popen(command2)
         time.sleep(5)
 
+    def getScreenDetail(self):
+        command = CC.GET_SCREEN_DETAIL
+        tempData = os.popen(command).read()
+        pendingList = tempData.strip().split('\n')
+        infoDict = {}
+        needList = []
+        for each in pendingList:
+            if 'app=' in each:
+                needList = each.strip().split(' ')
+        for el in needList:
+            if '=' in el:
+                val = el.strip().split('=')
+                infoDict[val[0]] = val[1]
+            else:
+                val = el.strip().split('dpi')
+                infoDict['density'] = val[0]
+        return infoDict
+
     # def getScriptInfo(self):
     #     '''
     #     获取调用

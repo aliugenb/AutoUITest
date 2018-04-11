@@ -1,6 +1,10 @@
 # -*- coding:utf-8 -*-
 import selenium
 from action import Action
+import common
+common.pathGet()
+from XFramework.ui_base import UITest
+from XFramework.command_container import CommandContainer as CC
 
 
 def transferProperty(target, key, source):
@@ -77,7 +81,10 @@ def actionHandle(control, data, realAction, uiObj):
         if '=' in control:
             elType, controlEl = control.strip().split('=')
             if elType == 'text':
-                uiObj.clickByText(controlEl, flowTag=1)
+                try:
+                    uiObj.clickByText(controlEl, flowTag=1)
+                except AssertionError as e:
+                    uiObj.clickByText(controlEl, flowTag=1, rule='p')
             elif elType == 'desc':
                 uiObj.clickByDesc(controlEl, flowTag=1)
             elif elType == 'Id':
@@ -133,61 +140,112 @@ def actionHandle(control, data, realAction, uiObj):
                 pass
         else:
             uiObj.sleep(int(control))
+    elif realAction == 'click&&equal':
+        elType, controlEl = control.strip().split('=')
+        textBefore = uiObj.getTextById(controlEl)
+        uiObj.clickById(controlEl)
+        textAfter = uiObj.getTextById(controlEl)
+        if textBefore == textAfter:
+            pass
+        else:
+            uiObj._LOGGER.error('点击操作后，此元素{}的text值发生改变，fail'.format(
+                                                                    controlEl))
+            Id_pic = controlEl.split('/')[1]
+            uiObj.screencap('{}_fail'.format(Id_pic), CC.PHONE_PATH)
+            raise AssertionError
+    elif realAction == 'click&&unequal':
+        elType, controlEl = control.strip().split('=')
+        textBefore = uiObj.getTextById(controlEl)
+        uiObj.clickById(controlEl)
+        textAfter = uiObj.getTextById(controlEl)
+        if textBefore != textAfter:
+            pass
+        else:
+            uiObj._LOGGER.error('点击操作后，此元素{}的text值未发生改变，fail'.format(
+                                                                    controlEl))
+            Id_pic = controlEl.split('/')[1]
+            uiObj.screencap('{}_fail'.format(Id_pic), CC.PHONE_PATH)
+            raise AssertionError
     elif realAction == 'back':
         uiObj.pressBack()
     else:
         pass
 
 
-def expectTypeHandle(expect, expectInfo, uiObj):
+def getJudgeReturn(paraType, judgeCondition):
+    if paraType == '==':
+        if judgeCondition:
+            return True
+        else:
+            return False
+    elif paraType == '!=':
+        if not judgeCondition:
+            return True
+        else:
+            return False
+    else:
+        pass
+
+
+def expectTypeHandle(expect, uiObj):
+    expectVal = None
     if '==' in expect:
         expectEl = expect.strip().split('==')[1]
         if 'text' in expect:
-            uiObj.isExistByText(expectEl, expectInfo, 0)
+            expectVal = getJudgeReturn('==', uiObj.isTextInPage(expectEl))
         elif 'desc' in expect:
-            uiObj.isExistByDesc(expectEl, expectInfo, 0)
+            expectVal = getJudgeReturn('==', uiObj.isDescInPage(expectEl))
         elif 'Id' in expect:
-            uiObj.isExistById(expectEl, expectInfo, 0)
+            expectVal = getJudgeReturn('==', uiObj.isIdInPage(expectEl))
+        else:
+            pass
     elif '!=' in expect:
         expectEl = expect.strip().split('!=')[1]
         if 'text' in expect:
-            uiObj.isExistByText(expectEl, expectInfo, 1)
+            expectVal = getJudgeReturn('!=', uiObj.isTextInPage(expectEl))
         elif 'desc' in expect:
-            uiObj.isExistByDesc(expectEl, expectInfo, 1)
+            expectVal = getJudgeReturn('!=', uiObj.isDescInPage(expectEl))
         elif 'Id' in expect:
-            uiObj.isExistById(expectEl, expectInfo, 1)
+            expectVal = getJudgeReturn('!=', uiObj.isIdInPage(expectEl))
+        else:
+            pass
     else:
         pass
+    if expectVal is None:
+        raise ValueError
+    else:
+        return expectVal
 
 
 def expectHandle(expect, expectInfo, uiObj):
     condition = []
     if '&&' in expect:
         for eveExpect in expect.strip().split('&&'):
-            try:
-                expectTypeHandle(eveExpect, expectInfo, uiObj)
-            except AssertionError as e:
-                condition.append(False)
-            else:
-                condition.append(True)
+            tempData = expectTypeHandle(eveExpect, uiObj)
+            condition.append(tempData)
         if condition[0] and condition[1]:
             pass
         else:
+            uiObj._LOGGER.error('{}_fail'.format(expectInfo))
+            uiObj.screencap('{}_fail'.format(expectInfo), CC.PHONE_PATH)
             raise AssertionError
     elif '||' in expect:
         for eveExpect in expect.strip().split('||'):
-            try:
-                expectTypeHandle(eveExpect, expectInfo, uiObj)
-            except AssertionError as e:
-                condition.append(False)
-            else:
-                condition.append(True)
+            tempData = expectTypeHandle(eveExpect, uiObj)
+            condition.append(tempData)
         if condition[0] or condition[1]:
             pass
         else:
+            uiObj._LOGGER.error('{}_fail'.format(expectInfo))
+            uiObj.screencap('{}_fail'.format(expectInfo), CC.PHONE_PATH)
             raise AssertionError
     else:
-        expectTypeHandle(expect, expectInfo, uiObj)
+        if expectTypeHandle(expect, uiObj):
+            pass
+        else:
+            uiObj._LOGGER.error('{}_fail'.format(expectInfo))
+            uiObj.screencap('{}_fail'.format(expectInfo), CC.PHONE_PATH)
+            raise AssertionError
 
 
 def executeEvent(stepEventSuit, uiObj):
@@ -232,6 +290,8 @@ def test_run_all_test(allTestClass, uiObj):
             moduleName = eachModle['moduleName']
             features = eachModle['featureSuite']
             firstEventSuit = []
+            uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
+                                                            moduleName))
             for eachFeature in features:
                 featureName = eachFeature['featureName']
                 steps = eachFeature['featureSteps']
@@ -254,30 +314,34 @@ def test_run_all_test(allTestClass, uiObj):
                             uiObj.sleep(10)
                             executeEvent(stepEventSuit, uiObj)
                         except AssertionError as e:
-                            print('{}: FAIL'.format(rName))
+                            uiObj._LOGGER.info('{}: FAIL'.format(rName))
                             failList.append(rName)
                             failCount += 1
-                            continue
                         except (IndexError, ValueError):
-                            print(u'这个功能点用例中可能存在不合法的参数，请核查！\n{}: FAIL'
-                                  .format(rName))
+                            uiObj._LOGGER.info(u'{}: FAIL(注意：功能点用例中存在不合法的参数！)'
+                                               .format(rName))
                             abortList.append(rName)
                             abortCount += 1
                         except selenium.common.exceptions.WebDriverException:
-                            print('{}: FAIL(causeByAppium)'.format(rName))
+                            uiObj._LOGGER.info('{}: FAIL(causeByAppium)'
+                                               .format(rName))
                             uiObj.appiumErrorHandle()
+                            uiObj = UITest()
+                            uiObj.sleep(10)
                             exceptionList.append(rName)
                             exceptionCount += 1
-                            continue
                         else:
-                            print('{}-{}-{}: PASS'.format(testClassName,
-                                                          moduleName,
-                                                          featureName))
+                            uiObj._LOGGER.info('{}-{}-{}: PASS'.format(
+                                                            testClassName,
+                                                            moduleName,
+                                                            featureName))
                             passCount += 1
                         finally:
                             totalCount += 1
                             uiObj.clearApp()
                             uiObj.sleep(5)
+            uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
+                                                          moduleName))
     uiObj.set_ime()
     print('总共：{}个\n成功：{}个\n失败：{}个\n中止：{}个\n异常：{}个\n'.format(totalCount,
                                                             passCount,
