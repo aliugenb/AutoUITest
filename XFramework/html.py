@@ -370,8 +370,8 @@ def renameHtmlFile(root, testTime):
            
 if __name__=="__main__":
     #root = '/Users/nali/gitlab/uiautotest/Android/LOG'
-    #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_UI_Test/uiautotest/Android/LOG'Users/nali/gitlab/Newuiautotest/Android/LOG
-    root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
+    root='/home/leo/workspace/jenkinsworkspace/workspace/Android_UI_Test/uiautotest/Android/LOG'Users/nali/gitlab/Newuiautotest/Android/LOG
+    #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
     tempHtmlname = os.path.join(root, 'test.html')
           
     lfh = LogFileHandle()
@@ -379,7 +379,7 @@ if __name__=="__main__":
     # 得到log.txt文件
     #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
-    print filename[0]
+    print filename
     filename = filename[0]
     
     
