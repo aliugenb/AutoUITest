@@ -12,7 +12,7 @@ class LogFileHandle():
             pass
         count +=1
         #print count
-        
+    
         with open(logfile, 'r') as f:
             first_line = f.readline().split(",",1)[0]
             if count == 1:
@@ -24,11 +24,11 @@ class LogFileHandle():
                     lines = f.readlines()
                     if len(lines)>=2:
                         last_line = lines[-1].split(",",1)[0]
-                        break
-                    off *= 2
-        return first_line, last_line
-
-    def getProjectInfo(self, root):
+                        break   
+                    off *= 2             
+        return first_line, last_line 
+    
+    def getProjectInfo(self, root): 
         projectInfo = []
         g=os.walk(root)
         for path, dir, filelist in g:
@@ -39,14 +39,14 @@ class LogFileHandle():
                         #print projectPath
                         for line in open(projectPath):
                             projectInfo.append(line.split('\n',1)[0])
-                
+
                     else:
                         pass
-    projectName = projectInfo[0]
-        versionBranch = projectInfo[1]
+            projectName = projectInfo[0]
+            versionBranch = projectInfo[1]
             jenkinsAddress = projectInfo[2]
             return projectInfo
-
+    
     def getLogFiles(self,root):
         fileNames = []
         g=os.walk(root)
@@ -54,18 +54,18 @@ class LogFileHandle():
             for filename in filelist:
                 if filename.endswith('txt'):
                     if filename == 'project.txt':
-                        pass
+                        pass        
                     else:
                         fileNames.append(os.path.join(path, filename))
-        return fileNames
-
-def getModuleTestTime(self, logfile):
-    # 得到日志文件中每个子模块的测试时间
-    # 如 other--个人页--aa
-    #    other--个人页--bb
-    # 结果：个人页的测试开始时间，结束时间
-    startTimes=[]
-        endTimes=[]
+        return fileNames    
+   
+    def getModuleTestTime(self, logfile):
+        # 得到日志文件中每个子模块的测试时间
+        # 如 other--个人页--aa
+        #    other--个人页--bb
+        # 结果：个人页的测试开始时间，结束时间
+        startTimes=[]
+        endTimes=[]        
         for lines in open(logfile):
             line = lines.strip().encode('utf-8')
             if 'Test Start...' in line:
@@ -73,80 +73,80 @@ def getModuleTestTime(self, logfile):
                 #print  starttime
                 startTimes.append(starttime)
             elif 'Test End...' in line:
-                endtime = line.strip().split(',',2)[0]
+                endtime = line.strip().split(',',2)[0] 
                 #print endtime
-                endTimes.append(starttime)
-    if len(startTimes) == len(endTimes):
-        return startTimes, endTimes
-        else:
+                endTimes.append(starttime) 
+        if len(startTimes) == len(endTimes):
+            return startTimes, endTimes
+        else: 
             pass
-
-def getTesttimeLine(self, logfile):
-    # 得到日志文件中每个子模块的测试开始，结束行数
-    # 目的：保证后续精确批评到测试子模块的测试内容
-    count = 0
+        
+    def getTesttimeLine(self, logfile):
+        # 得到日志文件中每个子模块的测试开始，结束行数
+        # 目的：保证后续精确批评到测试子模块的测试内容
+        count = 0
         startLineCount = []
-        endLineCount = []
+        endLineCount = []        
         for lines in open(logfile):
             line = lines.strip().encode('utf-8')
             if 'ERROR:' in line:
                 pass
             else:
                 if 'Test Start...' in line:
-                    #starttime = line.strip().split(',',2)[0]
-                    #print  starttime
+                     #starttime = line.strip().split(',',2)[0]
+                     #print  starttime
                     startLineCount.append(count)
                 elif 'Test End...' in line:
-                    #endtime = line.strip().split(',',2)[0]
-                    #print endtime
-                    endLineCount.append(count)
+                     #endtime = line.strip().split(',',2)[0] 
+                     #print endtime
+                    endLineCount.append(count) 
                 count = count +1
-    return startLineCount, endLineCount
-
-def getModulesSplitContents(self, logfile):
-    # 对模块内容进行处理:分离，开始行，结束行
-    # 处理异常行，置换内容为' ZERO'
-    # 得到begin行，zero行，测试内容行，end行
-    tempContents = []
+        return startLineCount, endLineCount
+             
+    def getModulesSplitContents(self, logfile):
+        # 对模块内容进行处理:分离，开始行，结束行
+        # 处理异常行，置换内容为' ZERO'
+        # 得到begin行，zero行，测试内容行，end行
+        tempContents = [] 
         contentS = []
         for lines in open(logfile):
             line = lines.strip().encode('utf-8')
-            
+    
             if 'Test Start...' in line:
-                #starttime = line.strip().split(',',2)[0]
+                #starttime = line.strip().split(',',2)[0]                
                 tempContents.append(' begin')
-            
+                
             elif 'Test End...' in line:
                 #endtime = line.strip().split(',',2)[0]
                 tempContents.append(' end')
-            
+                
             else:
                 contents = line.strip().split('>',1)[1]
                 tempContents.append(contents)
-
-    for i in range(len(tempContents)):
-        if "ERROR" in tempContents[i]:
-            #print mTotalContents[i].split(':',1)[1]
-            tempContents[i+1]=tempContents[i+1]+'(Error:'+tempContents[i].split(':',1)[1]+')'
-                tempContents[i]=' ZERO'
-        
-                    return tempContents
-
-def getModulesSplitTimestamps(self, logfile):
-    # 对模块内容进行处理:分离，开始行，结束行
-    # 处理异常行，置换内容为' ZERO'
-    # 得到begin行，zero行，测试内容行，end行
-    tempTimes = []
+                
+        for i in range(len(tempContents)):
+            if "ERROR" in tempContents[i]:                               
+                #print mTotalContents[i].split(':',1)[1]
+                tempContents[i+1]=tempContents[i+1]+'(Error:'+tempContents[i].split(':',1)[1]+')'
+                tempContents[i]=' ZERO' 
+                
+        return tempContents
+    
+    def getModulesSplitTimestamps(self, logfile):
+        # 对模块内容进行处理:分离，开始行，结束行
+        # 处理异常行，置换内容为' ZERO'
+        # 得到begin行，zero行，测试内容行，end行
+        tempTimes = [] 
         timeS = []
         for lines in open(logfile):
             line = lines.strip().encode('utf-8')
             
             if 'ERROR:' in line:
-                pass
+                pass            
             elif 'Test Start...' in line:
-                starttimestamp = line.strip().split(',',1)[0]
+                starttimestamp = line.strip().split(',',1)[0]                
                 tempTimes.append(starttimestamp)
-            
+                
             elif 'Test End...' in line:
                 endtimestamp = line.strip().split(',',1)[0]
                 tempTimes.append(endtimestamp)
@@ -154,36 +154,36 @@ def getModulesSplitTimestamps(self, logfile):
             else:
                 moduleTimestamp = line.strip().split(',', 1)[0]
                 tempTimes.append(moduleTimestamp)
-    return tempTimes
-
+        return tempTimes
+    
 class Handler:
     
-    def getDeviceName(self):
-        """
-            获取手机名字
-            """
+        def getDeviceName(self):
+                """
+                获取手机名字
+                """
                 command = 'adb shell getprop ro.product.model'
                 deviceName = os.popen(command).read().strip()
                 if deviceName == '':
-                    print '获取手机名称失败'
+                        print '获取手机名称失败'
                         raise RuntimeError
                 return deviceName
-            
-            def getPlatformVersion(self):
+                  
+        def getPlatformVersion(self):
                 """
-                    获取平台版本
-                    """
+                获取平台版本
+                """
                 command = 'adb shell getprop ro.build.version.release'
                 platformVersion = os.popen(command).read().strip()
                 if platformVersion == '':
-                    print '获取手机名称失败'
+                        print '获取手机名称失败'
                         raise RuntimeError
                 return platformVersion
-                
-                def getDeviceId(self):
+        
+        def getDeviceId(self):
                 """
-                    获取设备id
-                    """
+                获取设备id
+                """
                 command = 'adb devices'
                 #deviceIdInfo 得到devices命令
                 deviceIdSourceInfo=os.popen(command).read().strip()
@@ -192,10 +192,10 @@ class Handler:
                 # 得到设备号
                 deviceId=deviceIdInfo.split('\t',1)[0]
                 if deviceId == '':
-                    print '获取设备id失败'
+                        print '获取设备id失败'
                         raise RuntimeError
                 return deviceId
-
+       
 def getModulesContents(tempContents):
     #得到log中所有模块到内容
     #即，去掉begin行， zero行， end行
@@ -218,26 +218,26 @@ def getDurtime(starttime, endtime):
     second_sector = (seconds_sector%3600)%60
     #print minute_sector, second_sector
     
-    if day_sector != 0 :
+    if day_sector != 0 :            
         durtime = str(day_sector)+'天'
     else:
         durtime = ''
-    
+        
     if hour_sector != 0 :
         durtime = durtime + str(minute_sector)+'时'
     else:
         durtime = durtime
-    
+        
     if minute_sector != 0:
         durtime = durtime + str(minute_sector)+'分'
     else:
         durtime = durtime
-    
+        
     if seconds_sector != 0:
         durtime = durtime+str(second_sector)+'秒'
     else:
         durtime = durtime
-    
+   
     return durtime
 
 def getModuleTimestamps(slines,  elines, tempTimes):
@@ -246,20 +246,20 @@ def getModuleTimestamps(slines,  elines, tempTimes):
     for i in range(len(slines)):
         temp2Times = []
         caseTestDur = []
-        for j in range(slines[i], elines[i]):
-            temp2Times.append(tempTimes[j])
+        for j in range(slines[i], elines[i]): 
+            temp2Times.append(tempTimes[j]) 
         #print i,len(temp2Times), temp2Times
-        
-        for k in range(len(temp2Times)-1):
+            
+        for k in range(len(temp2Times)-1):            
             durtime = getDurtime(temp2Times[k], temp2Times[k+1])
             #print k, durtime
             caseTestDur.append(durtime)
         '''
-            for x in range(len(caseTestDur)):
+        for x in range(len(caseTestDur)):
             print i,x, caseTestDur[x]'''
-        
+            
         caseTestDurs.extend(caseTestDur)
-
+    
     return caseTestDurs
 
 
@@ -269,8 +269,8 @@ def getModuleContents(slines, elines,tempContents):
     moduleContents=[]
     for i in range(len(slines)):
         temp2Contents=[]
-        for j in range(slines[i], elines[i]):
-            temp2Contents.append(tempContents[j])
+        for j in range(slines[i], elines[i]): 
+            temp2Contents.append(tempContents[j])  
         moduleContents.append(temp2Contents)
     return moduleContents
 
@@ -281,7 +281,7 @@ def writeToHtml(filename, htmlTag, tagContents):
 def writeHtmlHead(filename):
     f = open(filename,'a')
     f.write('<head><title>Test 喜马拉雅FM-Android-UI自动化测试报告V2.0</title></head>')
-    f.write('<meta charset="UTF-8">')
+    f.write('<meta charset="UTF-8">')       
     f.write('<h1 align="center"><b>喜马拉雅FM-Android-UI自动化测试报告v2.0</b></h1>')
 
 def writeAppInfo(filename, projectName, versionBranch, jenkinsAddress):
@@ -324,13 +324,13 @@ def writeTestResult(filename, startTime, endTime, durTime="60min"):
 def writeTestDetail(filename, modulesContents):
     for i in range(len(modulesContents)):
         modulesContents[i]= modulesContents[i].strip().split(':', 1)[1]
-
+     
     f = open(filename,'a')
-    f.write('<table border="1" class="dataframe" align = "center">')
-    f.write('<thead><tr style="text-align: center;"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')
+    f.write('<table border="1" class="dataframe" align = "center">') 
+    f.write('<thead><tr style="text-align: center;"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')  
     for i in range(len(zip(caseTestDurs,  modulesContents))):
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
-        
+    
         testresultComment=modulesContents[i][2].strip().split(':',1)[1]
         if '(' in testresultComment:
             testresult = testresultComment.split('(',1)[0]
@@ -339,40 +339,40 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+caseTestDurs[i] +'</th>')
             f.write('<th>'+modulesContents[i][0] +'</th>')
             f.write('<th>'+modulesContents[i][1] +'</th>')
-            f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')
+            f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th >'+ testresult+'</th>')
             f.write('<th >'+ comment +'</th>')
             f.write('<th>'+' '+'</th>')
             f.write('<th>'+' '+'</th>')
-            f.write('</tr>')
+            f.write('</tr>')                
         else:
             f.write('<tr style="text-align: center;">')
             f.write('<th>'+caseTestDurs[i] +'</th>')
             f.write('<th>'+modulesContents[i][0] +'</th>')
             f.write('<th>'+modulesContents[i][1] +'</th>')
-            f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')
+            f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[1]+'</th>')
             f.write('<th>'+' '+'</th>')
             f.write('<th>'+' '+'</th>')
             f.write('<th>'+' '+'</th>')
-        f.write('</tr>')
-f.write('</table>')
-
+        f.write('</tr>')                
+    f.write('</table>')
+    
 def renameHtmlFile(root, testTime):
     testTime1 = testTime[0].replace('-','')
     testTime2 = testTime1.replace(' ','_')
-    testTimes = testTime2.replace(':','')
+    testTimes = testTime2.replace(':','')        
     src = os.path.join(root, 'test.html')
     dst = os.path.join(root, testTimes+'.html')
     #print src
     #print dst
     os.rename(src, dst)
-
+           
 if __name__=="__main__":
     #root = '/Users/nali/gitlab/uiautotest/Android/LOG'
     root='/home/leo/workspace/jenkinsworkspace/workspace/Android_UI_Test/uiautotest/Android/LOG'
     tempHtmlname = os.path.join(root, 'test.html')
-    
+          
     lfh = LogFileHandle()
     
     # 得到log.txt文件
@@ -383,7 +383,7 @@ if __name__=="__main__":
     stimes =  lfh.getModuleTestTime(filename)[0]
     etimes = lfh.getModuleTestTime(filename)[1]
     
-    #得到模块的测试开始时间行，结束时间行
+    #得到模块的测试开始时间行，结束时间行 
     slines = lfh.getTesttimeLine(filename)[0]
     elines = lfh.getTesttimeLine(filename)[1]
     
@@ -398,38 +398,21 @@ if __name__=="__main__":
     
     #得到测试项目信息
     projectInfo = lfh.getProjectInfo(root)
-    
+            
     h = Handler()
     deviceName = h.getDeviceName()
     platformVersion = h.getPlatformVersion()
     deviceId = h.getDeviceId()
     
-    testTime = lfh.getLogTime(filename)
-    
+    testTime = lfh.getLogTime(filename) 
+
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
     writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
     writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
     writeTestDetail(tempHtmlname, modulesContents)
-    
+
     #已测试开始时间重命名test.html
     renameHtmlFile(root, testTime)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   
+    
