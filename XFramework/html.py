@@ -379,7 +379,7 @@ if __name__=="__main__":
     # 得到log.txt文件
     #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
-    #print filename[0]
+    print filename[0]
     filename = filename[0]
     
     
