@@ -370,8 +370,8 @@ def renameHtmlFile(root, testTime):
     os.rename(src, dst)
            
 if __name__=="__main__":
-    #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
-    root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
+    root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
+    #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
     tempHtmlname = os.path.join(root, 'test.html')
           
     lfh = LogFileHandle()
