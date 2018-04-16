@@ -73,7 +73,7 @@ def preconditionHandle(pre, uiObj):
             if uiObj.isIdInPage(preEl):
                 return True
     else:
-        pass
+        raise ValueError
 
 
 def actionHandle(control, data, realAction, uiObj):
@@ -84,18 +84,24 @@ def actionHandle(control, data, realAction, uiObj):
                 try:
                     uiObj.clickByText(controlEl, flowTag=1)
                 except AssertionError as e:
-                    uiObj.clickByText(controlEl, flowTag=1, rule='p')
+                    try:
+                        uiObj.clickByText(controlEl, flowTag=1, rule='p')
+                    except AssertionError as e:
+                        uiObj._LOGGER.error(u"此页面找不到你输入的text：{}，请确认!"
+                                            .format(controlEl))
+                        uiObj.screencap(controlEl, CC.PHONE_PATH)
+                        raise
             elif elType == 'desc':
                 uiObj.clickByDesc(controlEl, flowTag=1)
             elif elType == 'Id':
                 uiObj.clickById(controlEl, flowTag=1)
             else:
-                pass
+                raise ValueError
         elif '-' in control:
             posList = control.strip().split('-')
             uiObj.clickByPos(posList[0], posList[1])
         else:
-            pass
+            raise ValueError
     elif realAction == 'swipe':
         posList = control.strip().split('-')
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])
@@ -116,7 +122,7 @@ def actionHandle(control, data, realAction, uiObj):
             elif elType == 'Id':
                 uiObj.setValueById(data, controlEl)
             else:
-                pass
+                raise ValueError
     elif realAction == 'scroll&&click':
         elType, controlEl = control.strip().split('=')
         if elType == 'text':
@@ -126,7 +132,7 @@ def actionHandle(control, data, realAction, uiObj):
         elif elType == 'Id':
             uiObj.scrollByElement(Id=controlEl)
         else:
-            pass
+            raise ValueError
     elif realAction == 'sleep':
         if '-' in control:
             controlData = control.strip().split('-')
@@ -137,7 +143,7 @@ def actionHandle(control, data, realAction, uiObj):
                 t, el, refreshTime = controlData
                 uiObj.sleep(t, el=el, refresh_time=refreshTime)
             else:
-                pass
+                raise ValueError
         else:
             uiObj.sleep(int(control))
     elif realAction == 'click&&equal':
@@ -169,7 +175,7 @@ def actionHandle(control, data, realAction, uiObj):
     elif realAction == 'back':
         uiObj.pressBack()
     else:
-        pass
+        raise ValueError
 
 
 def getJudgeReturn(paraType, judgeCondition):
@@ -184,7 +190,7 @@ def getJudgeReturn(paraType, judgeCondition):
         else:
             return False
     else:
-        pass
+        raise ValueError
 
 
 def expectTypeHandle(expect, uiObj):
@@ -198,7 +204,7 @@ def expectTypeHandle(expect, uiObj):
         elif 'Id' in expect:
             expectVal = getJudgeReturn('==', uiObj.isIdInPage(expectEl))
         else:
-            pass
+            raise ValueError
     elif '!=' in expect:
         expectEl = expect.strip().split('!=')[1]
         if 'text' in expect:
@@ -208,9 +214,9 @@ def expectTypeHandle(expect, uiObj):
         elif 'Id' in expect:
             expectVal = getJudgeReturn('!=', uiObj.isIdInPage(expectEl))
         else:
-            pass
+            raise ValueError
     else:
-        pass
+        raise ValueError
     if expectVal is None:
         raise ValueError
     else:
@@ -274,7 +280,7 @@ def executeEvent(stepEventSuit, uiObj):
                     raise
 
 
-def test_run_all_test(allTestClass, uiObj):
+def test_run_all_test(allTestClass, realIngoreModule, uiObj):
     totalCount = 0
     passCount = 0
     failCount = 0
@@ -283,12 +289,13 @@ def test_run_all_test(allTestClass, uiObj):
     failList = []
     abortList = []
     exceptionList = []
+    ingoreFeature = []
     for eachTestClass in allTestClass:
         testClassName = eachTestClass['testCaseName']
-        testCase = eachTestClass['modleSuit']
-        for eachModle in testCase:
-            moduleName = eachModle['moduleName']
-            features = eachModle['featureSuite']
+        testCase = eachTestClass['moduleSuit']
+        for eachModule in testCase:
+            moduleName = eachModule['moduleName']
+            features = eachModule['featureSuite']
             firstEventSuit = []
             uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
                                                             moduleName))
@@ -297,6 +304,11 @@ def test_run_all_test(allTestClass, uiObj):
                 steps = eachFeature['featureSteps']
                 otherEventSuit = []
                 if '#' in featureName:
+                    rfeatureName = featureName.strip().split('#')[1]
+                    rPath = '{}-{}-{}'.format(testClassName,
+                                              moduleName,
+                                              rfeatureName)
+                    ingoreFeature.append(rPath)
                     continue
                 else:
                     if featureName == '首次启动app':
@@ -351,3 +363,7 @@ def test_run_all_test(allTestClass, uiObj):
     detailPrint('失败用例', failList)
     detailPrint('中止用例', abortList)
     detailPrint('异常用例', exceptionList)
+    if realIngoreModule != []:
+        detailPrint('忽略模块', realIngoreModule)
+    if ingoreFeature != []:
+        detailPrint('忽略功能点', ingoreFeature)

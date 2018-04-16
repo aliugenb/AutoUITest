@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
+import sys
 import time
 import random
 import chardet
@@ -89,6 +90,8 @@ class BaseOn(object):
         currenttime = int(time.time())
         timeArray = time.localtime(currenttime)
         formatTime = time.strftime("%Y%m%d%H%M%S", timeArray)
+        if '|' in pic_name:
+            pic_name = pic_name.replace('|', '-')
         filename = '{}/{}_{}.png'.format(sdcard_path, pic_name, formatTime)
         command = CC.PHONE_SCREENCAP + ' ' + filename
         os.popen(command)
@@ -103,10 +106,8 @@ class BaseOn(object):
         r_val = []
         for each in r_list:
             r_val.append(each.split('\r')[0])
-
         if r_val == ['']:
             self._LOGGER.warning(u'获取已下载的输入法存在问题')
-
         return r_val
 
     def get_current_ime(self):
@@ -118,7 +119,6 @@ class BaseOn(object):
         r_val = r_info.read().strip()
         if r_val == '':
             self._LOGGER.warning(u'获取当前的输入法存在问题')
-
         return r_val
 
     def set_ime(self, pkg='com.sohu.inputmethod.sogou.xiaomi/.SogouIME'):
@@ -130,12 +130,11 @@ class BaseOn(object):
         for eachPkg in pkgList:
             if CC.APPIUM_IME_PKG in eachPkg:
                 pkgList.remove(eachPkg)
-
         if pkg not in pkgList and pkg != CC.APPIUM_IME_PKG:
-            command = command + ' ' + pkgList[0]
+            command = '{} {}'.format(command, pkgList[0])
             os.popen(command)
         else:
-            command = command + ' ' + pkg
+            command = '{} {}'.format(command, pkg)
             os.popen(command)
 
     def set_input_text(self, text):
@@ -154,7 +153,6 @@ class BaseOn(object):
         if 'x' not in posList:
             self._LOGGER.critical(u'由于经费有限部分机型匹配可能有问题，出现此问题请钉钉联系我！')
             raise RuntimeError
-
         posList = posList.strip().split(': ')
         posList = posList[1].split('x')
         screenX = int(posList[0])
@@ -170,7 +168,6 @@ class BaseOn(object):
         if dn == '':
             self._LOGGER.critical(u'获取手机名字失败')
             raise RuntimeError
-
         return dn
 
     def getPlatformVersion(self):
@@ -182,7 +179,6 @@ class BaseOn(object):
         if pv == '':
             self._LOGGER.critical(u'获取平台版本失败')
             raise RuntimeError
-
         return pv
 
     def clearApp(self, pkgName=CC.XIMALAYA_PKG):
@@ -206,42 +202,41 @@ class BaseOn(object):
         """
         把文件从手机推送到电脑,默认推送截图
         """
+        command = '{} {} {}'.format(CC.PULLFILE_PHOHE_TO_COMPUTER,
+                                    kwargs['p_path'],
+                                    kwargs['c_path'])
         if kwargs:
             try:
-                command = CC.PULLFILE_PHOHE_TO_COMPUTER + ' ' + kwargs['p_path'] + ' ' + kwargs['c_path']
                 os.popen(command)
             except KeyError as e:
-                #self._LOGGER.exception(u'此处异常，详情如下')
-                self._LOGGER.critical(u'参数有问题,两个参数分别为p_path=XXX和c_path=XXX，请核对')
+                self._LOGGER.critical(u'参数有问题,参数分别为p_path=XXX和c_path=XXX，请核对')
                 raise ValueError
         else:
             if args:
                 self._LOGGER.warning(u"无效参数，将为你执行默认方法，指定文件夹推送")
-
             kwargs['c_path'] = CC.LINIX_PATH_F
             kwargs['p_path'] = CC.PHONE_PATH_D
-            command = CC.PULLFILE_PHOHE_TO_COMPUTER + ' ' + kwargs['p_path'] + " " + kwargs['c_path']
             os.popen(command)
 
     def pressBack(self):
         """
         返回键
         """
-        command =  CC.PHONE_KEYEVENT + ' 4'
+        command = '{} 4'.format(CC.PHONE_KEYEVENT)
         os.popen(command)
 
     def pressMenu(self):
         '''
         菜单键
         '''
-        command = CC.PHONE_KEYEVENT + ' 82'
+        command = '{} 82'.format(CC.PHONE_KEYEVENT)
         os.popen(command)
 
     def pressHome(self):
         """
         回主界面
         """
-        command =  CC.PHONE_KEYEVENT + ' 3'
+        command = '{} 3'.format(CC.PHONE_KEYEVENT)
         os.popen(command)
 
     def getRandomNum(self):
@@ -255,7 +250,6 @@ class BaseOn(object):
             randomNum = str(randomNum)
         else:
             print(u'随机数长度不符合要求')
-
         return randomNum
 
     def get_file_list(self, file_name):
@@ -270,7 +264,6 @@ class BaseOn(object):
                     r_lines.append(line.strip())
         except IOError as e:
             self._LOGGER.critical(u'File error: {}'.format(str()))
-
         return r_lines
 
     def clearAllAppointEl(self, pendingList, el):
@@ -280,12 +273,10 @@ class BaseOn(object):
         if not isinstance(pendingList, list):
             self._LOGGER.critical(u'错误：输入参数不为列表')
             raise TypeError
-
         list_copy = pendingList
         for i in pendingList:
             if i == el:
                 list_copy.remove(i)
-
         return list_copy
 
     def isOrNotEqual(self, valueLeft, valueRight):
@@ -295,9 +286,11 @@ class BaseOn(object):
         valueLeft = str(valueLeft)
         valueRight = str(valueRight)
         if valueLeft == valueRight:
-            self._LOGGER.debug(u'两个值相等，两个值分别为: {}, {}'.format(valueLeft, valueRight))
+            self._LOGGER.debug(u'两个值相等，两个值分别为: {}, {}'.format(valueLeft,
+                                                              valueRight))
         else:
-            self._LOGGER.debug(u'两个值不等，两个值分别为: {}, {}'.format(valueLeft, valueRight))
+            self._LOGGER.debug(u'两个值不等，两个值分别为: {}, {}'.format(valueLeft,
+                                                              valueRight))
 
     def appiumErrorHandle(self):
         command1 = CC.KILL_ADB

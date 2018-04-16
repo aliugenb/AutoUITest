@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import caseDataTransform as cdt
-import TestRunner as TR
+import TestRunner as tr
 import common
 common.pathGet()
 from XFramework.base_on import BaseOn
@@ -18,5 +18,6 @@ if __name__ == '__main__':
         lines = f.readlines()
         for line in lines:
             allTestList.append(line.strip())
-    allTestClass = cdt.getTestCaseSuit('testCase.xlsx', allTestList)
-    TR.test_run_all_test(allTestClass, p)
+    allTestClass, realIngoreModule = cdt.getTestCaseSuit('testCase.xlsx',
+                                                         allTestList)
+    tr.test_run_all_test(allTestClass, realIngoreModule, p)

@@ -12,10 +12,11 @@ def getSheetName(filePath, allTestList):
     return sheetList
 
 
-def getModleGroup(dataFrame):
+def getModuleGroup(dataFrame):
     startList = []
     endList = []
-    modleDict = {}
+    moduleDict = {}
+    ingoreModule = []
     for index, name in enumerate(dataFrame.loc[:, 'moduleName']):
         if name != 'isNaN':
             if '>>>>' in name:
@@ -27,9 +28,12 @@ def getModleGroup(dataFrame):
     else:
         for index in range(len(startList)):
             if '#' not in startList[index][1]:
-                modleDict[startList[index][1]] = \
+                moduleDict[startList[index][1]] = \
                     '{}-{}'.format(startList[index][0], endList[index][0])
-    return modleDict
+            else:
+                moduleName = startList[index][1].strip().split('#')[1]
+                ingoreModule.append(moduleName)
+    return moduleDict, ingoreModule
 
 
 def getStepUnit(dataFrame, rowIndex):
@@ -51,9 +55,9 @@ def getTestCaseUnit(dataFrame, sheetName):
     multiSteps = []
     featureUnit = {}
     multiStepUnit = {}
-    modleSuit = []
-    modleDict = getModleGroup(dataFrame)
-    for key, value in modleDict.items():
+    moduleSuit = []
+    moduleDict, ingoreModule = getModuleGroup(dataFrame)
+    for key, value in moduleDict.items():
         rowIndex, rowsNum = [int(i) for i in value.split('-')]
         while rowIndex <= rowsNum-1:
             if dataFrame.loc[rowIndex, ['featureName']][0] != 'isNaN':
@@ -100,12 +104,17 @@ def getTestCaseUnit(dataFrame, sheetName):
                         stepSuit = []
                         featureUnit = {}
             rowIndex += 1
-        modleUnit = {"moduleName": key, 'featureSuite': featuresList}
+        moduleUnit = {"moduleName": key, 'featureSuite': featuresList}
         featuresList = []
-        modleSuit.append(modleUnit)
-        modleUnit = {}
-    testCaseUnit = {'testCaseName': sheetName, 'modleSuit': modleSuit}
-    return testCaseUnit
+        moduleSuit.append(moduleUnit)
+        moduleUnit = {}
+    testCaseUnit = {'testCaseName': sheetName, 'moduleSuit': moduleSuit}
+    realIngoreModule = []
+    if ingoreModule != []:
+        for module in ingoreModule:
+            modulePath = '{}-{}'.format(sheetName, module)
+            realIngoreModule.append(modulePath)
+    return testCaseUnit, realIngoreModule
 
 
 def getTestCaseSuit(filePath, allTestList):
@@ -118,6 +127,6 @@ def getTestCaseSuit(filePath, allTestList):
         dataFrame = pd.read_csv(csvPath)
         # 填充空值
         dataFrame = dataFrame.fillna('isNaN')
-        testCaseUnit = getTestCaseUnit(dataFrame, sheet[1])
+        testCaseUnit, realIngoreModule = getTestCaseUnit(dataFrame, sheet[1])
         testCaseSuit.append(testCaseUnit)
-    return testCaseSuit
+    return testCaseSuit, realIngoreModule
