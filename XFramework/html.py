@@ -326,8 +326,9 @@ def writeTestDetail(filename, modulesContents):
         modulesContents[i]= modulesContents[i].strip().split(':', 1)[1]
      
     f = open(filename,'a')
-    f.write('<table border="1" class="dataframe">') 
-    f.write('<thead><tr style="text-align: center;"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')  
+    #f.write('<table border="1" class="dataframe">') 
+    f.write('<table width="100%" border="1"  class="dataframe">') 
+    f.write('<thead><tr style="text-align: center;background: #ccc"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')  
     for i in range(len(zip(caseTestDurs,  modulesContents))):
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
     
@@ -335,7 +336,7 @@ def writeTestDetail(filename, modulesContents):
         if '(' in testresultComment:
             testresult = testresultComment.split('(',1)[0]
             comment = testresultComment.split('(',1)[1][:-1]
-            f.write('<tr style="text-align: center;background: #ccc;">')
+            f.write('<tr style="text-align:center; color:#FF0000;">')
             f.write('<th>'+caseTestDurs[i] +'</th>')
             f.write('<th>'+modulesContents[i][0] +'</th>')
             f.write('<th>'+modulesContents[i][1] +'</th>')
@@ -369,9 +370,8 @@ def renameHtmlFile(root, testTime):
     os.rename(src, dst)
            
 if __name__=="__main__":
-    #root = '/Users/nali/gitlab/uiautotest/Android/LOG'
-    root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
-    #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
+    #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
+    root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
     tempHtmlname = os.path.join(root, 'test.html')
           
     lfh = LogFileHandle()
@@ -380,9 +380,7 @@ if __name__=="__main__":
     #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
     print filename
-    filename = filename[0]
-    
-    
+    filename = filename[0]    
     
     #得到模块的测试开始时间，结束时间
     stimes =  lfh.getModuleTestTime(filename)[0]
