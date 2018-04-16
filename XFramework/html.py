@@ -124,7 +124,7 @@ class LogFileHandle():
                 contents = line.strip().split('>',1)[1]
                 tempContents.append(contents)
                 
-        for i in range(len(tempContents)):
+        for i in range(len(tempContents)-1):
             if "ERROR" in tempContents[i]:                               
                 #print mTotalContents[i].split(':',1)[1]
                 tempContents[i+1]=tempContents[i+1]+'(Error:'+tempContents[i].split(':',1)[1]+')'
