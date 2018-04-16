@@ -419,5 +419,5 @@ if __name__=="__main__":
     writeTestDetail(tempHtmlname, modulesContents)
 
     #已测试开始时间重命名test.html
-    renameHtmlFile(root, testTime)
+    #renameHtmlFile(root, testTime)
     
