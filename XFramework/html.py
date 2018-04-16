@@ -326,7 +326,7 @@ def writeTestDetail(filename, modulesContents):
         modulesContents[i]= modulesContents[i].strip().split(':', 1)[1]
      
     f = open(filename,'a')
-    f.write('<table border="1" class="dataframe" align = "center">') 
+    f.write('<table border="1" class="dataframe">') 
     f.write('<thead><tr style="text-align: center;"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')  
     for i in range(len(zip(caseTestDurs,  modulesContents))):
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
