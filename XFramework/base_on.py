@@ -90,10 +90,11 @@ class BaseOn(object):
         # currenttime = int(time.time())
         # timeArray = time.localtime(currenttime)
         # formatTime = time.strftime("%Y%m%d%H%M%S", timeArray)
-        if '|' in pic_name:
-            pic_name = pic_name.replace('|', '-')
+        for eachChara in CC.SPECIAL_CHARACTER_LIST:
+            if eachChara in pic_name:
+                pic_name = pic_name.replace(eachChara, '-')
         filename = '{}/{}.png'.format(sdcard_path, pic_name)
-        command = CC.PHONE_SCREENCAP + ' ' + filename
+        command = '{} {}'.format(CC.PHONE_SCREENCAP, filename)
         os.popen(command)
 
     def get_had_ime(self):

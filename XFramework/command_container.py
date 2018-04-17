@@ -52,3 +52,9 @@ class CommandContainer(object):
     PHONE_PATH = 'sdcard/AutoTest/screencap'
     #图片存放
     LINIX_PATH_F = "/opt/lampp/htdocs/kodexplorer/data/Group/public/home/UITest/Android/screenshot/"
+
+    '''
+    其他
+    '''
+    SPECIAL_CHARACTER_LIST = ['\\', '/', ':', '*',
+                              '?', '"', '<', '>', '|']
