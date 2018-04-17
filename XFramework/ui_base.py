@@ -93,7 +93,7 @@ class UITest(PhoneInfo, TA):
                 self._LOGGER.debug(u'点击desc: ' + desc + u'，结束')
         except AttributeError as e:
             self._LOGGER.error(u"此页面找不到你输入的desc：" + desc + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
-            self.screencap(desc, CC.PHONE_PATH)
+            # self.screencap(desc, CC.PHONE_PATH)
             raise AssertionError
 
     def clickById(self, Id, *args, **kwargs):
@@ -125,7 +125,7 @@ class UITest(PhoneInfo, TA):
         except AttributeError as e:
             self._LOGGER.error(u"此页面找不到你输入的Id：" + Id + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
             Id_pic = Id.split('/')[1]
-            self.screencap(Id_pic, CC.PHONE_PATH)
+            # self.screencap(Id_pic, CC.PHONE_PATH)
             raise AssertionError
 
     @base_on.unifyParaCode
@@ -157,7 +157,7 @@ class UITest(PhoneInfo, TA):
                 self._LOGGER.debug(u'点击text: {}, ins: {}, 结束'.format(text, str(ins)))
         except AttributeError as e:
             self._LOGGER.error(u"此页面找不到你输入的text：" + text + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
-            self.screencap(text, CC.PHONE_PATH)
+            # self.screencap(text, CC.PHONE_PATH)
             raise AssertionError
 
     @base_on.unifyParaCode
@@ -189,7 +189,7 @@ class UITest(PhoneInfo, TA):
                 self._LOGGER.debug(u'点击desc: {}, ins: {}, 结束'.format(desc, str(ins)))
         except AttributeError as e:
             self._LOGGER.error(u"此页面找不到你输入的desc：" + desc + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
-            self.screencap(desc, CC.PHONE_PATH)
+            # self.screencap(desc, CC.PHONE_PATH)
             raise AssertionError
 
     def clickByIdInstance(self, Id, ins, *args, **kwargs):
@@ -220,8 +220,8 @@ class UITest(PhoneInfo, TA):
                 self._LOGGER.debug(u'点击Id: {}, ins: {}, 结束'.format(Id, str(ins)))
         except AttributeError as e:
             self._LOGGER.error(u"此页面找不到你输入的Id：" + Id + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
-            Id_pic = Id.split('/')[1]
-            self.screencap(Id_pic, CC.PHONE_PATH)
+            # Id_pic = Id.split('/')[1]
+            # self.screencap(Id_pic, CC.PHONE_PATH)
             raise AssertionError
 
     def getTextById(self, Id, ins=None):
@@ -239,8 +239,8 @@ class UITest(PhoneInfo, TA):
                 return re_text
         except AttributeError as e:
             self._LOGGER.error(u"此页面找不到你输入的Id：{}, 请确认！".format(Id))
-            Id_pic = Id.split('/')[1]
-            self.screencap(Id_pic, CC.PHONE_PATH)
+            # Id_pic = Id.split('/')[1]
+            # self.screencap(Id_pic, CC.PHONE_PATH)
             # self.set_ime()
             raise AssertionError
 
@@ -261,7 +261,7 @@ class UITest(PhoneInfo, TA):
                 self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             self._LOGGER.error(u'T文本：' + input_text + u"，输入失败，请确认！（友情提示：输入框点击后可能切换了页面！）")
-            self.screencap(text_2, CC.PHONE_PATH)
+            # self.screencap(text_2, CC.PHONE_PATH)
             # self.set_ime()
             raise AssertionError
 
@@ -282,7 +282,7 @@ class UITest(PhoneInfo, TA):
                 self._LOGGER.debug(u'D文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             self._LOGGER.error(u'D文本：' + input_text + u"，输入失败，请确认！（友情提示：输入框点击后可能切换了页面！）")
-            self.screencap(desc_2, CC.PHONE_PATH)
+            # self.screencap(desc_2, CC.PHONE_PATH)
             raise AssertionError
 
     def setValueById(self, input_text, Id_2, *args, **kwargs):
@@ -300,7 +300,7 @@ class UITest(PhoneInfo, TA):
         except AttributeError as e:
             self._LOGGER.error(u'I文本：' + input_text + u"，输入失败，请确认！（友情提示：输入框点击后可能切换了页面！）")
             Id_pic = Id_2.split('/')[1]
-            self.screencap(Id_pic, CC.PHONE_PATH)
+            # self.screencap(Id_pic, CC.PHONE_PATH)
             raise AssertionError
 
     @base_on.unifyParaCode
@@ -363,7 +363,7 @@ class UITest(PhoneInfo, TA):
             else:
                 filename = instruction + "_fail"
                 self._LOGGER.error(filename)
-                self.screencap(filename, CC.PHONE_PATH)
+                # self.screencap(filename, CC.PHONE_PATH)
                 raise AssertionError
         elif int(isIn) == 1:
             if not self.__select_text_Android(text, rule):
@@ -371,7 +371,7 @@ class UITest(PhoneInfo, TA):
             else:
                 filename = instruction + "_fail"
                 self._LOGGER.error(filename)
-                self.screencap(filename, CC.PHONE_PATH)
+                # self.screencap(filename, CC.PHONE_PATH)
                 # self.set_ime()
                 raise AssertionError
         else:
@@ -410,7 +410,7 @@ class UITest(PhoneInfo, TA):
             else:
                 filename = instruction + "_fail"
                 self._LOGGER.error(filename)
-                self.screencap(filename, CC.PHONE_PATH)
+                # self.screencap(filename, CC.PHONE_PATH)
                 # self.set_ime()
                 raise AssertionError
         elif int(isIn) == 1:
@@ -419,7 +419,7 @@ class UITest(PhoneInfo, TA):
             else:
                 filename = instruction + "_fail"
                 self._LOGGER.error(filename)
-                self.screencap(filename, CC.PHONE_PATH)
+                # self.screencap(filename, CC.PHONE_PATH)
                 # self.set_ime()
                 raise AssertionError
         else:
@@ -458,7 +458,7 @@ class UITest(PhoneInfo, TA):
             else:
                 filename = instruction + "_fail"
                 self._LOGGER.error(filename)
-                self.screencap(filename, CC.PHONE_PATH)
+                # self.screencap(filename, CC.PHONE_PATH)
                 # self.set_ime()
                 raise AssertionError
         elif int(isIn) == 1:
@@ -467,7 +467,7 @@ class UITest(PhoneInfo, TA):
             else:
                 filename = instruction + "_fail"
                 self._LOGGER.error(filename)
-                self.screencap(filename, CC.PHONE_PATH)
+                # self.screencap(filename, CC.PHONE_PATH)
                 # self.set_ime()
                 raise AssertionError
         else:
@@ -512,9 +512,9 @@ class UITest(PhoneInfo, TA):
                         pass
                     else:
                         self._LOGGER.error(u'规定时间内，仍未找到该元素: %s, 请检查页面是否存在此元素或者检查网络是否正常！' % el)
-                        if '/' in el:
-                            el = el.split('/')[1]
-                        self.screencap(el, CC.PHONE_PATH)
+                        # if '/' in el:
+                        #     el = el.split('/')[1]
+                        # self.screencap(el, CC.PHONE_PATH)
                     raise AssertionError
 
             except KeyError as e:
@@ -588,16 +588,16 @@ class UITest(PhoneInfo, TA):
             if tFlag == 1:
                 self._LOGGER.error(u'完成滑动的指定步数，仍未能找到该元素:{}，Fail'
                                    .format(kwargs['text']))
-                self.screencap(kwargs['text'], CC.PHONE_PATH)
+                # self.screencap(kwargs['text'], CC.PHONE_PATH)
             elif dFlag == 1:
                 self._LOGGER.error(u'完成滑动的指定步数，仍未能找到该元素:{}，Fail'
                                    .format(kwargs['desc']))
-                self.screencap(kwargs['desc'], CC.PHONE_PATH)
+                # self.screencap(kwargs['desc'], CC.PHONE_PATH)
             elif iFlag == 1:
                 self._LOGGER.error(u'完成滑动的指定步数，仍未能找到该元素:{}，Fail'
                                    .format(kwargs['Id']))
-                Id_pic = kwargs['Id'].split('/')[1]
-                self.screencap(Id_pic, CC.PHONE_PATH)
+                # Id_pic = kwargs['Id'].split('/')[1]
+                # self.screencap(Id_pic, CC.PHONE_PATH)
             else:
                 pass
             raise AssertionError

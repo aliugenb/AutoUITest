@@ -12,9 +12,6 @@ def transferProperty(target, key, source):
         setattr(target, key, source.get(key))
 
 
-# def parseCaseSuit(allTestClass):
-#     if not isinstance(allTestClass, list):
-
 def detailPrint(detailName, targetList):
     if len(targetList) != 0:
         print('{}:'.format(detailName))
@@ -327,6 +324,7 @@ def test_run_all_test(allTestClass, realIngoreModule, uiObj):
                             executeEvent(stepEventSuit, uiObj)
                         except AssertionError as e:
                             uiObj._LOGGER.info('{}: FAIL'.format(rName))
+                            uiObj.screencap(rName, CC.PHONE_PATH)
                             failList.append(rName)
                             failCount += 1
                         except (IndexError, ValueError):
