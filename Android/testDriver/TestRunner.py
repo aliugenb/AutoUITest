@@ -86,7 +86,6 @@ def actionHandle(control, data, realAction, uiObj):
                     except AssertionError as e:
                         uiObj._LOGGER.error(u"此页面找不到你输入的text：{}，请确认!"
                                             .format(controlEl))
-                        uiObj.screencap(controlEl, CC.PHONE_PATH)
                         raise
             elif elType == 'desc':
                 uiObj.clickByDesc(controlEl, flowTag=1)
@@ -154,7 +153,6 @@ def actionHandle(control, data, realAction, uiObj):
             uiObj._LOGGER.error('点击操作后，此元素{}的text值发生改变，fail'.format(
                                                                     controlEl))
             Id_pic = controlEl.split('/')[1]
-            uiObj.screencap('{}_fail'.format(Id_pic), CC.PHONE_PATH)
             raise AssertionError
     elif realAction == 'click&&unequal':
         elType, controlEl = control.strip().split('=')
@@ -166,8 +164,6 @@ def actionHandle(control, data, realAction, uiObj):
         else:
             uiObj._LOGGER.error('点击操作后，此元素{}的text值未发生改变，fail'.format(
                                                                     controlEl))
-            Id_pic = controlEl.split('/')[1]
-            uiObj.screencap('{}_fail'.format(Id_pic), CC.PHONE_PATH)
             raise AssertionError
     elif realAction == 'back':
         uiObj.pressBack()
@@ -230,7 +226,6 @@ def expectHandle(expect, expectInfo, uiObj):
             pass
         else:
             uiObj._LOGGER.error('{}_fail'.format(expectInfo))
-            uiObj.screencap('{}_fail'.format(expectInfo), CC.PHONE_PATH)
             raise AssertionError
     elif '||' in expect:
         for eveExpect in expect.strip().split('||'):
@@ -240,14 +235,12 @@ def expectHandle(expect, expectInfo, uiObj):
             pass
         else:
             uiObj._LOGGER.error('{}_fail'.format(expectInfo))
-            uiObj.screencap('{}_fail'.format(expectInfo), CC.PHONE_PATH)
             raise AssertionError
     else:
         if expectTypeHandle(expect, uiObj):
             pass
         else:
             uiObj._LOGGER.error('{}_fail'.format(expectInfo))
-            uiObj.screencap('{}_fail'.format(expectInfo), CC.PHONE_PATH)
             raise AssertionError
 
 
@@ -324,7 +317,8 @@ def test_run_all_test(allTestClass, realIngoreModule, uiObj):
                             executeEvent(stepEventSuit, uiObj)
                         except AssertionError as e:
                             uiObj._LOGGER.info('{}: FAIL'.format(rName))
-                            uiObj.screencap(rName, CC.PHONE_PATH)
+                            uiObj.screencap('{}_fail'.format(rName),
+                                            CC.PHONE_PATH)
                             failList.append(rName)
                             failCount += 1
                         except (IndexError, ValueError):

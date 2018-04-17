@@ -9,6 +9,9 @@ def getSheetName(filePath, allTestList):
     for index, sheet in enumerate(data_xls.sheets()):
         if sheet.name in allTestList:
             sheetList.append((index, sheet.name))
+    if sheetList == []:
+        print('你上传的表格sheet名与你勾选的不一致, 请核实！')
+        raise ValueError
     return sheetList
 
 

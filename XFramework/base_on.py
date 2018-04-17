@@ -87,12 +87,12 @@ class BaseOn(object):
         jPath = os.popen(command1).read()
         if jPath == '':
             self.new_floder(sdcard_path)
-        currenttime = int(time.time())
-        timeArray = time.localtime(currenttime)
-        formatTime = time.strftime("%Y%m%d%H%M%S", timeArray)
+        # currenttime = int(time.time())
+        # timeArray = time.localtime(currenttime)
+        # formatTime = time.strftime("%Y%m%d%H%M%S", timeArray)
         if '|' in pic_name:
             pic_name = pic_name.replace('|', '-')
-        filename = '{}/{}_{}.png'.format(sdcard_path, pic_name, formatTime)
+        filename = '{}/{}.png'.format(sdcard_path, pic_name)
         command = CC.PHONE_SCREENCAP + ' ' + filename
         os.popen(command)
 
