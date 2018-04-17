@@ -34,7 +34,6 @@ def sheetNotExistwarning(getTestExcel):
             for index, sheet in enumerate(data_xls.sheets()):
                 sheetList.append(sheet.name)
             for each in allTestList:
-                print each
                 if each not in sheetList:
                     print('警告：你勾选的{}大类，在测试表格中不存在，已经自动帮你过滤。'
                           .format(each))
