@@ -375,14 +375,18 @@ if __name__=="__main__":
     root1= os.path.abspath('..')
     root = root1+'/Android/LOG'
     tempHtmlname = os.path.join(root, 'test.html')
+    print tempHtmlname
           
     lfh = LogFileHandle()
     
     # 得到log.txt文件
     #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
-    #print filename
-    filename = filename[0]    
+    if len(filename)==0:
+        print "ERROR:不存在log文件"
+    else:  
+        #print filename
+        filename = filename[0]    
     
     #得到模块的测试开始时间，结束时间
     stimes =  lfh.getModuleTestTime(filename)[0]
