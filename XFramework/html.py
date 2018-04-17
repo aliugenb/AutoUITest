@@ -56,6 +56,7 @@ class LogFileHandle():
                     if filename == 'project.txt':
                         pass        
                     else:
+                        print '找到log文件'
                         fileNames.append(os.path.join(path, filename))
         return fileNames    
    
@@ -374,6 +375,7 @@ if __name__=="__main__":
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
     root1= os.path.abspath('..')
     root = root1+'/Android/LOG'
+    print 'root:', root
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
           
