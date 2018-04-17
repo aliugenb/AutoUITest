@@ -374,7 +374,7 @@ if __name__=="__main__":
     #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
     root1= os.path.abspath('..')
-    root = root1+'/Android/LOG'
+    root = root1+'/LOG'
     print 'root:', root
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
