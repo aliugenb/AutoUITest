@@ -385,7 +385,7 @@ if __name__=="__main__":
     if len(filename)==0:
         print "ERROR:不存在log文件"
     else:  
-        #print filename
+        print filename
         filename = filename[0]    
     
     #得到模块的测试开始时间，结束时间
