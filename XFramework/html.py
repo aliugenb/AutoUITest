@@ -370,8 +370,10 @@ def renameHtmlFile(root, testTime):
     os.rename(src, dst)
            
 if __name__=="__main__":
-    root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
+    #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
+    root1= os.path.abspath('..')
+    root = root1+'/Android/LOG'
     tempHtmlname = os.path.join(root, 'test.html')
           
     lfh = LogFileHandle()
@@ -379,7 +381,7 @@ if __name__=="__main__":
     # 得到log.txt文件
     #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
-    print filename
+    #print filename
     filename = filename[0]    
     
     #得到模块的测试开始时间，结束时间
@@ -406,6 +408,7 @@ if __name__=="__main__":
     deviceName = h.getDeviceName()
     platformVersion = h.getPlatformVersion()
     deviceId = h.getDeviceId()
+    
     
     testTime = lfh.getLogTime(filename) 
 
