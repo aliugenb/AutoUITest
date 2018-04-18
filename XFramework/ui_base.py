@@ -2,18 +2,20 @@
 import os, sys, time
 import selenium.common.exceptions
 from appium.webdriver.common.touch_action import TouchAction as TA
-from phoneInfo import PhoneInfo
+# from phoneInfo import PhoneInfo
+import phoneInfo as pi
 import base_on
 from base_on import BaseOn
 from command_container import CommandContainer as CC
 
 
-class UITest(PhoneInfo, TA):
+class UITest(BaseOn, TA):
     """
     ui层基本操作
     """
-    def __init__(self):
-        super(UITest, self).__init__()
+    def __init__(self, driver=pi.getDriver()):
+        self.driver = driver
+        # super(UITest, self).__init__()
         TA.__init__(self, driver=self.driver)
 
     def clickByPos(self, x, y, duration=None):
