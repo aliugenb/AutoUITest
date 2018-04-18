@@ -84,9 +84,10 @@ def actionHandle(control, data, realAction, uiObj):
                     try:
                         uiObj.clickByText(controlEl, flowTag=1, rule='p')
                     except AssertionError as e:
-                        uiObj._LOGGER.error(u"此页面找不到你输入的text：{}，请确认!"
-                                            .format(controlEl))
-                        raise
+                        # uiObj._LOGGER.error(u"此页面找不到你输入的text：{}，请确认!"
+                        #                     .format(controlEl))
+                        raise AssertionError(u"此页面找不到你输入的text：{}，请确认!"
+                                             .format(controlEl))
             elif elType == 'desc':
                 uiObj.clickByDesc(controlEl, flowTag=1)
             elif elType == 'Id':
@@ -150,10 +151,11 @@ def actionHandle(control, data, realAction, uiObj):
         if textBefore == textAfter:
             pass
         else:
-            uiObj._LOGGER.error('点击操作后，此元素{}的text值发生改变，fail'.format(
-                                                                    controlEl))
+            # uiObj._LOGGER.error('点击操作后，此元素{}的text值发生改变，fail'.format(
+            #                                                         controlEl))
             Id_pic = controlEl.split('/')[1]
-            raise AssertionError
+            raise AssertionError('点击操作后，此元素{}的text值发生改变，fail'.format(
+                                                                    controlEl))
     elif realAction == 'click&&unequal':
         elType, controlEl = control.strip().split('=')
         textBefore = uiObj.getTextById(controlEl)
@@ -162,9 +164,10 @@ def actionHandle(control, data, realAction, uiObj):
         if textBefore != textAfter:
             pass
         else:
-            uiObj._LOGGER.error('点击操作后，此元素{}的text值未发生改变，fail'.format(
+            # uiObj._LOGGER.error('点击操作后，此元素{}的text值未发生改变，fail'.format(
+            #                                                         controlEl))
+            raise AssertionError('点击操作后，此元素{}的text值未发生改变，fail'.format(
                                                                     controlEl))
-            raise AssertionError
     elif realAction == 'back':
         uiObj.pressBack()
     else:
@@ -225,8 +228,8 @@ def expectHandle(expect, expectInfo, uiObj):
         if condition[0] and condition[1]:
             pass
         else:
-            uiObj._LOGGER.error('{}_fail'.format(expectInfo))
-            raise AssertionError
+            # uiObj._LOGGER.error('{}_fail'.format(expectInfo))
+            raise AssertionError('{}_fail'.format(expectInfo))
     elif '||' in expect:
         for eveExpect in expect.strip().split('||'):
             tempData = expectTypeHandle(eveExpect, uiObj)
@@ -234,14 +237,14 @@ def expectHandle(expect, expectInfo, uiObj):
         if condition[0] or condition[1]:
             pass
         else:
-            uiObj._LOGGER.error('{}_fail'.format(expectInfo))
-            raise AssertionError
+            # uiObj._LOGGER.error('{}_fail'.format(expectInfo))
+            raise AssertionError('{}_fail'.format(expectInfo))
     else:
         if expectTypeHandle(expect, uiObj):
             pass
         else:
-            uiObj._LOGGER.error('{}_fail'.format(expectInfo))
-            raise AssertionError
+            # uiObj._LOGGER.error('{}_fail'.format(expectInfo))
+            raise AssertionError('{}_fail'.format(expectInfo))
 
 
 def executeEvent(stepEventSuit, uiObj):
@@ -267,6 +270,7 @@ def executeEvent(stepEventSuit, uiObj):
                 if isOptional == '1.0':
                     pass
                 else:
+                    uiObj._LOGGER.error(e)
                     raise
 
 
