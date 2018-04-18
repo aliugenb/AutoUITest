@@ -94,7 +94,7 @@ class UITest(BaseOn, TA):
                 self.__select_desc_Android(desc, rule).click()
                 self._LOGGER.debug(u'点击desc: ' + desc + u'，结束')
         except AttributeError as e:
-            self._LOGGER.error(u"此页面找不到你输入的desc：" + desc + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
+            # self._LOGGER.error(u"此页面找不到你输入的desc：" + desc + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
             # self.screencap(desc, CC.PHONE_PATH)
             raise AssertionError
 
@@ -125,8 +125,8 @@ class UITest(BaseOn, TA):
                 self.__select_Id_Android(Id).click()
                 self._LOGGER.debug(u'点击Id: ' + Id + u'，结束')
         except AttributeError as e:
-            self._LOGGER.error(u"此页面找不到你输入的Id：" + Id + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
-            Id_pic = Id.split('/')[1]
+            # self._LOGGER.error(u"此页面找不到你输入的Id：" + Id + u"，请确认！（友情提示：你的输入可能存在空格，请尝试部分匹配规则！）")
+            # Id_pic = Id.split('/')[1]
             # self.screencap(Id_pic, CC.PHONE_PATH)
             raise AssertionError
 

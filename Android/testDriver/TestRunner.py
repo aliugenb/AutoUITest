@@ -89,9 +89,17 @@ def actionHandle(control, data, realAction, uiObj):
                         raise AssertionError(u"此页面找不到你输入的text：{}，请确认!"
                                              .format(controlEl))
             elif elType == 'desc':
-                uiObj.clickByDesc(controlEl, flowTag=1)
+                try:
+                    uiObj.clickByDesc(controlEl, flowTag=1)
+                except AssertionError as e:
+                    raise AssertionError(u"此页面找不到你输入的desc：{}，请确认!"
+                                         .format(controlEl))
             elif elType == 'Id':
-                uiObj.clickById(controlEl, flowTag=1)
+                try:
+                    uiObj.clickById(controlEl, flowTag=1)
+                except AssertionError as e:
+                    raise AssertionError(u"此页面找不到你输入的Id：{}，请确认!"
+                                         .format(controlEl))
             else:
                 raise ValueError
         elif '-' in control:
