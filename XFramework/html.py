@@ -330,6 +330,10 @@ def writeTestResult(filename, startTime, endTime, durTime="60min"):
     f.write('</table>')
     f.write('<br/>')
     f.write('<br/>')
+def writeTestBottom():
+    f.write('<br/>')    
+    f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
+    
 
 def writeTestDetail(filename, modulesContents):
     for i in range(len(modulesContents)):
