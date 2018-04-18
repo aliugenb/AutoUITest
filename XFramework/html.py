@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import os,sys
 import chardet
+import re
 from dateutil import parser
 
 class LogFileHandle():
@@ -45,6 +46,7 @@ class LogFileHandle():
             projectName = projectInfo[0]
             versionBranch = projectInfo[1]
             jenkinsAddress = projectInfo[2]
+            savedNum = projectInfo[3]
             return projectInfo
     
     def getLogFiles(self,root):
@@ -275,6 +277,13 @@ def getModuleContents(slines, elines,tempContents):
         moduleContents.append(temp2Contents)
     return moduleContents
 
+def delSpeChar(str):
+    #speChar = ['\\', '/', ':', '*','?', '"', '<', '>', '|']
+    speChar = "([\\\|/|\:|\*|\?|\"|<|>|\|])"
+    pattern = re.compile(speChar)
+    temp = re.sub(pattern,'-', str) 
+    return temp 
+    
 def writeToHtml(filename, htmlTag, tagContents):
     f = open(filename,'a')
     f.write('<'+htmlTag+'>'+tagContents+'</'+htmlTag+'>')
@@ -331,12 +340,19 @@ def writeTestDetail(filename, modulesContents):
     f.write('<table width="100%" border="1"  class="dataframe">') 
     f.write('<thead><tr style="text-align: center;background: #ccc"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')  
     for i in range(len(zip(caseTestDurs,  modulesContents))):
+        pngName = modulesContents[i].split(':',2)[0].strip()
+        #print pngName
+        newpngName = delSpeChar(pngName)
+        #print newpngName
+        pngAdds = './screencap/'+newpngName+'_fail.png'
+        print pngAdds
+        
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
-    
         testresultComment=modulesContents[i][2].strip().split(':',1)[1]
         if '(' in testresultComment:
             testresult = testresultComment.split('(',1)[0]
             comment = testresultComment.split('(',1)[1][:-1]
+           
             f.write('<tr style="text-align:center; color:#FF0000;">')
             f.write('<th>'+caseTestDurs[i] +'</th>')
             f.write('<th>'+modulesContents[i][0] +'</th>')
@@ -344,7 +360,7 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th >'+ testresult+'</th>')
             f.write('<th >'+ comment +'</th>')
-            f.write('<th>'+' '+'</th>')
+            f.write('<th ><a href=" '+pngAdds+'">点击这里</a></th>')
             f.write('<th>'+' '+'</th>')
             f.write('</tr>')                
         else:
@@ -355,10 +371,9 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[1]+'</th>')
             f.write('<th>'+' '+'</th>')
-            f.write('<th>'+' '+'</th>')
-            f.write('<th>'+' '+'</th>')
-        f.write('</tr>')                
+            f.write('</tr>')                
     f.write('</table>')
+   
     
 def renameHtmlFile(root, testTime):
     testTime1 = testTime[0].replace('-','')
@@ -378,7 +393,7 @@ if __name__=="__main__":
     print 'root:', root
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
-          
+           
     lfh = LogFileHandle()
     
     # 得到log.txt文件
@@ -401,7 +416,7 @@ if __name__=="__main__":
     #得到模块的测试内容
     tempContents = lfh.getModulesSplitContents(filename)
     modulesContents = getModulesContents(tempContents)
-    
+        
     #单个测试case测试时间
     tempTimestamps = lfh.getModulesSplitTimestamps(filename)
     #单个测试case测试耗时
@@ -409,13 +424,13 @@ if __name__=="__main__":
     
     #得到测试项目信息
     projectInfo = lfh.getProjectInfo(root)
-            
+     
+    #得到测试设备的信息       
     h = Handler()
     deviceName = h.getDeviceName()
     platformVersion = h.getPlatformVersion()
     deviceId = h.getDeviceId()
-    
-    
+        
     testTime = lfh.getLogTime(filename) 
 
     #写test.html文件信息
