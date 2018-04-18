@@ -360,7 +360,7 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th >'+ testresult+'</th>')
             f.write('<th >'+ comment +'</th>')
-            f.write('<th ><a rarget=_self href=" '+pngAdds+'">查看</a></th>')
+            f.write('<th ><a rarget=_blank href=" '+pngAdds+'">查看</a></th>')
             f.write('<th>'+' '+'</th>')
             f.write('</tr>')                
         else:
