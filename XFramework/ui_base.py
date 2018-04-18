@@ -13,8 +13,8 @@ class UITest(BaseOn, TA):
     """
     ui层基本操作
     """
-    def __init__(self, driver=pi.getDriver()):
-        self.driver = driver
+    def __init__(self, driver=None):
+        self.driver = pi.getDriver()
         # super(UITest, self).__init__()
         TA.__init__(self, driver=self.driver)
 
