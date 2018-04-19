@@ -1,0 +1,8 @@
+{
+    "Android": {
+                "platformName": "Android",
+                "appPackage": "com.ximalaya.ting.android",
+                "appActivity": ".host.activity.WelComeActivity",
+                "newCommandTimeout": 300
+    }
+}
