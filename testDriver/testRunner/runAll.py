@@ -76,21 +76,26 @@ def getConfigPara(filePath):
 
 
 if __name__ == '__main__':
-    filePath = LG.setLogPath()
+    # 获取log文件生成路径
+    logPath = LG.setLogPath()
+    # 获取手机参数信息
     configData = getConfigPara('config.json')
+    # 获取需要测试的大类集合
+    allTestList = getTestClass('testList.txt')
+    # 获取用例路径
     casePath = '{}{}{}'.format(os.pardir, os.sep, 'testCase')
     fileName = getTestExcel(casePath)
-    allTestList = getTestClass('testList.txt')
-    allTestClass, realIngoreModule = cdt.getTestCaseSuit(fileName,
+    realCasePath = '{}{}{}'.format(casePath, os.sep, fileName)
+    allTestClass, realIngoreModule = cdt.getTestCaseSuit(realCasePath,
                                                          allTestList)
     if configData['platformName'] == 'Android':
-        androidBO._LOGGER = LG.logCreater(filePath)
+        androidBO._LOGGER = LG.logCreater(logPath)
         p = androidUT(configData)
         p.clearApp()
         androidTR.test_run_all_test(allTestClass, realIngoreModule,
                                     configData, p)
     elif configData['platformName'] == 'iOS':
-        iosBO._LOGGER = LG.logCreater(filePath)
+        iosBO._LOGGER = LG.logCreater(logPath)
         p = iosUT(configData)
         p.clearApp()
         iosTR.test_run_all_test(allTestClass, realIngoreModule,
