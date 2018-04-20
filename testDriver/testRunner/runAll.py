@@ -14,9 +14,9 @@ from XFramework.parseExcel import caseDataTransform as cdt
 import XFramework.logger.logger as LG
 
 
-def getTestExcel(filePath):
+def getTestExcel(casePath):
     fileName = ''
-    for path, dirs, files in os.walk(filePath):
+    for path, dirs, files in os.walk(casePath):
         for eachFile in files:
             if '.xlsx' in eachFile or '.xls' in eachFile:
                 if '~$' not in eachFile:
@@ -27,12 +27,22 @@ def getTestExcel(filePath):
     return fileName
 
 
-def sheetNotExistwarning(getTestExcel):
+def getCaseInfo(fileName):
+    '''
+    只能用于获取父级目录文件
+    '''
+    casePath = '{}{}{}'.format(os.pardir, os.sep, fileName)
+    caseName = getTestExcel(casePath)
+    realCasePath = '{}{}{}'.format(casePath, os.sep, caseName)
+    return caseName, realCasePath
+
+
+def sheetNotExistwarning(getCaseInfo):
     def outerFunc(func):
-        def tempFunc(filePath):
-            fileName = getTestExcel('.')
-            allTestList = func(filePath)
-            data_xls = xlrd.open_workbook(fileName)
+        def tempFunc(listPath):
+            _, realCasePath = getCaseInfo('testCase')
+            allTestList = func(listPath)
+            data_xls = xlrd.open_workbook(realCasePath)
             sheetList = []
             realList = [i for i in allTestList]
             for index, sheet in enumerate(data_xls.sheets()):
@@ -47,10 +57,10 @@ def sheetNotExistwarning(getTestExcel):
     return outerFunc
 
 
-@sheetNotExistwarning(getTestExcel)
-def getTestClass(filePath):
+@sheetNotExistwarning(getCaseInfo)
+def getTestClass(listPath):
     allTestList = []
-    with open('testList.txt', 'r') as f:
+    with open(listPath, 'r') as f:
         lines = f.readlines()
         for line in lines:
             allTestList.append(line.strip())
@@ -60,9 +70,9 @@ def getTestClass(filePath):
     return allTestList
 
 
-def getConfigPara(filePath):
+def getConfigPara(configPath):
     configDict = {}
-    with open(filePath, 'r') as f:
+    with open(configPath, 'r') as f:
         tempDict = json.load(f)
     if 'Android' in tempDict:
         configDict = tempDict['Android']
@@ -83,14 +93,15 @@ if __name__ == '__main__':
     # 获取需要测试的大类集合
     allTestList = getTestClass('testList.txt')
     # 获取用例路径
-    casePath = '{}{}{}'.format(os.pardir, os.sep, 'testCase')
-    fileName = getTestExcel(casePath)
-    realCasePath = '{}{}{}'.format(casePath, os.sep, fileName)
+    _, realCasePath = getCaseInfo('testCase')
+    # 获取所有测试用例
     allTestClass, realIngoreModule = cdt.getTestCaseSuit(realCasePath,
                                                          allTestList)
+    # 测试驱动
     if configData['platformName'] == 'Android':
         androidBO._LOGGER = LG.logCreater(logPath)
         p = androidUT(configData)
+        p.sleep(10)
         p.clearApp()
         androidTR.test_run_all_test(allTestClass, realIngoreModule,
                                     configData, p)

@@ -57,9 +57,8 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_text_Android(text, rule).click()
-                self._LOGGER.debug(u'点击text: ' + text + u'，结束')
+            self.__select_text_Android(text, rule).click()
+            self._LOGGER.debug(u'点击text: ' + text + u'，结束')
         except AttributeError as e:
             raise AssertionError(1)
 
@@ -87,9 +86,8 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_desc_Android(desc, rule).click()
-                self._LOGGER.debug(u'点击desc: ' + desc + u'，结束')
+            self.__select_desc_Android(desc, rule).click()
+            self._LOGGER.debug(u'点击desc: ' + desc + u'，结束')
         except AttributeError as e:
             raise AssertionError(2)
 
@@ -116,9 +114,8 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_Id_Android(Id).click()
-                self._LOGGER.debug(u'点击Id: ' + Id + u'，结束')
+            self.__select_Id_Android(Id).click()
+            self._LOGGER.debug(u'点击Id: ' + Id + u'，结束')
         except AttributeError as e:
             raise AssertionError(3)
 
@@ -146,9 +143,8 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_text_ins_Android(text, ins, rule).click()
-                self._LOGGER.debug(u'点击text: {}, ins: {}, 结束'.format(text, str(ins)))
+            self.__select_text_ins_Android(text, ins, rule).click()
+            self._LOGGER.debug(u'点击text: {}, ins: {}, 结束'.format(text, str(ins)))
         except AttributeError as e:
             raise AssertionError(1)
 
@@ -176,9 +172,8 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_desc_ins_Android(desc, ins, rule).click()
-                self._LOGGER.debug(u'点击desc: {}, ins: {}, 结束'.format(desc, str(ins)))
+            self.__select_desc_ins_Android(desc, ins, rule).click()
+            self._LOGGER.debug(u'点击desc: {}, ins: {}, 结束'.format(desc, str(ins)))
         except AttributeError as e:
             raise AssertionError(2)
 
@@ -205,9 +200,8 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_Id_ins_Android(Id, ins).click()
-                self._LOGGER.debug(u'点击Id: {}, ins: {}, 结束'.format(Id, str(ins)))
+            self.__select_Id_ins_Android(Id, ins).click()
+            self._LOGGER.debug(u'点击Id: {}, ins: {}, 结束'.format(Id, str(ins)))
         except AttributeError as e:
             raise AssertionError(3)
 
@@ -216,17 +210,15 @@ class UITest(BaseOn, TA):
         通过Id查找控件，并获取它的text
         """
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                if ins is None:
-                    re_text = self.__select_Id_Android(Id).text
-                else:
-                    re_text = self.__select_Id_ins_Android(Id, ins).text
+            if ins is None:
+                re_text = self.__select_Id_Android(Id).text
+            else:
+                re_text = self.__select_Id_ins_Android(Id, ins).text
 
-                self._LOGGER.debug(u"获取text: {}, 结束".format(re_text))
-                return re_text
+            self._LOGGER.debug(u"获取text: {}, 结束".format(re_text))
+            return re_text
         except AttributeError as e:
-            self._LOGGER.error(u"此页面找不到你输入的Id：{}, 请确认！".format(Id))
-            raise AssertionError
+            raise AssertionError(3)
 
     def setValueByText(self, input_text, text_2, *args, **kwargs):
         """
@@ -239,10 +231,9 @@ class UITest(BaseOn, TA):
             kwargs['rule'] = 'e'
 
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_text_Android(kwargs['text_before'], kwargs['rule']).click()
-                self.__select_text_Android(text_2, kwargs['rule']).set_text(input_text)
-                self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
+            self.__select_text_Android(kwargs['text_before'], kwargs['rule']).click()
+            self.__select_text_Android(text_2, kwargs['rule']).set_text(input_text)
+            self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             raise AssertionError(4)
 
@@ -257,10 +248,9 @@ class UITest(BaseOn, TA):
             kwargs['rule'] = 'e'
 
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_desc_Android(kwargs['desc_before'], kwargs['rule']).click()
-                self.__select_desc_Android(desc_2, kwargs['rule']).set_text(input_text)
-                self._LOGGER.debug(u'D文本: ' + input_text + u'，输入结束')
+            self.__select_desc_Android(kwargs['desc_before'], kwargs['rule']).click()
+            self.__select_desc_Android(desc_2, kwargs['rule']).set_text(input_text)
+            self._LOGGER.debug(u'D文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             raise AssertionError(4)
 
@@ -270,12 +260,11 @@ class UITest(BaseOn, TA):
         """
         if 'Id_before' not in kwargs:
             kwargs['Id_before'] = Id_2
-
+            
         try:
-            if self.desired_caps['platformName'] == 'Android':
-                self.__select_Id_Android(kwargs['Id_before']).click()
-                self.__select_Id_Android(Id_2).set_text(input_text)
-                self._LOGGER.debug(u'I文本: ' + input_text + u'，输入结束')
+            self.__select_Id_Android(kwargs['Id_before']).click()
+            self.__select_Id_Android(Id_2).set_text(input_text)
+            self._LOGGER.debug(u'I文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             raise AssertionError(4)
 
@@ -609,7 +598,6 @@ class UITest(BaseOn, TA):
             else:
                 self._LOGGER.critical(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
                 raise ValueError
-
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
