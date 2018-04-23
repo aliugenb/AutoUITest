@@ -86,7 +86,7 @@ class BaseOn(object):
         """
         command1 = '{} ls {}'.format(CC.PHONE_SHELL, sdcard_path)
         jPath = os.popen(command1).read()
-        if jPath == '':
+        if jPath == '' or 'No such file or directory' in jPath:
             self.new_floder(sdcard_path)
         expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
         pic_name = re.sub(expression, '-', pic_name)
