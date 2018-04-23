@@ -375,6 +375,7 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[1]+'</th>')
             f.write('<th>'+' '+'</th>')
+            f.write('<th>'+' '+'</th>')
             f.write('</tr>')                
     f.write('</table>')
    
