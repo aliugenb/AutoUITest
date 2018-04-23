@@ -345,14 +345,24 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                     else:
                         for eachStep in steps:
                             otherEventSuit.append(creatEvent(eachStep))
-                        stepEventSuit = firstEventSuit + otherEventSuit
+                        # stepEventSuit = firstEventSuit + otherEventSuit
                         rName = '{}-{}-{}'.format(testClassName,
                                                   moduleName,
                                                   featureName)
                         try:
                             uiObj.startApp()
                             uiObj.sleep(10)
-                            executeEvent(stepEventSuit, uiObj)
+                            # executeEvent(stepEventSuit, uiObj)
+                            numCount = 10
+                            while numCount > 0:
+                                executeEvent(firstEventSuit, uiObj)
+                                if uiObj.isTextInPage('首页'):
+                                    break
+                                else:
+                                    numCount -= 1
+                            else:
+                                uiObj._LOGGER.debug('点击app弹窗失败，请检测app控件名是否正确！')
+                            executeEvent(otherEventSuit, uiObj)
                         except AssertionError as e:
                             uiObj._LOGGER.info('{}: FAIL'.format(rName))
                             uiObj.screencap('{}_fail'.format(rName),
