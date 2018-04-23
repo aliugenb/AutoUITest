@@ -101,7 +101,6 @@ if __name__ == '__main__':
     if configData['platformName'] == 'Android':
         androidBO._LOGGER = LG.logCreater(logPath)
         p = androidUT(configData)
-        p.sleep(10)
         p.clearApp()
         androidTR.test_run_all_test(allTestClass, realIngoreModule,
                                     configData, p)
