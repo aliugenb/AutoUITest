@@ -260,7 +260,7 @@ class UITest(BaseOn, TA):
         """
         if 'Id_before' not in kwargs:
             kwargs['Id_before'] = Id_2
-            
+
         try:
             self.__select_Id_Android(kwargs['Id_before']).click()
             self.__select_Id_Android(Id_2).set_text(input_text)
@@ -315,6 +315,7 @@ class UITest(BaseOn, TA):
         if 'flowTag' not in kwargs:
             kwargs['flowTag'] = '0'
 
+        time.sleep(1)
         self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:
@@ -354,6 +355,7 @@ class UITest(BaseOn, TA):
         if 'flowTag' not in kwargs:
             kwargs['flowTag'] = '0'
 
+        time.sleep(1)
         self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:
@@ -393,6 +395,7 @@ class UITest(BaseOn, TA):
         if 'flowTag' not in kwargs:
             kwargs['flowTag'] = '0'
 
+        time.sleep(1)
         self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:

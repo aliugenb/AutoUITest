@@ -349,19 +349,30 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         rName = '{}-{}-{}'.format(testClassName,
                                                   moduleName,
                                                   featureName)
+                        # 处理初始化
+                        pre_firstEventSuit = []
+                        nor_firstEventSuit = []
+                        for i in firstEventSuit:
+                            if len(i) >= 2:
+                                pre_firstEventSuit.append(i)
+                            elif len(i) == 1:
+                                nor_firstEventSuit.append(i)
+                            else:
+                                pass
                         try:
                             uiObj.startApp()
                             uiObj.sleep(10)
                             # executeEvent(stepEventSuit, uiObj)
                             numCount = 10
                             while numCount > 0:
-                                executeEvent(firstEventSuit, uiObj)
+                                executeEvent(pre_firstEventSuit, uiObj)
                                 if uiObj.isTextInPage('首页'):
                                     break
                                 else:
                                     numCount -= 1
                             else:
                                 uiObj._LOGGER.debug('点击app弹窗失败，请检测app控件名是否正确！')
+                            executeEvent(nor_firstEventSuit, uiObj)
                             executeEvent(otherEventSuit, uiObj)
                         except AssertionError as e:
                             uiObj._LOGGER.info('{}: FAIL'.format(rName))
