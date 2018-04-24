@@ -325,6 +325,8 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
             moduleName = eachModule['moduleName']
             features = eachModule['featureSuite']
             firstEventSuit = []
+            pre_firstEventSuit = []
+            nor_firstEventSuit = []
             uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
                                                             moduleName))
             for eachFeature in features:
@@ -342,6 +344,18 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                     if featureName == '首次启动app':
                         for eachStep in steps:
                             firstEventSuit.append(creatEvent(eachStep))
+                        # 处理初始化
+                        for i in firstEventSuit:
+                            if len(i) >= 2:
+                                if i[0].precondition != '' and\
+                                 i[1].optional != '':
+                                    pre_firstEventSuit.append(i)
+                                else:
+                                    nor_firstEventSuit.append(i)
+                            elif len(i) == 1:
+                                nor_firstEventSuit.append(i)
+                            else:
+                                pass
                     else:
                         for eachStep in steps:
                             otherEventSuit.append(creatEvent(eachStep))
@@ -349,16 +363,6 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         rName = '{}-{}-{}'.format(testClassName,
                                                   moduleName,
                                                   featureName)
-                        # 处理初始化
-                        pre_firstEventSuit = []
-                        nor_firstEventSuit = []
-                        for i in firstEventSuit:
-                            if len(i) >= 2:
-                                pre_firstEventSuit.append(i)
-                            elif len(i) == 1:
-                                nor_firstEventSuit.append(i)
-                            else:
-                                pass
                         try:
                             uiObj.startApp()
                             uiObj.sleep(10)
@@ -366,6 +370,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             numCount = 10
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj)
+                                uiObj.sleep(1)
                                 if uiObj.isTextInPage('首页'):
                                     break
                                 else:
