@@ -315,7 +315,6 @@ class UITest(BaseOn, TA):
         if 'flowTag' not in kwargs:
             kwargs['flowTag'] = '0'
 
-        time.sleep(1)
         self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:
@@ -355,7 +354,6 @@ class UITest(BaseOn, TA):
         if 'flowTag' not in kwargs:
             kwargs['flowTag'] = '0'
 
-        time.sleep(1)
         self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:
@@ -395,7 +393,6 @@ class UITest(BaseOn, TA):
         if 'flowTag' not in kwargs:
             kwargs['flowTag'] = '0'
 
-        time.sleep(1)
         self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:

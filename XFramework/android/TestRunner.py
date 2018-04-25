@@ -56,11 +56,20 @@ def exceptionHandle(func):
 
 
 def transferProperty(target, key, source):
+    '''
+    动态的向某个类写入属性
+    target: 类
+    key: 属性名
+    source: 字典
+    '''
     if key in source:
         setattr(target, key, source.get(key))
 
 
 def detailPrint(detailName, targetList):
+    '''
+    适配输出测试结果
+    '''
     if len(targetList) != 0:
         print('{}:'.format(detailName))
         for i in targetList:
@@ -69,6 +78,9 @@ def detailPrint(detailName, targetList):
 
 
 def setPara(stepEvent, stepAction):
+    '''
+    步骤事件类写入属性
+    '''
     transferProperty(stepEvent, 'controlType', stepAction)
     transferProperty(stepEvent, 'inputText', stepAction)
     transferProperty(stepEvent, 'controlAction', stepAction)
@@ -78,6 +90,9 @@ def setPara(stepEvent, stepAction):
 
 
 def creatEvent(stepAction):
+    '''
+    创建步骤事件
+    '''
     stepEvent = Action()
     stepEventList = []
     transferProperty(stepEvent, 'precondition', stepAction)
@@ -95,6 +110,9 @@ def creatEvent(stepAction):
 
 
 def preconditionHandle(pre, uiObj):
+    '''
+    前提参数处理
+    '''
     if '==' in pre:
         preElType, preEl = pre.strip().split('==')
         if preElType == 'text':
@@ -118,11 +136,14 @@ def preconditionHandle(pre, uiObj):
             if uiObj.isIdInPage(preEl):
                 return True
     else:
-        raise ValueError
+        raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(pre))
 
 
 @exceptionHandle
 def actionHandle(control, data, realAction, uiObj):
+    '''
+    动作处理
+    '''
     if realAction == 'click':
         if '=' in control:
             elType, controlEl = control.strip().split('=')
@@ -136,12 +157,12 @@ def actionHandle(control, data, realAction, uiObj):
             elif elType == 'Id':
                 uiObj.clickById(controlEl, flowTag=1)
             else:
-                raise ValueError
+                raise ValueError('参数:{}中的控件类型不合法'.format(control))
         elif '-' in control:
             posList = control.strip().split('-')
             uiObj.clickByPos(posList[0], posList[1])
         else:
-            raise ValueError
+            raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(control))
     elif realAction == 'swipe':
         posList = control.strip().split('-')
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])
@@ -162,7 +183,7 @@ def actionHandle(control, data, realAction, uiObj):
             elif elType == 'Id':
                 uiObj.setValueById(data, controlEl)
             else:
-                raise ValueError
+                raise ValueError('参数:{}中的控件类型不合法'.format(control))
     elif realAction == 'scroll&&click':
         elType, controlEl = control.strip().split('=')
         if elType == 'text':
@@ -172,7 +193,7 @@ def actionHandle(control, data, realAction, uiObj):
         elif elType == 'Id':
             uiObj.scrollByElement(Id=controlEl)
         else:
-            raise ValueError
+            raise ValueError('参数:{}中的控件类型不合法'.format(control))
     elif realAction == 'sleep':
         if '-' in control:
             controlData = control.strip().split('-')
@@ -183,7 +204,7 @@ def actionHandle(control, data, realAction, uiObj):
                 t, el, refreshTime = controlData
                 uiObj.sleep(t, el=el, refresh_time=refreshTime)
             else:
-                raise ValueError
+                raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(control))
         else:
             uiObj.sleep(int(control))
     elif realAction == 'click&&equal':
@@ -207,25 +228,39 @@ def actionHandle(control, data, realAction, uiObj):
     elif realAction == 'back':
         uiObj.pressBack()
     else:
-        raise ValueError
+        raise ValueError('不存在的动作类型:{}'.format(realAction))
 
 
 def getJudgeReturn(paraType, judgeCondition):
-    if paraType == '==':
-        if judgeCondition:
-            return True
+    '''
+    判断处理
+    '''
+    judgeVal = False
+    totalNum = 10
+    while totalNum > 0:
+        if paraType == '==':
+            if judgeCondition:
+                judgeVal = True
+                break
+            else:
+                pass
+        elif paraType == '!=':
+            if not judgeCondition:
+                judgeVal = True
+                break
+            else:
+                pass
         else:
-            return False
-    elif paraType == '!=':
-        if not judgeCondition:
-            return True
-        else:
-            return False
-    else:
-        raise ValueError
+            raise ValueError('不存在的判断类型:{}'.format(paraType))
+        uiObj.sleep(1)
+        totalNum -= 1
+    return judgeVal
 
 
 def expectTypeHandle(expect, uiObj):
+    '''
+    期望元素处理
+    '''
     expectVal = None
     if '==' in expect:
         expectEl = expect.strip().split('==')[1]
@@ -236,7 +271,7 @@ def expectTypeHandle(expect, uiObj):
         elif 'Id' in expect:
             expectVal = getJudgeReturn('==', uiObj.isIdInPage(expectEl))
         else:
-            raise ValueError
+            raise ValueError('参数:{}中的控件类型不合法'.format(expect))
     elif '!=' in expect:
         expectEl = expect.strip().split('!=')[1]
         if 'text' in expect:
@@ -246,24 +281,24 @@ def expectTypeHandle(expect, uiObj):
         elif 'Id' in expect:
             expectVal = getJudgeReturn('!=', uiObj.isIdInPage(expectEl))
         else:
-            raise ValueError
+            raise ValueError('参数:{}中的控件类型不合法'.format(expect))
     else:
-        raise ValueError
-    if expectVal is None:
-        raise ValueError
-    else:
-        return expectVal
+        raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(expect))
+    return expectVal
 
 
 @exceptionHandle
 def expectHandle(expect, expectInfo, uiObj):
+    '''
+    期望处理
+    '''
     condition = []
     if '&&' in expect:
         for eveExpect in expect.strip().split('&&'):
             tempData = expectTypeHandle(eveExpect, uiObj)
             condition.append(tempData)
         if condition[0] and condition[1]:
-            pass
+            uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
     elif '||' in expect:
@@ -271,17 +306,20 @@ def expectHandle(expect, expectInfo, uiObj):
             tempData = expectTypeHandle(eveExpect, uiObj)
             condition.append(tempData)
         if condition[0] or condition[1]:
-            pass
+            uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
     else:
         if expectTypeHandle(expect, uiObj):
-            pass
+            uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
 
 
 def executeEvent(stepEventSuit, uiObj):
+    '''
+    执行动作事件
+    '''
     for stepEventUnit in stepEventSuit:
         for stepEvent in stepEventUnit:
             pre = stepEvent.precondition
@@ -309,6 +347,9 @@ def executeEvent(stepEventSuit, uiObj):
 
 
 def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
+    '''
+    执行所有用例
+    '''
     totalCount = 0
     passCount = 0
     failCount = 0
@@ -385,9 +426,11 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                                             CC.PHONE_PATH)
                             failList.append(rName)
                             failCount += 1
-                        except (IndexError, ValueError):
-                            uiObj._LOGGER.info(u'{}: FAIL(注意：功能点用例中存在不合法的参数！)'
-                                               .format(rName))
+                        except (IndexError, ValueError) as e:
+                            uiObj._LOGGER.info(
+                                '{}: FAIL(注意：功能点用例中存在不合法的参数！)\n错误详情：{}'
+                                .format(rName, e.args[0]))
+                            # uiObj._LOGGER.exception('错误详情')
                             abortList.append(rName)
                             abortCount += 1
                         except selenium.common.exceptions.WebDriverException:
