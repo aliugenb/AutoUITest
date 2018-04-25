@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import time
 import selenium
 from action import Action
 from uiBase import UITest
@@ -252,7 +253,7 @@ def getJudgeReturn(paraType, judgeCondition):
                 pass
         else:
             raise ValueError('不存在的判断类型:{}'.format(paraType))
-        uiObj.sleep(1)
+        time.sleep(1)
         totalNum -= 1
     return judgeVal
 
