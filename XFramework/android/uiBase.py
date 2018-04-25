@@ -37,7 +37,7 @@ class UITest(BaseOn, TA):
     def clickByText(self, text, rule='e', *args, **kwargs):
         """
         通过控件的text属性点击；rule默认为e
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -66,7 +66,7 @@ class UITest(BaseOn, TA):
     def clickByDesc(self, desc, rule='e', *args, **kwargs):
         """
         通过控件的desc属性点击；rule默认为e
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -94,7 +94,7 @@ class UITest(BaseOn, TA):
     def clickById(self, Id, *args, **kwargs):
         """
         通过控件的id属性点击；
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -123,7 +123,7 @@ class UITest(BaseOn, TA):
     def clickByTextInstance(self, text, ins, rule='e', *args, **kwargs):
         """
         通过特定控件的text属性点击；ins为索引；rule默认为e
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -152,7 +152,7 @@ class UITest(BaseOn, TA):
     def clickByDescInstance(self, desc, ins, rule='e', *args, **kwargs):
         """
         通过特定控件的desc属性点击；ins为索引；rule默认为e
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -180,7 +180,7 @@ class UITest(BaseOn, TA):
     def clickByIdInstance(self, Id, ins, *args, **kwargs):
         """
         通过控件的id属性点击；ins为索引；
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -301,7 +301,7 @@ class UITest(BaseOn, TA):
     def isExistByText(self, text, instruction, isIn=0, rule='e', *args, **kwargs):
         """
         通过控件的text属性判断操作是否成功，instruction为此处步骤描述内容；
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -340,7 +340,7 @@ class UITest(BaseOn, TA):
     def isExistByDesc(self, desc, instruction, isIn=0, rule='e', *args, **kwargs):
         """
         通过控件的desc属性判断操作是否成功，instruction为此处步骤描述内容；
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
@@ -379,7 +379,7 @@ class UITest(BaseOn, TA):
     def isExistById(self, Id, instruction, isIn=0, *args, **kwargs):
         """
         通过控件的id属性判断操作是否成功，instruction为此处步骤描述内容；
-        kwargs参数：
+        kwargs参数:
             refresh_time: 刷新时间
             totalTime: 等待总时间
             flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击

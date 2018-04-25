@@ -8,14 +8,14 @@ from commandContainer import CommandContainer as CC
 
 def exceptionHandle(func):
     '''
-    异常1：点击时找不到text控件
-    异常2：点击时找不到desc控件
-    异常3：点击时找不到Id控件
-    异常4：文本输入失败
-    异常5：判断失败
-    异常6：点击判等失败
-    异常7：点击判不等失败
-    异常8：等待控件超时
+    异常1: 点击时找不到text控件
+    异常2: 点击时找不到desc控件
+    异常3: 点击时找不到Id控件
+    异常4: 文本输入失败
+    异常5: 判断失败
+    异常6: 点击判等失败
+    异常7: 点击判不等失败
+    异常8: 等待控件超时
     '''
     def tempFunc(*args, **kwargs):
         try:
@@ -24,18 +24,18 @@ def exceptionHandle(func):
             flowTag = e.args[0]
             if flowTag == 1:
                 elType, controlEl = args[0].strip().split('=')
-                raise AssertionError(u"找不到你输入的text：{}，请确认!"
+                raise AssertionError(u"找不到你输入的text: {}，请确认!"
                                      .format(controlEl))
             elif flowTag == 2:
                 elType, controlEl = args[0].strip().split('=')
-                raise AssertionError(u"找不到你输入的desc：{}，请确认!"
+                raise AssertionError(u"找不到你输入的desc: {}，请确认!"
                                      .format(controlEl))
             elif flowTag == 3:
                 elType, controlEl = args[0].strip().split('=')
-                raise AssertionError(u"找不到你输入的Id：{}，请确认!"
+                raise AssertionError(u"找不到你输入的Id: {}，请确认!"
                                      .format(controlEl))
             elif flowTag == 4:
-                raise AssertionError(u"文本：{} 输入失败，请确认!"
+                raise AssertionError(u"文本: {} 输入失败，请确认!"
                                      .format(args[1]))
             elif flowTag == 5:
                 raise AssertionError('{}_fail'.format(args[1]))
@@ -429,7 +429,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             failCount += 1
                         except (IndexError, ValueError) as e:
                             uiObj._LOGGER.info(
-                                '{}: FAIL(注意：功能点用例中存在不合法的参数！)\n错误详情：{}'
+                                '{}: FAIL(注意: 功能点用例中存在不合法的参数！)\n错误详情: {}'
                                 .format(rName, e.args[0]))
                             # uiObj._LOGGER.exception('错误详情')
                             abortList.append(rName)
@@ -455,7 +455,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
     uiObj.set_ime()
-    print('总共：{}个\n成功：{}个\n失败：{}个\n中止：{}个\n异常：{}个\n'.format(totalCount,
+    print('总共: {}个\n成功: {}个\n失败: {}个\n中止: {}个\n异常: {}个\n'.format(totalCount,
                                                             passCount,
                                                             failCount,
                                                             abortCount,

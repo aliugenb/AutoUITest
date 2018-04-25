@@ -82,7 +82,7 @@ class BaseOn(object):
     def screencap(self, pic_name, sdcard_path):
         """
         屏幕截图.sdcard_path(手机路径),pic_name(图片名字)
-        截图命名方式：测试用例名_截图时间戳.png
+        截图命名方式: 测试用例名_截图时间戳.png
         """
         command1 = '{} ls {}'.format(CC.PHONE_SHELL, sdcard_path)
         jPath = os.popen(command1).read()
@@ -269,7 +269,7 @@ class BaseOn(object):
         删除列表中所有指定的元素
         '''
         if not isinstance(pendingList, list):
-            self._LOGGER.critical(u'错误：输入参数不为列表')
+            self._LOGGER.critical(u'错误: 输入参数不为列表')
             raise TypeError
         list_copy = pendingList
         for i in pendingList:
