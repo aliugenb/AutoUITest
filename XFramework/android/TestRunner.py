@@ -360,21 +360,38 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
     abortList = []
     exceptionList = []
     ingoreFeature = []
+    # 处理大类
     for eachTestClass in allTestClass:
         testClassName = eachTestClass['testCaseName']
         testCase = eachTestClass['moduleSuit']
+        # 处理模块
         for eachModule in testCase:
             moduleName = eachModule['moduleName']
             features = eachModule['featureSuite']
+            ingoreFeaturesNum = 0
             firstEventSuit = []
+            # 首次启动app中的步骤分割
             pre_firstEventSuit = []
             nor_firstEventSuit = []
-            uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
-                                                            moduleName))
+            # 检测模块中的功能点是否被全部忽略
+            for tempFeature in features:
+                if '#' in tempFeature['featureName']:
+                    ingoreFeaturesNum += 1
+            if len(features) == ingoreFeaturesNum+1:
+                uiObj._LOGGER.warning('模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
+                                      .format(moduleName))
+                realIngoreModule.append('{}-{}'.format(testClassName,
+                                                       moduleName))
+                continue
+            else:
+                uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
+                                                                moduleName))
+            # 处理功能点
             for eachFeature in features:
                 featureName = eachFeature['featureName']
                 steps = eachFeature['featureSteps']
                 otherEventSuit = []
+                # 处理忽略功能点
                 if '#' in featureName:
                     rfeatureName = featureName.strip().split('#')[1]
                     rPath = '{}-{}-{}'.format(testClassName,
@@ -405,10 +422,12 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         rName = '{}-{}-{}'.format(testClassName,
                                                   moduleName,
                                                   featureName)
+                        # 开始测试
                         try:
                             uiObj.startApp()
                             uiObj.sleep(10)
                             # executeEvent(stepEventSuit, uiObj)
+                            # 循环点击权限弹窗
                             numCount = 10
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj)
@@ -455,11 +474,13 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
     uiObj.set_ime()
+    # 打印报告
     print('总共: {}个\n成功: {}个\n失败: {}个\n中止: {}个\n异常: {}个\n'.format(totalCount,
-                                                            passCount,
-                                                            failCount,
-                                                            abortCount,
-                                                            exceptionCount))
+                                                                 passCount,
+                                                                 failCount,
+                                                                 abortCount,
+                                                                 exceptionCount
+                                                                 ))
     detailPrint('失败用例', failList)
     detailPrint('中止用例', abortList)
     detailPrint('异常用例', exceptionList)

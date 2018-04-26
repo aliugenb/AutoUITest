@@ -222,6 +222,7 @@ class BaseOn(object):
         """
         command = '{} 4'.format(CC.PHONE_KEYEVENT)
         os.popen(command)
+        time.sleep(1)
 
     def pressMenu(self):
         '''
@@ -229,6 +230,7 @@ class BaseOn(object):
         '''
         command = '{} 82'.format(CC.PHONE_KEYEVENT)
         os.popen(command)
+        time.sleep(1)
 
     def pressHome(self):
         """
@@ -236,6 +238,7 @@ class BaseOn(object):
         """
         command = '{} 3'.format(CC.PHONE_KEYEVENT)
         os.popen(command)
+        time.sleep(1)
 
     def getRandomNum(self):
         '''
