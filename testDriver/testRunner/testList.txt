@@ -1,5 +1,1 @@
-mine
-listen
-discovery
 home
-other
