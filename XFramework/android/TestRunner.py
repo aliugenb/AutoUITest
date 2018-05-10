@@ -110,34 +110,34 @@ def creatEvent(stepAction):
     return stepEventList
 
 
-def preconditionHandle(pre, uiObj):
+def preconditionHandle(pre, uiObj, totalTime):
     '''
     前提参数处理
     '''
+    preJudgeVal = False
     if '==' in pre:
         preElType, preEl = pre.strip().split('==')
         if preElType == 'text':
-            if not uiObj.isTextInPage(preEl):
-                return True
+            preJudgeVal = uiObj.isTextInPage(preEl, totalTime=totalTime)
         elif preElType == 'desc':
-            if not uiObj.isDescInPage(preEl):
-                return True
+            preJudgeVal = uiObj.isDescInPage(preEl, totalTime=totalTime)
         elif preElType == 'Id':
-            if not uiObj.isIdInPage(preEl):
-                return True
+            preJudgeVal = uiObj.isIdInPage(preEl, totalTime=totalTime)
+        else:
+            raise ValueError('前提参数:{}控件类型不合法,提醒:可能存在空格'.format(pre))
     elif '!=' in pre:
         preElType, preEl = pre.strip().split('!=')
         if preElType == 'text':
-            if uiObj.isTextInPage(preEl):
-                return True
+            preJudgeVal = not uiObj.isTextInPage(preEl, totalTime=totalTime)
         elif preElType == 'desc':
-            if uiObj.isDescInPage(preEl):
-                return True
+            preJudgeVal = not uiObj.isDescInPage(preEl, totalTime=totalTime)
         elif preElType == 'Id':
-            if uiObj.isIdInPage(preEl):
-                return True
+            preJudgeVal = not uiObj.isIdInPage(preEl, totalTime=totalTime)
+        else:
+            raise ValueError('前提参数:{}控件类型不合法,提醒:可能存在空格'.format(pre))
     else:
-        raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(pre))
+        raise ValueError('前提参数:{}不合法, 提醒:可能存在中文符号'.format(pre))
+    return preJudgeVal
 
 
 @exceptionHandle
@@ -150,20 +150,21 @@ def actionHandle(control, data, realAction, uiObj):
             elType, controlEl = control.strip().split('=')
             if elType == 'text':
                 try:
-                    uiObj.clickByText(controlEl, flowTag=1)
+                    uiObj.clickByText(controlEl)
                 except AssertionError as e:
-                    uiObj.clickByText(controlEl, flowTag=1, rule='p')
+                    print '*'*80
+                    uiObj.clickByText(controlEl, rule='p')
             elif elType == 'desc':
-                uiObj.clickByDesc(controlEl, flowTag=1)
+                uiObj.clickByDesc(controlEl)
             elif elType == 'Id':
-                uiObj.clickById(controlEl, flowTag=1)
+                uiObj.clickById(controlEl)
             else:
-                raise ValueError('参数:{}中的控件类型不合法'.format(control))
+                raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
         elif '-' in control:
             posList = control.strip().split('-')
             uiObj.clickByPos(posList[0], posList[1])
         else:
-            raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(control))
+            raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
     elif realAction == 'swipe':
         posList = control.strip().split('-')
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])
@@ -184,8 +185,8 @@ def actionHandle(control, data, realAction, uiObj):
             elif elType == 'Id':
                 uiObj.setValueById(data, controlEl)
             else:
-                raise ValueError('参数:{}中的控件类型不合法'.format(control))
-    elif realAction == 'scroll&&click':
+                raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
+    elif realAction == 'scroll':
         elType, controlEl = control.strip().split('=')
         if elType == 'text':
             uiObj.scrollByElement(text=controlEl)
@@ -194,7 +195,20 @@ def actionHandle(control, data, realAction, uiObj):
         elif elType == 'Id':
             uiObj.scrollByElement(Id=controlEl)
         else:
-            raise ValueError('参数:{}中的控件类型不合法'.format(control))
+            raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
+    elif realAction == 'scroll&&click':
+        elType, controlEl = control.strip().split('=')
+        if elType == 'text':
+            uiObj.scrollByElement(text=controlEl)
+            uiObj.clickByText(controlEl)
+        elif elType == 'desc':
+            uiObj.scrollByElement(desc=controlEl)
+            uiObj.clickByDesc(controlEl)
+        elif elType == 'Id':
+            uiObj.scrollByElement(Id=controlEl)
+            uiObj.clickById(controlEl)
+        else:
+            raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'sleep':
         if '-' in control:
             controlData = control.strip().split('-')
@@ -205,7 +219,7 @@ def actionHandle(control, data, realAction, uiObj):
                 t, el, refreshTime = controlData
                 uiObj.sleep(t, el=el, refresh_time=refreshTime)
             else:
-                raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(control))
+                raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
         else:
             uiObj.sleep(int(control))
     elif realAction == 'click&&equal':
@@ -229,62 +243,44 @@ def actionHandle(control, data, realAction, uiObj):
     elif realAction == 'back':
         uiObj.pressBack()
     else:
-        raise ValueError('不存在的动作类型:{}'.format(realAction))
+        raise ValueError('不存在的动作类型:{},提醒:可能存在空格'.format(realAction))
 
 
-def getJudgeReturn(paraType, judgeCondition):
-    '''
-    判断处理
-    '''
-    judgeVal = False
-    totalNum = 10
-    while totalNum > 0:
-        if paraType == '==':
-            if judgeCondition:
-                judgeVal = True
-                break
-            else:
-                pass
-        elif paraType == '!=':
-            if not judgeCondition:
-                judgeVal = True
-                break
-            else:
-                pass
-        else:
-            raise ValueError('不存在的判断类型:{}'.format(paraType))
-        time.sleep(1)
-        totalNum -= 1
-    return judgeVal
-
-
-def expectTypeHandle(expect, uiObj):
+def expectTypeHandle(expect, expectInfo, uiObj):
     '''
     期望元素处理
     '''
-    expectVal = None
+    expectVal = False
     if '==' in expect:
         expectEl = expect.strip().split('==')[1]
-        if 'text' in expect:
-            expectVal = getJudgeReturn('==', uiObj.isTextInPage(expectEl))
-        elif 'desc' in expect:
-            expectVal = getJudgeReturn('==', uiObj.isDescInPage(expectEl))
-        elif 'Id' in expect:
-            expectVal = getJudgeReturn('==', uiObj.isIdInPage(expectEl))
-        else:
-            raise ValueError('参数:{}中的控件类型不合法'.format(expect))
+        try:
+            if 'text' in expect:
+                uiObj.isExistByText(expectEl, expectInfo)
+            elif 'desc' in expect:
+                uiObj.isExistByDesc(expectEl, expectInfo)
+            elif 'Id' in expect:
+                uiObj.isExistById(expectEl, expectInfo)
+            else:
+                raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
+            expectVal = True
+        except AssertionError as e:
+            pass
     elif '!=' in expect:
         expectEl = expect.strip().split('!=')[1]
-        if 'text' in expect:
-            expectVal = getJudgeReturn('!=', uiObj.isTextInPage(expectEl))
-        elif 'desc' in expect:
-            expectVal = getJudgeReturn('!=', uiObj.isDescInPage(expectEl))
-        elif 'Id' in expect:
-            expectVal = getJudgeReturn('!=', uiObj.isIdInPage(expectEl))
-        else:
-            raise ValueError('参数:{}中的控件类型不合法'.format(expect))
+        try:
+            if 'text' in expect:
+                uiObj.isExistByText(expectEl, expectInfo, isIn=1)
+            elif 'desc' in expect:
+                uiObj.isExistByDesc(expectEl, expectInfo, isIn=1)
+            elif 'Id' in expect:
+                uiObj.isExistById(expectEl, expectInfo, isIn=1)
+            else:
+                raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
+            expectVal = True
+        except AssertionError as e:
+            pass
     else:
-        raise ValueError('参数:{}不合法, 提醒:可能存在中文符号'.format(expect))
+        raise ValueError('期望参数:{}不合法, 提醒:可能存在中文符号'.format(expect))
     return expectVal
 
 
@@ -296,7 +292,7 @@ def expectHandle(expect, expectInfo, uiObj):
     condition = []
     if '&&' in expect:
         for eveExpect in expect.strip().split('&&'):
-            tempData = expectTypeHandle(eveExpect, uiObj)
+            tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
             condition.append(tempData)
         if condition[0] and condition[1]:
             uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
@@ -304,20 +300,20 @@ def expectHandle(expect, expectInfo, uiObj):
             raise AssertionError(5)
     elif '||' in expect:
         for eveExpect in expect.strip().split('||'):
-            tempData = expectTypeHandle(eveExpect, uiObj)
+            tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
             condition.append(tempData)
         if condition[0] or condition[1]:
             uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
     else:
-        if expectTypeHandle(expect, uiObj):
+        if expectTypeHandle(expect, expectInfo, uiObj):
             uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
 
 
-def executeEvent(stepEventSuit, uiObj):
+def executeEvent(stepEventSuit, uiObj, totalTime=0):
     '''
     执行动作事件
     '''
@@ -332,12 +328,12 @@ def executeEvent(stepEventSuit, uiObj):
             isOptional = stepEvent.optional
             try:
                 if pre != '':
-                    if preconditionHandle(pre, uiObj):
+                    preJudgeRet = not preconditionHandle(pre, uiObj, totalTime)
+                    if preJudgeRet:
                         break
                 if realAction != '':
-                    actionHandle(control, data, realAction, uiObj)
+                    actionHandle(control, data, realAction.strip(), uiObj)
                 if expect != '':
-                    uiObj.sleep(2)
                     expectHandle(expect, expectInfo, uiObj)
             except AssertionError as e:
                 if isOptional == '1.0':
@@ -351,23 +347,35 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
     '''
     执行所有用例
     '''
+    # 总共测试次数
     totalCount = 0
+    # 通过次数
     passCount = 0
+    # 失败次数
     failCount = 0
+    # 中止次数
     abortCount = 0
+    # 异常次数
     exceptionCount = 0
+    # 失败详情列表
     failList = []
+    # 中止详情列表
     abortList = []
+    # 期望详情列表
     exceptionList = []
+    # 忽略详情列表
     ingoreFeature = []
     # 处理大类
     for eachTestClass in allTestClass:
+        # 获取每个测试大类名称
         testClassName = eachTestClass['testCaseName']
         testCase = eachTestClass['moduleSuit']
         # 处理模块
         for eachModule in testCase:
+            # 获取每个测试大类下测试模块名称
             moduleName = eachModule['moduleName']
             features = eachModule['featureSuite']
+            # 此模块下忽略功能点数目
             ingoreFeaturesNum = 0
             firstEventSuit = []
             # 首次启动app中的步骤分割
@@ -388,6 +396,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                                                                 moduleName))
             # 处理功能点
             for eachFeature in features:
+                # 获取每个测试大类下测试模块有效测试功能点名称
                 featureName = eachFeature['featureName']
                 steps = eachFeature['featureSteps']
                 otherEventSuit = []
@@ -425,21 +434,21 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         # 开始测试
                         try:
                             uiObj.startApp()
-                            uiObj.sleep(10)
+                            time.sleep(10)
                             # executeEvent(stepEventSuit, uiObj)
                             # 循环点击权限弹窗
                             numCount = 10
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj)
-                                uiObj.sleep(1)
+                                time.sleep(1)
                                 if uiObj.isTextInPage('首页'):
                                     break
                                 else:
                                     numCount -= 1
                             else:
                                 uiObj._LOGGER.debug('点击app弹窗失败，请检测app控件名是否正确！')
-                            executeEvent(nor_firstEventSuit, uiObj)
-                            executeEvent(otherEventSuit, uiObj)
+                            executeEvent(nor_firstEventSuit, uiObj, 3)
+                            executeEvent(otherEventSuit, uiObj, 3)
                         except AssertionError as e:
                             uiObj._LOGGER.info('{}: FAIL'.format(rName))
                             uiObj.screencap('{}_fail'.format(rName),
@@ -456,9 +465,10 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         except selenium.common.exceptions.WebDriverException:
                             uiObj._LOGGER.info('{}: FAIL(causeByAppium)'
                                                .format(rName))
+                            uiObj.testExit()
                             uiObj.appiumErrorHandle()
                             uiObj = UITest(configData)
-                            uiObj.sleep(10)
+                            time.sleep(10)
                             exceptionList.append(rName)
                             exceptionCount += 1
                         else:
@@ -470,7 +480,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         finally:
                             totalCount += 1
                             uiObj.clearApp()
-                            uiObj.sleep(5)
+                            time.sleep(5)
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
     uiObj.set_ime()

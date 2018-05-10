@@ -8,10 +8,30 @@ from baseOn import BaseOn
 from commandContainer import CommandContainer as CC
 
 
+def setDefaultPara(func):
+    '''
+    给某些函数添加默认的值
+    kwargs参数:
+        refresh_time: 刷新时间
+        totalTime: 等待总时间
+        flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
+    '''
+    def tempFunc(*args, **kwargs):
+        if 'refresh_time' not in kwargs:
+            kwargs['refresh_time'] = 1
+        if 'totalTime' not in kwargs:
+            kwargs['totalTime'] = 10
+        if 'flowTag' not in kwargs:
+            kwargs['flowTag'] = '1'
+        return func(*args, **kwargs)
+    return tempFunc
+
+
 class UITest(BaseOn, TA):
     """
     ui层基本操作
     """
+
     def __init__(self, configData, driver=None):
         self.configData = configData
         self.driver = pi.getDriver(self.configData)
@@ -33,27 +53,15 @@ class UITest(BaseOn, TA):
         time.sleep(1)
         self._LOGGER.debug(u'滑动结束')
 
-    @baseOn.unifyParaCode
+    @setDefaultPara
     def clickByText(self, text, rule='e', *args, **kwargs):
         """
         通过控件的text属性点击；rule默认为e
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], text=text)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], text=text)
             except AssertionError as e:
                 pass
         try:
@@ -62,27 +70,15 @@ class UITest(BaseOn, TA):
         except AttributeError as e:
             raise AssertionError(1)
 
-    @baseOn.unifyParaCode
+    @setDefaultPara
     def clickByDesc(self, desc, rule='e', *args, **kwargs):
         """
         通过控件的desc属性点击；rule默认为e
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], desc=desc)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], desc=desc)
             except AssertionError as e:
                 pass
         try:
@@ -91,26 +87,15 @@ class UITest(BaseOn, TA):
         except AttributeError as e:
             raise AssertionError(2)
 
+    @setDefaultPara
     def clickById(self, Id, *args, **kwargs):
         """
         通过控件的id属性点击；
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], Id=Id)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
             except AssertionError as e:
                 pass
         try:
@@ -119,84 +104,51 @@ class UITest(BaseOn, TA):
         except AttributeError as e:
             raise AssertionError(3)
 
-    @baseOn.unifyParaCode
+    @setDefaultPara
     def clickByTextInstance(self, text, ins, rule='e', *args, **kwargs):
         """
         通过特定控件的text属性点击；ins为索引；rule默认为e
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], text=text)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], text=text)
             except AssertionError as e:
                 pass
         try:
             self.__select_text_ins_Android(text, ins, rule).click()
-            self._LOGGER.debug(u'点击text: {}, ins: {}, 结束'.format(text, str(ins)))
+            self._LOGGER.debug(u'点击text: {}, ins: {}, 结束'.format(text,
+                                                                 str(ins)))
         except AttributeError as e:
             raise AssertionError(1)
 
-    @baseOn.unifyParaCode
+    @setDefaultPara
     def clickByDescInstance(self, desc, ins, rule='e', *args, **kwargs):
         """
         通过特定控件的desc属性点击；ins为索引；rule默认为e
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], desc=desc)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], desc=desc)
             except AssertionError as e:
                 pass
         try:
             self.__select_desc_ins_Android(desc, ins, rule).click()
-            self._LOGGER.debug(u'点击desc: {}, ins: {}, 结束'.format(desc, str(ins)))
+            self._LOGGER.debug(u'点击desc: {}, ins: {}, 结束'.format(desc,
+                                                                 str(ins)))
         except AttributeError as e:
             raise AssertionError(2)
 
+    @setDefaultPara
     def clickByIdInstance(self, Id, ins, *args, **kwargs):
         """
         通过控件的id属性点击；ins为索引；
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], Id=Id)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
             except AssertionError as e:
                 pass
         try:
@@ -205,10 +157,17 @@ class UITest(BaseOn, TA):
         except AttributeError as e:
             raise AssertionError(3)
 
+    @setDefaultPara
     def getTextById(self, Id, ins=None):
         """
         通过Id查找控件，并获取它的text
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
+            except AssertionError as e:
+                pass
         try:
             if ins is None:
                 re_text = self.__select_Id_Android(Id).text
@@ -220,108 +179,117 @@ class UITest(BaseOn, TA):
         except AttributeError as e:
             raise AssertionError(3)
 
-    def setValueByText(self, input_text, text_2, *args, **kwargs):
+    @setDefaultPara
+    def setValueByText(self, input_text, text, rule='e', *args, **kwargs):
         """
         通过控件的text属性输入文本；rule默认为e;input_text为你想输入文本，支持中英文
         """
-        if 'text_before' not in kwargs:
-            kwargs['text_before'] = text_2
-
-        if 'rule' not in kwargs:
-            kwargs['rule'] = 'e'
-
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], text=text)
+            except AssertionError as e:
+                pass
         try:
-            self.__select_text_Android(kwargs['text_before'], kwargs['rule']).click()
-            self.__select_text_Android(text_2, kwargs['rule']).set_text(input_text)
+            self.__select_text_Android(text, rule).set_text(input_text)
             self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             raise AssertionError(4)
 
-    def setValueByDesc(self, input_text, desc_2, *args, **kwargs):
+    @setDefaultPara
+    def setValueByDesc(self, input_text, desc, rule='e', *args, **kwargs):
         """
         通过控件的desc属性输入文本；rule默认为e;input_text为你想输入文本，支持中英文
         """
-        if 'desc_before' not in kwargs:
-            kwargs['desc_before'] = desc_2
-
-        if 'rule' not in kwargs:
-            kwargs['rule'] = 'e'
-
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], desc=desc)
+            except AssertionError as e:
+                pass
         try:
-            self.__select_desc_Android(kwargs['desc_before'], kwargs['rule']).click()
-            self.__select_desc_Android(desc_2, kwargs['rule']).set_text(input_text)
+            self.__select_desc_Android(desc, rule).set_text(input_text)
             self._LOGGER.debug(u'D文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             raise AssertionError(4)
 
-    def setValueById(self, input_text, Id_2, *args, **kwargs):
+    @setDefaultPara
+    def setValueById(self, input_text, Id, *args, **kwargs):
         """
         通过控件的Id属性输入文本；input_text为你想输入文本，支持中英文
         """
-        if 'Id_before' not in kwargs:
-            kwargs['Id_before'] = Id_2
-
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
+            except AssertionError as e:
+                pass
         try:
-            self.__select_Id_Android(kwargs['Id_before']).click()
-            self.__select_Id_Android(Id_2).set_text(input_text)
+            self.__select_Id_Android(Id).set_text(input_text)
             self._LOGGER.debug(u'I文本: ' + input_text + u'，输入结束')
         except AttributeError as e:
             raise AssertionError(4)
 
-    @baseOn.unifyParaCode
-    def isTextInPage(self, text, rule='e'):
+    @setDefaultPara
+    def isTextInPage(self, text, rule='e', *args, **kwargs):
         """
         判断text元素是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], text=text)
+            except AssertionError as e:
+                pass
         if self.__select_text_Android(text, rule):
             return True
         else:
             return False
 
-    @baseOn.unifyParaCode
-    def isDescInPage(self, desc, rule='e'):
+    @setDefaultPara
+    def isDescInPage(self, desc, rule='e', *args, **kwargs):
         """
         判断desc元素是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], desc=desc)
+            except AssertionError as e:
+                pass
         if self.__select_desc_Android(desc, rule):
             return True
         else:
             return False
 
-    def isIdInPage(self, Id):
+    @setDefaultPara
+    def isIdInPage(self, Id, *args, **kwargs):
         """
         判断id元素是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
+            except AssertionError as e:
+                pass
         if self.__select_Id_Android(Id):
             return True
         else:
             return False
 
-    @baseOn.unifyParaCode
+    @setDefaultPara
     def isExistByText(self, text, instruction, isIn=0, rule='e', *args, **kwargs):
         """
         通过控件的text属性判断操作是否成功，instruction为此处步骤描述内容；
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
-        self._LOGGER.debug(instruction)
+        # self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], text=text)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], text=text)
             except AssertionError as e:
                 pass
-
         if int(isIn) == 0:
             if self.__select_text_Android(text, rule):
                 pass
@@ -333,31 +301,18 @@ class UITest(BaseOn, TA):
             else:
                 raise AssertionError
         else:
-            self._LOGGER.critical(u"参数输入有误，请确认后输入参数")
-            raise ValueError
+            raise ValueError(u"参数输入有误，请确认后输入参数")
 
-    @baseOn.unifyParaCode
+    @setDefaultPara
     def isExistByDesc(self, desc, instruction, isIn=0, rule='e', *args, **kwargs):
         """
         通过控件的desc属性判断操作是否成功，instruction为此处步骤描述内容；
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
-        self._LOGGER.debug(instruction)
+        # self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], desc=desc)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], desc=desc)
             except AssertionError as e:
                 pass
 
@@ -372,31 +327,18 @@ class UITest(BaseOn, TA):
             else:
                 raise AssertionError
         else:
-            self._LOGGER.critical(u"参数输入有误，请确认后输入参数")
-            raise ValueError
+            raise ValueError(u"参数输入有误，请确认后输入参数")
 
-    @baseOn.unifyParaCode
+    @setDefaultPara
     def isExistById(self, Id, instruction, isIn=0, *args, **kwargs):
         """
         通过控件的id属性判断操作是否成功，instruction为此处步骤描述内容；
-        kwargs参数:
-            refresh_time: 刷新时间
-            totalTime: 等待总时间
-            flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
         """
-        if 'refresh_time' not in kwargs:
-            kwargs['refresh_time'] = 1
-
-        if 'totalTime' not in kwargs:
-            kwargs['totalTime'] = 10
-
-        if 'flowTag' not in kwargs:
-            kwargs['flowTag'] = '0'
-
-        self._LOGGER.debug(instruction)
+        # self._LOGGER.debug(instruction)
         if str(kwargs['flowTag']) == '1':
             try:
-                self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], Id=Id)
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
             except AssertionError as e:
                 pass
         if int(isIn) == 0:
@@ -410,10 +352,8 @@ class UITest(BaseOn, TA):
             else:
                 raise AssertionError
         else:
-            self._LOGGER.critical(u"参数输入有误，请确认后输入参数")
-            raise ValueError
+            raise ValueError(u"参数输入有误，请确认后输入参数")
 
-    @baseOn.unifyParaCode
     def sleep(self, t, *args, **kwargs):
         """
         等待时间，分隐性等待和强制等待，单位s；只有参数t为强制等待，
@@ -427,32 +367,23 @@ class UITest(BaseOn, TA):
                 while timeCount <= t:
                     # 判断传入的控件类型
                     if 'text' in kwargs:
-                        el = kwargs['text']
-                        if self.isTextInPage(kwargs['text']):
+                        if self.__select_text_Android(kwargs['text'], 'e'):
                             break
                     elif 'desc' in kwargs:
-                        el = kwargs['desc']
-                        if self.isDescInPage(kwargs['desc']):
+                        if self.__select_desc_Android(kwargs['desc'], 'e'):
                             break
                     elif 'Id' in kwargs:
-                        el = kwargs['Id']
-                        if self.isIdInPage(kwargs['Id']):
+                        if self.__select_Id_Android(kwargs['Id']):
                             break
                     else:
-                        self._LOGGER.critical(u'核心参数未给出，或者参数形式有误，请参考文档后，再使用！')
-                        raise ValueError
-
+                        raise ValueError(u'核心参数未给出，或者参数形式有误，请参考文档后，再使用！')
                     time.sleep(kwargs['refresh_time'])
                     timeCount += kwargs['refresh_time']
 
                 if timeCount > t:
-                    # if 'ui_base' in backFileName or 'baseOn' in backFileName:
-                    #     pass
                     raise AssertionError(8)
-
             except KeyError as e:
-                self._LOGGER.critical(u'参数有问题,两个参数分别为refresh_time=XXX和el(text,desc,Id)=XXX，请核对')
-                raise ValueError
+                raise ValueError(u'参数有问题, 请核对')
         else:
             if args:
                 if 'ui_base' in backFileName or 'baseOn' in backFileName:
@@ -485,47 +416,34 @@ class UITest(BaseOn, TA):
                           str(screenY/4) + ' ' + str(screenX/2) + ' ' +
                           str(screenY/2))
         else:
-            self._LOGGER.critical(u'你输入的参数有误')
-            raise ValueError
+            raise ValueError(u'你输入的参数有误')
 
-        tFlag = 0
-        dFlag = 0
-        iFlag = 0
-        if 'text' in kwargs:
-            tFlag = 1
-        elif 'desc' in kwargs:
-            dFlag = 1
-        elif 'Id' in kwargs:
-            iFlag = 1
-        else:
-            self._LOGGER.critical(u'核心参数未给出，或者参数形式有误，请参考文档后，再使用！')
-            raise ValueError
         stepCount = 0
         while stepCount <= kwargs['step']:
             # 判断传入的控件类型
-            if tFlag == 1:
-                if self.isTextInPage(kwargs['text']):
+            if 'text' in kwargs:
+                if self.__select_text_Android(kwargs['text'], 'e'):
                     break
-            elif dFlag == 1:
-                if self.isDescInPage(kwargs['desc']):
+            elif 'desc' in kwargs:
+                if self.__select_desc_Android(kwargs['desc'], 'e'):
                     break
-            elif iFlag == 1:
-                if self.isIdInPage(kwargs['Id']):
+            elif 'Id' in kwargs:
+                if self.__select_Id_Android(kwargs['Id']):
                     break
             else:
-                pass
+                raise ValueError(u'核心参数未给出，或者参数形式有误，请参考文档后，再使用！')
             os.system(excCommand)
             time.sleep(1)
             stepCount += 1
         else:
-            if tFlag == 1:
+            if 'text' in kwargs:
                 raise AssertionError(1)
-            elif dFlag == 1:
+            elif 'desc' in kwargs:
                 raise AssertionError(2)
-            elif iFlag == 1:
+            elif 'Id' in kwargs:
                 raise AssertionError(3)
             else:
-                raise RuntimeError
+                pass
 
     # def longPressByElement(self, el, duration=1000):
     #     '''
@@ -575,7 +493,7 @@ class UITest(BaseOn, TA):
         退出测试
         """
         self.driver.quit()
-        self._LOGGER.debug(u'退出测试，完成')
+        self._LOGGER.debug(u'退出测试')
 
     def getCurrentTime(self):
         '''
@@ -586,68 +504,80 @@ class UITest(BaseOn, TA):
         formatTime = time.strftime("%Y-%m-%d-%H:%M:%S", timeArray)
         return formatTime
 
+    @baseOn.unifyParaCode
     def __select_text_Android(self, text, rule):
         """
         Android:text匹配规则；ins代表文本索引；rule为匹配规则，e代表全部匹配，p代表部分匹配
         """
         try:
             if rule == "e":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().text("' + text + '")')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().text("{}")'.format(text))
             elif rule == "p":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().textContains("' + text + '")')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().textContains("{}")'.format(text))
             else:
-                self._LOGGER.critical(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
-                raise ValueError
+                raise ValueError(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
 
+    @baseOn.unifyParaCode
     def __select_text_ins_Android(self, text, ins, rule):
         """
         Android:特定text匹配规则；ins代表文本索引；rule为匹配规则，e代表全部匹配，p代表部分匹配
         """
         try:
             if rule == "e":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().text("' + text + '").instance(' + str(ins) + ')')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().text("{}").instance({})'.format(
+                        text, str(ins)))
             elif rule == "p":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().textContains("' + text + '").instance(' + str(ins) + ')')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().textContains("{}").instance({})'.format(
+                        text, str(ins)))
             else:
-                self._LOGGER.critical(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
-                raise ValueError
+                raise ValueError(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
 
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
 
+    @baseOn.unifyParaCode
     def __select_desc_Android(self, desc, rule):
         """
         Android:desc匹配规则;rule为匹配规则，e代表全部匹配，p代表部分匹配
         """
         try:
             if rule == "e":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().description("' + desc + '")')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().description("{}")'.format(desc))
             elif rule == "p":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().descriptionContains("' + desc + '")')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().descriptionContains("{}")'.format(desc))
             else:
-                self._LOGGER.critical(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
-                raise ValueError
+                raise ValueError(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
 
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
 
+    @baseOn.unifyParaCode
     def __select_desc_ins_Android(self, desc, ins, rule):
         """
         Android:特定desc匹配规则;ins为索引；rule为匹配规则，e代表全部匹配，p代表部分匹配
         """
         try:
             if rule == "e":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().description("' + desc + '").instance(' + str(ins) + ')')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().description("{}").instance({})'.format(
+                        desc, str(ins)))
             elif rule == "p":
-                el = self.driver.find_element_by_android_uiautomator('new UiSelector().descriptionContains("' + desc + '").instance(' + str(ins) + ')')
+                el = self.driver.find_element_by_android_uiautomator(
+                    'new UiSelector().descriptionContains("{}").instance({})'
+                    .format(desc, str(ins)))
             else:
-                self._LOGGER.critical(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
-                raise ValueError
+                raise ValueError(u"这么说吧，你用了一个假的规则选项，请重新阅读规则！")
 
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
@@ -658,7 +588,8 @@ class UITest(BaseOn, TA):
         Android:Id匹配规则;
         """
         try:
-            el = self.driver.find_element_by_android_uiautomator('new UiSelector().resourceId("' + Id + '")')
+            el = self.driver.find_element_by_android_uiautomator(
+                'new UiSelector().resourceId("{}")'.format(Id))
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
@@ -668,11 +599,14 @@ class UITest(BaseOn, TA):
         Android:特定Id匹配规则;ins为索引；
         """
         try:
-            el = self.driver.find_element_by_android_uiautomator('new UiSelector().resourceId("' + Id + '").instance(' + str(ins) + ')')
+            el = self.driver.find_element_by_android_uiautomator(
+                'new UiSelector().resourceId("{}").instance({})'.format(
+                    Id, str(ins)))
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
 
+    @baseOn.unifyParaCode
     def __getElement(self, el, rule, ins=None):
         '''
         通过用户传参获取元素

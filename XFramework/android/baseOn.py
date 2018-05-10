@@ -9,16 +9,6 @@ import types
 from commandContainer import CommandContainer as CC
 
 
-def getStrEncode(oStr):
-    '''
-    获取字串编码方式, 返回编码方式
-    参数:
-        str
-    '''
-    codeMode = chardet.detect(oStr)['encoding']
-    return codeMode
-
-
 def strDecode(oIter):
     '''
     字串解码为unicode编码, 返回解码后的序列
@@ -28,7 +18,8 @@ def strDecode(oIter):
     if isinstance(oIter, dict):
         for key, value in oIter.items():
             if isinstance(value, str) and not isinstance(value, unicode):
-                paraCode = getStrEncode(value)
+                # 获取value的编码方式
+                paraCode = chardet.detect(value)['encoding']
                 nv = value.decode(paraCode)
                 oIter[key] = nv
         return oIter
@@ -36,7 +27,7 @@ def strDecode(oIter):
         count = 0
         for i in oIter:
             if isinstance(i, str) and not isinstance(i, unicode):
-                paraCode = getStrEncode(i)
+                paraCode = chardet.detect(i)['encoding']
                 j = i.decode(paraCode)
                 oIter[count] = j
             count += 1
@@ -55,7 +46,6 @@ def unifyParaCode(func):
             rl = strDecode(tl)
         if kwargs:
             rd = strDecode(kwargs)
-        # print('%s is begin' % func.__name__)
         if rl and not rd:
             return func(*rl)
         elif not rl and rd:
@@ -157,25 +147,27 @@ class BaseOn(object):
         screenY = int(posList[1])
         return screenX, screenY
 
-    def getDeviceName(self):
+    @classmethod
+    def getDeviceName(cls):
         """
         获取手机名字
         """
         command = CC.GET_PHONE_NAME
         dn = os.popen(command).read().strip()
         if dn == '':
-            self._LOGGER.critical(u'获取手机名字失败')
+            cls._LOGGER.critical(u'获取手机名字失败')
             raise RuntimeError
         return dn
 
-    def getPlatformVersion(self):
+    @classmethod
+    def getPlatformVersion(cls):
         """
         获取平台版本
         """
         command = CC.GET_PHONE_VERSION
         pv = os.popen(command).read().strip()
         if pv == '':
-            self._LOGGER.critical(u'获取平台版本失败')
+            cls._LOGGER.critical(u'获取平台版本失败')
             raise RuntimeError
         return pv
 
