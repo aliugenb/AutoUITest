@@ -10,8 +10,7 @@ def getSheetName(filePath, allTestList):
         if sheet.name in allTestList:
             sheetList.append((index, sheet.name))
     if sheetList == []:
-        print('你上传的表格sheet名与你勾选的不一致, 请核实！')
-        raise ValueError
+        raise ValueError('你上传的表格sheet名与你勾选的不一致, 请核实！')
     return sheetList
 
 
@@ -25,9 +24,9 @@ def getModuleGroup(dataFrame):
             if '>>>>' in name:
                 endList.append((index, name))
             else:
-                startList.append((index, name))
+                startList.append((index, name.strip()))
     if len(startList) != len(endList):
-        print(u'注意检查模块名的起始和结束是否闭合')
+        raise ValueError(u'注意检查模块名的起始和结束是否闭合')
     else:
         for index in range(len(startList)):
             if '#' not in startList[index][1]:
@@ -65,39 +64,57 @@ def getTestCaseUnit(dataFrame, sheetName):
         while rowIndex <= rowsNum-1:
             if dataFrame.loc[rowIndex, ['featureName']][0] != 'isNaN':
                 featureName = dataFrame.loc[rowIndex, ['featureName']][0]
-                featureUnit['featureName'] = featureName
+                featureUnit['featureName'] = featureName.strip()
             stepDesc = dataFrame.loc[rowIndex, ['stepDesc']][0]
-            if dataFrame.loc[rowIndex, ['precondition']][0] != 'isNaN':
-                if precondition != 'isNaN' and \
-                 precondition != dataFrame.loc[rowIndex, ['precondition']][0]:
-                    multiStepUnit['multiSteps'] = multiSteps
-                    stepSuit.append(multiStepUnit)
-                    multiSteps = []
-                    multiStepUnit = {}
-                precondition = dataFrame.loc[rowIndex, ['precondition']][0]
-                multiStepUnit['precondition'] = precondition
+            if rowIndex == rowsNum-1:
+                if dataFrame.loc[rowIndex, ['precondition']][0] != 'isNaN':
+                    if precondition != 'isNaN' and \
+                     precondition != dataFrame.loc[rowIndex,
+                                                   ['precondition']][0]:
+                        raise ValueError('功能点的最后一行不能只是一个判断，请修改用例！')
+                else:
+                    if '>>' in stepDesc:
+                        stepUnit = getStepUnit(dataFrame, rowIndex)
+                        multiSteps.append(stepUnit)
+                        multiStepUnit['multiSteps'] = multiSteps
+                        stepSuit.append(multiStepUnit)
+                        featureUnit['featureSteps'] = stepSuit
+                        featuresList.append(featureUnit)
+                        multiSteps = []
+                        multiStepUnit = {}
+                        stepSuit = []
+                        featureUnit = {}
+                    else:
+                        stepUnit = getStepUnit(dataFrame, rowIndex)
+                        stepSuit.append(stepUnit)
+                        featureUnit['featureSteps'] = stepSuit
+                        featuresList.append(featureUnit)
+                        stepSuit = []
+                        featureUnit = {}
             else:
-                if '>>' in stepDesc:
-                    stepUnit = getStepUnit(dataFrame, rowIndex)
-                    multiSteps.append(stepUnit)
-                    rowIndex += 1
-                    continue
-                elif '>>' not in stepDesc and precondition != 'isNaN':
-                    multiStepUnit['multiSteps'] = multiSteps
-                    stepSuit.append(multiStepUnit)
-                    precondition = 'isNaN'
-                    multiSteps = []
-                    multiStepUnit = {}
+                if dataFrame.loc[rowIndex, ['precondition']][0] != 'isNaN':
+                    if precondition != 'isNaN' and \
+                       precondition != dataFrame.loc[rowIndex,
+                                                     ['precondition']][0]:
+                        multiStepUnit['multiSteps'] = multiSteps
+                        stepSuit.append(multiStepUnit)
+                        multiSteps = []
+                        multiStepUnit = {}
+                    precondition = dataFrame.loc[rowIndex, ['precondition']][0]
+                    multiStepUnit['precondition'] = precondition
                 else:
-                    pass
-                if rowIndex == rowsNum-1:
-                    stepUnit = getStepUnit(dataFrame, rowIndex)
-                    stepSuit.append(stepUnit)
-                    featureUnit['featureSteps'] = stepSuit
-                    featuresList.append(featureUnit)
-                    stepSuit = []
-                    featureUnit = {}
-                else:
+                    if '>>' in stepDesc:
+                        stepUnit = getStepUnit(dataFrame, rowIndex)
+                        multiSteps.append(stepUnit)
+                        rowIndex += 1
+                        continue
+                    elif '>>' not in stepDesc and precondition != 'isNaN':
+                        multiStepUnit['multiSteps'] = multiSteps
+                        stepSuit.append(multiStepUnit)
+                        multiSteps = []
+                        multiStepUnit = {}
+                    else:
+                        raise ValueError('{}行里有无法识别的参数'.format(rowIndex+2))
                     if stepDesc != 'isNaN':
                         stepUnit = getStepUnit(dataFrame, rowIndex)
                         stepSuit.append(stepUnit)

@@ -56,4 +56,4 @@ class CommandContainer(object):
     '''
     其他
     '''
-    SPECIAL_CHARACTER_LIST = r'[\\/:*?"<>|]'
+    SPECIAL_CHARACTER_LIST = r'[\\/:*?" <>|]'
