@@ -90,7 +90,6 @@ if __name__ == '__main__':
     logPath = LG.setLogPath()
     # 获取手机参数信息
     configData = getConfigPara('config.json')
-    print configData
     # 获取需要测试的大类集合
     allTestList = getTestClass('testList.txt')
     # 获取用例路径
