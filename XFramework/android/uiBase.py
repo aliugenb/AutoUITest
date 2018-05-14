@@ -158,7 +158,7 @@ class UITest(BaseOn, TA):
             raise AssertionError(3)
 
     @setDefaultPara
-    def getTextById(self, Id, ins=None):
+    def getTextById(self, Id, ins=None, *args, **kwargs):
         """
         通过Id查找控件，并获取它的text
         """

@@ -18,6 +18,9 @@ def exceptionHandle(func):
     异常8: 等待控件超时
     '''
     def tempFunc(*args, **kwargs):
+        '''
+        错误类型集合
+        '''
         try:
             func(*args, **kwargs)
         except AssertionError as e:
@@ -152,7 +155,6 @@ def actionHandle(control, data, realAction, uiObj):
                 try:
                     uiObj.clickByText(controlEl)
                 except AssertionError as e:
-                    print '*'*80
                     uiObj.clickByText(controlEl, rule='p')
             elif elType == 'desc':
                 uiObj.clickByDesc(controlEl)
@@ -462,9 +464,9 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             # uiObj._LOGGER.exception('错误详情')
                             abortList.append(rName)
                             abortCount += 1
-                        except selenium.common.exceptions.WebDriverException:
-                            uiObj._LOGGER.info('{}: FAIL(causeByAppium)'
-                                               .format(rName))
+                        except selenium.common.exceptions.WebDriverException as e:
+                            uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
+                                               .format(rName, e))
                             uiObj.testExit()
                             uiObj.appiumErrorHandle()
                             uiObj = UITest(configData)
