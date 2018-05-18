@@ -388,8 +388,8 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                 if '#' in tempFeature['featureName']:
                     ingoreFeaturesNum += 1
             if len(features) == ingoreFeaturesNum+1:
-                uiObj._LOGGER.warning('模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
-                                      .format(moduleName))
+                print('警告: 模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
+                      .format(moduleName))
                 realIngoreModule.append('{}-{}'.format(testClassName,
                                                        moduleName))
                 continue
