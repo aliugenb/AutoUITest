@@ -32,9 +32,12 @@ class UITest(BaseOn, TA):
     ui层基本操作
     """
 
-    def __init__(self, configData, driver=None):
+    def __init__(self, configData=None, driver=None):
         self.configData = configData
-        self.driver = pi.getDriver(self.configData)
+        if self.configData is not None:
+            self.driver = pi.getDriver(self.configData)
+        else:
+            self.driver = pi.getDriver()
         TA.__init__(self, driver=self.driver)
 
     def clickByPos(self, x, y, duration=None):

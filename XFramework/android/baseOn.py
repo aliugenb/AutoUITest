@@ -188,25 +188,17 @@ class BaseOn(object):
         if os.popen(commands[0]).read() == '':
             os.popen(commands[1])
 
-    def pullFile(self, *args, **kwargs):
+    def pullFile(self, d_path, c_path):
         """
         把文件从手机推送到电脑,默认推送截图
         """
         command = '{} {} {}'.format(CC.PULLFILE_PHOHE_TO_COMPUTER,
-                                    kwargs['p_path'],
-                                    kwargs['c_path'])
-        if kwargs:
-            try:
-                os.popen(command)
-            except KeyError as e:
-                self._LOGGER.critical(u'参数有问题,参数分别为p_path=XXX和c_path=XXX，请核对')
-                raise ValueError
-        else:
-            if args:
-                self._LOGGER.warning(u"无效参数，将为你执行默认方法，指定文件夹推送")
-            kwargs['c_path'] = CC.LINIX_PATH_F
-            kwargs['p_path'] = CC.PHONE_PATH_D
+                                    d_path,
+                                    c_path)
+        try:
             os.popen(command)
+        except KeyError as e:
+            raise ValueError(u'参数有问题,参数分别为d_path=XXX和c_path=XXX，请核对')
 
     def pressBack(self):
         """

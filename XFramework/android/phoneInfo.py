@@ -2,8 +2,14 @@
 from appium import webdriver
 from baseOn import BaseOn as bo
 
+configData_default = {}
+configData_default["platformName"] = "Android"
+configData_default["appPackage"] = "com.ximalaya.ting.android"
+configData_default["appActivity"] = ".host.activity.WelComeActivity"
+configData_default["newCommandTimeout"] = 300
 
-def getDriver(configData):
+
+def getDriver(configData=configData_default):
     desired_caps = {}
     desired_caps['automationName'] = 'UiAutomator2'  # 使用UI2
     desired_caps['platformName'] = configData['platformName']  # 设备系统

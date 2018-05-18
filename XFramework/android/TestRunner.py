@@ -297,7 +297,7 @@ def expectHandle(expect, expectInfo, uiObj):
             tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
             condition.append(tempData)
         if condition[0] and condition[1]:
-            uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
+            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
     elif '||' in expect:
@@ -305,12 +305,12 @@ def expectHandle(expect, expectInfo, uiObj):
             tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
             condition.append(tempData)
         if condition[0] or condition[1]:
-            uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
+            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
     else:
         if expectTypeHandle(expect, expectInfo, uiObj):
-            uiObj._LOGGER.info('{}， 结束'.format(expectInfo))
+            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
         else:
             raise AssertionError(5)
 
