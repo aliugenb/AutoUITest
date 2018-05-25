@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import time
+from functools import wraps
 import selenium
 from action import Action
 from uiBase import UITest
@@ -17,6 +18,7 @@ def exceptionHandle(func):
     异常7: 点击判不等失败
     异常8: 等待控件超时
     '''
+    @wraps(func)
     def tempFunc(*args, **kwargs):
         '''
         错误类型集合

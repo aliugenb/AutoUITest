@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os, sys, time
+from functools import wraps
 import selenium.common.exceptions
 from appium.webdriver.common.touch_action import TouchAction as TA
 import phoneInfo as pi
@@ -16,6 +17,7 @@ def setDefaultPara(func):
         totalTime: 等待总时间
         flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
     '''
+    @wraps(func)
     def tempFunc(*args, **kwargs):
         if 'refresh_time' not in kwargs:
             kwargs['refresh_time'] = 1

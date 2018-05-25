@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+from functools import wraps
 import random
 import re
 import chardet
@@ -38,6 +39,7 @@ def unifyParaCode(func):
     '''
     处理函数参数，将参数全部转化为unicode
     '''
+    @wraps(func)
     def tempCheck(*args, **kwargs):
         rl = []
         rd = {}
