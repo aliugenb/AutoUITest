@@ -468,7 +468,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             abortCount += 1
                         except selenium.common.exceptions.WebDriverException as e:
                             uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
-                                               .format(rName, e))
+                                               .format(rName, str(e).strip()))
                             uiObj.testExit()
                             uiObj.appiumErrorHandle()
                             uiObj = UITest(configData)
