@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import time
+import urllib2
 from functools import wraps
 import selenium
 from action import Action
@@ -466,7 +467,8 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             # uiObj._LOGGER.exception('错误详情')
                             abortList.append(rName)
                             abortCount += 1
-                        except selenium.common.exceptions.WebDriverException as e:
+                        except (selenium.common.exceptions.WebDriverException,
+                                URLError) as e:
                             uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
                                                .format(rName, str(e).strip()))
                             uiObj.testExit()
