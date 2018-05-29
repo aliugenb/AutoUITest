@@ -124,7 +124,9 @@ class LogFileHandle():
                 tempContents.append(' end')
                 
             else:
-                contents = line.strip().split('>',1)[1]
+                print line  
+                contents = line.strip().split('>',1)
+                print contents[0]
                 tempContents.append(contents)
                 
         for i in range(len(tempContents)-1):
@@ -227,7 +229,7 @@ def getDurtime(starttime, endtime):
         durtime = ''
         
     if hour_sector != 0 :
-        durtime = durtime + str(minute_sector)+'时'
+        durtime = durtime + str(hour_sector)+'时'
     else:
         durtime = durtime
         
@@ -349,14 +351,17 @@ def writeTestDetail(filename, modulesContents):
         newpngName = delSpeChar(pngName)
         #print newpngName
         pngAdds = './screencap/'+newpngName+'_fail.png'
-        print pngAdds
+        #print pngAdds
         
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
+        print '****************'
+        for j in  range(len(modulesContents[i])):
+            print modulesContents[i][j]
         testresultComment=modulesContents[i][2].strip().split(':',1)[1]
         if '(' in testresultComment:
             testresult = testresultComment.split('(',1)[0]
             comment = testresultComment.split('(',1)[1][:-1]
-           
+            print pngAdds           
             f.write('<tr style="text-align:center; color:#FF0000;">')
             f.write('<th>'+caseTestDurs[i] +'</th>')
             f.write('<th>'+modulesContents[i][0] +'</th>')
@@ -376,7 +381,8 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[1]+'</th>')
             f.write('<th>'+' '+'</th>')
             f.write('<th>'+' '+'</th>')
-            f.write('</tr>')                
+            f.write('<th>'+' '+'</th>')
+            f.write('</tr>')
     f.write('</table>')
    
     
@@ -393,9 +399,10 @@ def renameHtmlFile(root, testTime):
 if __name__=="__main__":
     #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
-    root1= os.path.abspath('..')
+    '''root1= os.path.abspath('..')
     root = root1+'/testLOG'
-    print 'root:', root
+    print 'root:', root'''
+    root = '/Users/nali/Downloads/123'
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
            
@@ -421,6 +428,7 @@ if __name__=="__main__":
     #得到模块的测试内容
     tempContents = lfh.getModulesSplitContents(filename)
     modulesContents = getModulesContents(tempContents)
+
         
     #单个测试case测试时间
     tempTimestamps = lfh.getModulesSplitTimestamps(filename)
@@ -429,19 +437,19 @@ if __name__=="__main__":
     
     #得到测试项目信息
     projectInfo = lfh.getProjectInfo(root)
-     
+    ''' 
     #得到测试设备的信息       
     h = Handler()
     deviceName = h.getDeviceName()
     platformVersion = h.getPlatformVersion()
     deviceId = h.getDeviceId()
-        
+    '''        
     testTime = lfh.getLogTime(filename) 
 
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
     writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
-    writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
+    #writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
     writeTestDetail(tempHtmlname, modulesContents)
 
