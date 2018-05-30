@@ -399,11 +399,10 @@ def renameHtmlFile(root, testTime):
 if __name__=="__main__":
     root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
-    '''root1= os.path.abspath('..')
+    root1= os.path.abspath('..')
     root = root1+'/testLOG'
     print 'root:', root
-    root = '/Users/nali/Downloads/123'
-    '''
+    #root = '/Users/nali/Downloads/123'    
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
            
