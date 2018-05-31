@@ -124,9 +124,9 @@ class LogFileHandle():
                 tempContents.append(' end')
                 
             else:
-                print line  
-                contents = line.strip().split('>',1)
-                print contents[0]
+                #print line  
+                contents = line.strip().split('>',1)[1]
+                #print contents
                 tempContents.append(contents)
                 
         for i in range(len(tempContents)-1):
@@ -339,7 +339,8 @@ def writeTestBottom():
 
 def writeTestDetail(filename, modulesContents):
     for i in range(len(modulesContents)):
-        modulesContents[i]= modulesContents[i].strip().split(':', 1)[1]
+        temp =  modulesContents[i]
+        modulesContents[i]= temp.strip().split(':', 1)[1]
      
     f = open(filename,'a')
     #f.write('<table border="1" class="dataframe">') 
@@ -354,7 +355,7 @@ def writeTestDetail(filename, modulesContents):
         #print pngAdds
         
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
-        print '****************'
+        # '****************'
         for j in  range(len(modulesContents[i])):
             print modulesContents[i][j]
         testresultComment=modulesContents[i][2].strip().split(':',1)[1]
@@ -399,10 +400,16 @@ def renameHtmlFile(root, testTime):
 if __name__=="__main__":
     #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
+    '''
+    # <服务器获取root代码段
     root1= os.path.abspath('..')
     root = root1+'/testLOG'
     print 'root:', root
-    #root = '/Users/nali/Downloads/123'    
+    # 服务器获取root代码段>
+   '''
+    # <本地获取root代码段
+    root = '/Users/nali/Downloads/137'
+    # 本地获取root代码段>
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
            
@@ -437,13 +444,14 @@ if __name__=="__main__":
     
     #得到测试项目信息
     projectInfo = lfh.getProjectInfo(root)
-    ''' 
-    #得到测试设备的信息       
+    
+    #得到测试设备的信息<       
     h = Handler()
     deviceName = h.getDeviceName()
     platformVersion = h.getPlatformVersion()
     deviceId = h.getDeviceId()
-    '''        
+    #得到测试设备的信息>
+            
     testTime = lfh.getLogTime(filename) 
 
     #写test.html文件信息
