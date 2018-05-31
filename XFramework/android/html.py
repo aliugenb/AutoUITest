@@ -400,23 +400,23 @@ def renameHtmlFile(root, testTime):
 if __name__=="__main__":
     #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
-    '''
+  
     # <服务器获取root代码段
     root1= os.path.abspath('..')
     root = root1+'/testLOG'
     print 'root:', root
     # 服务器获取root代码段>
-   '''
+    '''
     # <本地获取root代码段
     root = '/Users/nali/Downloads/137'
     # 本地获取root代码段>
+    '''
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
            
     lfh = LogFileHandle()
     
     # 得到log.txt文件
-    #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
     if len(filename)==0:
         print "ERROR:不存在log文件"
