@@ -19,6 +19,7 @@ def getDriver(configData=configData_default):
     desired_caps['appPackage'] = configData['appPackage']
     desired_caps['appActivity'] = configData['appActivity']
     desired_caps['newCommandTimeout'] = configData['newCommandTimeout']
+    desired_caps['noReset'] = True
     desired_caps["unicodeKeyboard"] = True  # 支持中文
     driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
     return driver

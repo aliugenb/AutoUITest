@@ -173,22 +173,50 @@ class BaseOn(object):
             raise RuntimeError
         return pv
 
-    def clearApp(self, pkgName=CC.XIMALAYA_PKG):
+    def searchAppPro(self, pkgName=CC.XIMALAYA_PKG):
+        comand = '{} {}'.format(CC.SEARCH_APP_PRO, pkgName)
+        return os.popen(comand).read()
+
+    def getProId(self, pkgName=CC.XIMALAYA_PKG):
+        """获取某个应用的进程Id
+        """
+        originalVal = self.searchAppPro(pkgName)
+        if originalVal:
+            proList = originalVal.strip().split('\n')
+            tempList = [i.strip().split(' ') for i in originalVal]
+            # 除去嵌套列表中的空值
+            [i.remove('') for i in tempList for j in range(i.count(''))]
+            return [i[1] for i in tempList]
+        else:
+            print('警告:你输入的包名:{}，所代表的app没有运行'.format(pkgName))
+            return []
+
+    # def killAppPro(self, pkgName=CC.XIMALAYA_PKG):
+    #     """
+    #     杀掉指定apk进程
+    #     """
+    #     command = '{} {}'.format(CC.SEARCH_APP_PRO, pkgName)
+
+    def clearApp(self, pkgName=CC.XIMALAYA_PKG, isAD=False):
         '''
-        清理apk数据
+        杀掉apk进程，并清理apk数据
         '''
-        command = '{} {}'.format(CC.CLEAR_APP_DATA, pkgName)
-        os.popen(command)
+        command1 = '{} {}'.format(CC.FORCE_STOP_APP, pkgName)
+        command2 = '{} {}'.format(CC.CLEAR_APP_DATA, pkgName)
+        if isAD:
+            commands = [command1]
+        else:
+            commands = [command1, command2]
+        map(lambda command: os.popen(command), commands)
 
     def startApp(self, ActivityName=CC.XIMALAYA_ACTIVITY):
         '''
         启动apk
         '''
         pkgName = ActivityName.split('/')[0]
-        commands = ['{} {}'.format(CC.SEARCH_APP_PRO, pkgName),
-                    '{} {}'.format(CC.START_APP, ActivityName)]
-        if os.popen(commands[0]).read() == '':
-            os.popen(commands[1])
+        command = '{} {}'.format(CC.START_APP, ActivityName)
+        if not self.searchAppPro(pkgName):
+            os.popen(command)
 
     def pullFile(self, d_path, c_path):
         """

@@ -28,11 +28,12 @@ class CommandContainer(object):
     PHONE_DEVICES = 'adb devices'
     PHONE_SHELL = 'adb shell'
     CLEAR_APP_DATA = 'adb shell pm clear'
-    START_APP = 'adb shell am start -n'
+    START_APP = 'adb shell am start -W -S -n'
     SEARCH_APP_PRO = 'adb shell ps | grep'
     START_ADB = 'adb start-server'
     KILL_ADB = 'adb kill-server'
     GET_SCREEN_DETAIL = 'adb shell dumpsys window displays | head -n 3'
+    FORCE_STOP_APP = 'adb shell am force-stop'
 
     """
     包名/Activity名
@@ -41,7 +42,7 @@ class CommandContainer(object):
     APPIUM_IME_PKG = 'io.appium.android.ime'
     # 喜马拉雅
     XIMALAYA_PKG = 'com.ximalaya.ting.android'
-    XIMALAYA_ACTIVITY = 'com.ximalaya.ting.android/.host.activity.WelComeActivity'
+    XIMALAYA_ACTIVITY = 'com.ximalaya.ting.android/com.ximalaya.ting.android.host.activity.WelComeActivity'
 
     """
     常用路径

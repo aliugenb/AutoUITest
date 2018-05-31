@@ -96,8 +96,10 @@ def getTestCaseUnit(dataFrame, sheetName):
                     if precondition != 'isNaN' and \
                        precondition != dataFrame.loc[rowIndex,
                                                      ['precondition']][0]:
-                        multiStepUnit['multiSteps'] = multiSteps
-                        stepSuit.append(multiStepUnit)
+                        if multiSteps:
+                            multiStepUnit['multiSteps'] = multiSteps
+                        if multiStepUnit:
+                            stepSuit.append(multiStepUnit)
                         multiSteps = []
                         multiStepUnit = {}
                     precondition = dataFrame.loc[rowIndex, ['precondition']][0]
@@ -108,13 +110,17 @@ def getTestCaseUnit(dataFrame, sheetName):
                         multiSteps.append(stepUnit)
                         rowIndex += 1
                         continue
-                    elif '>>' not in stepDesc and precondition != 'isNaN':
-                        multiStepUnit['multiSteps'] = multiSteps
-                        stepSuit.append(multiStepUnit)
+                    else:
+                        if multiSteps:
+                            multiStepUnit['multiSteps'] = multiSteps
+                        if multiStepUnit:
+                            stepSuit.append(multiStepUnit)
                         multiSteps = []
                         multiStepUnit = {}
-                    else:
-                        raise ValueError('{}行里有无法识别的参数'.format(rowIndex+2))
+                    # else:
+                    #     raise ValueError('表单:{}中的第{}行中的参数里有无法识别'
+                    #                      .format(sheetName,
+                    #                              rowIndex+2))
                     if stepDesc != 'isNaN':
                         stepUnit = getStepUnit(dataFrame, rowIndex)
                         stepSuit.append(stepUnit)

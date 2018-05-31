@@ -152,24 +152,58 @@ def actionHandle(control, data, realAction, uiObj):
     动作处理
     '''
     if realAction == 'click':
-        if '=' in control:
-            elType, controlEl = control.strip().split('=')
-            if elType == 'text':
-                try:
-                    uiObj.clickByText(controlEl)
-                except AssertionError as e:
-                    uiObj.clickByText(controlEl, rule='p')
-            elif elType == 'desc':
-                uiObj.clickByDesc(controlEl)
-            elif elType == 'Id':
-                uiObj.clickById(controlEl)
-            else:
-                raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
+        paraList = []
+        paraDict = {}
+        if ',' in control:
+            paraList = control.strip().split(',')
+        elif ',' not in control and '=' in control:
+            paraList.append(control)
         elif '-' in control:
             posList = control.strip().split('-')
             uiObj.clickByPos(posList[0], posList[1])
         else:
             raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
+        if paraList:
+            for eachPara in paraList:
+                if '=' in eachPara:
+                    paraKey, paraValue = eachPara.strip().split('=')
+                    paraDict[paraKey] = paraValue
+                else:
+                    raise ValueError('动作参数:{}不合法，提醒:肯存在中文符号'.format(eachPara))
+            if 'text' in paraDict:
+                if 'rule' in paraDict and 'ins' not in paraDict:
+                    uiObj.clickByText(text=paraDict['text'],
+                                      rule=paraDict['rule'])
+                elif 'rule' in paraDict and 'ins' in paraDict:
+                    uiObj.clickByTextInstance(text=paraDict['text'],
+                                              rule=paraDict['rule'],
+                                              ins=paraDict['ins'])
+                elif 'rule' not in paraDict and 'ins' in paraDict:
+                    uiObj.clickByTextInstance(text=paraDict['text'],
+                                              ins=paraDict['ins'])
+                else:
+                    uiObj.clickByText(text=paraDict['text'])
+            elif 'desc' in paraDict:
+                if 'rule' in paraDict and 'ins' not in paraDict:
+                    uiObj.clickByDesc(desc=paraDict['desc'],
+                                      rule=paraDict['rule'])
+                elif 'rule' in paraDict and 'ins' in paraDict:
+                    uiObj.clickByDescInstance(desc=paraDict['desc'],
+                                              rule=paraDict['rule'],
+                                              ins=paraDict['ins'])
+                elif 'rule' not in paraDict and 'ins' in paraDict:
+                    uiObj.clickByDescInstance(desc=paraDict['desc'],
+                                              ins=paraDict['ins'])
+                else:
+                    uiObj.clickByDesc(desc=paraDict['desc'])
+            elif 'Id' in paraDict:
+                if 'ins' in paraDict:
+                    uiObj.clickByIdInstance(Id=paraDict['Id'],
+                                            ins=paraDict['ins'])
+                else:
+                    uiObj.clickById(Id=paraDict['Id'])
+            else:
+                raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'swipe':
         posList = control.strip().split('-')
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])
@@ -375,11 +409,20 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
         # 获取每个测试大类名称
         testClassName = eachTestClass['testCaseName']
         testCase = eachTestClass['moduleSuit']
+        if testClassName == 'ad':
+            uiObj.clearApp(isAD=True)
+            uiObj.pressHome()
+        else:
+            uiObj.clearApp()
         # 处理模块
         for eachModule in testCase:
             # 获取每个测试大类下测试模块名称
             moduleName = eachModule['moduleName']
             features = eachModule['featureSuite']
+            # 出去忽略模块实际要跑的功能点集合
+            realFeatures = []
+            # 此模块下忽略的功能点
+            tempIngoreFeature = []
             # 此模块下忽略功能点数目
             ingoreFeaturesNum = 0
             firstEventSuit = []
@@ -389,58 +432,70 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
             # 检测模块中的功能点是否被全部忽略
             for tempFeature in features:
                 if '#' in tempFeature['featureName']:
-                    ingoreFeaturesNum += 1
-            if len(features) == ingoreFeaturesNum+1:
-                print('警告: 模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
-                      .format(moduleName))
-                realIngoreModule.append('{}-{}'.format(testClassName,
-                                                       moduleName))
-                continue
-            else:
-                uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
-                                                                moduleName))
-            # 处理功能点
-            for eachFeature in features:
-                # 获取每个测试大类下测试模块有效测试功能点名称
-                featureName = eachFeature['featureName']
-                steps = eachFeature['featureSteps']
-                otherEventSuit = []
-                # 处理忽略功能点
-                if '#' in featureName:
                     rfeatureName = featureName.strip().split('#')[1]
                     rPath = '{}-{}-{}'.format(testClassName,
                                               moduleName,
                                               rfeatureName)
-                    ingoreFeature.append(rPath)
+                    tempIngoreFeature.append(rPath)
+                    ingoreFeaturesNum += 1
+                else:
+                    realFeatures.append(tempFeature)
+            # 主app和广告业务逻辑不同
+            if testClassName == 'ad':
+                if len(features) == ingoreFeaturesNum:
+                    print('警告: 模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
+                          .format(moduleName))
+                    realIngoreModule.append('{}-{}'.format(testClassName,
+                                                           moduleName))
                     continue
                 else:
-                    if featureName == '首次启动app':
-                        for eachStep in steps:
-                            firstEventSuit.append(creatEvent(eachStep))
-                        # 处理初始化
-                        for i in firstEventSuit:
-                            if len(i) >= 2:
-                                if i[0].precondition != '' and\
-                                 i[1].optional != '':
-                                    pre_firstEventSuit.append(i)
-                                else:
-                                    nor_firstEventSuit.append(i)
-                            elif len(i) == 1:
-                                nor_firstEventSuit.append(i)
+                    ingoreFeature.extend(tempIngoreFeature)
+            else:
+                if len(features) == ingoreFeaturesNum+1:
+                    print('警告: 模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
+                          .format(moduleName))
+                    realIngoreModule.append('{}-{}'.format(testClassName,
+                                                           moduleName))
+                    continue
+                else:
+                    ingoreFeature.extend(tempIngoreFeature)
+            uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
+                                                            moduleName))
+            # 处理功能点
+            for eachFeature in realFeatures:
+                # 获取每个测试大类下测试模块有效测试功能点名称
+                featureName = eachFeature['featureName']
+                steps = eachFeature['featureSteps']
+                otherEventSuit = []
+                if featureName == '首次启动app':
+                    for eachStep in steps:
+                        firstEventSuit.append(creatEvent(eachStep))
+                    # 处理初始化
+                    for i in firstEventSuit:
+                        if len(i) >= 2:
+                            if i[0].precondition != '' and\
+                             i[1].optional != '':
+                                pre_firstEventSuit.append(i)
                             else:
-                                pass
-                    else:
-                        for eachStep in steps:
-                            otherEventSuit.append(creatEvent(eachStep))
-                        # stepEventSuit = firstEventSuit + otherEventSuit
-                        rName = '{}-{}-{}'.format(testClassName,
-                                                  moduleName,
-                                                  featureName)
-                        # 开始测试
-                        try:
+                                nor_firstEventSuit.append(i)
+                        elif len(i) == 1:
+                            nor_firstEventSuit.append(i)
+                        else:
+                            pass
+                else:
+                    for eachStep in steps:
+                        otherEventSuit.append(creatEvent(eachStep))
+                    rName = '{}-{}-{}'.format(testClassName,
+                                              moduleName,
+                                              featureName)
+                    # 开始测试
+                    try:
+                        if testClassName == 'ad':
+                            uiObj.startApp()
+                            executeEvent(otherEventSuit, uiObj, 3)
+                        else:
                             uiObj.startApp()
                             time.sleep(10)
-                            # executeEvent(stepEventSuit, uiObj)
                             # 循环点击权限弹窗
                             numCount = 10
                             while numCount > 0:
@@ -454,39 +509,43 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                                 uiObj._LOGGER.debug('点击app弹窗失败，请检测app控件名是否正确！')
                             executeEvent(nor_firstEventSuit, uiObj, 3)
                             executeEvent(otherEventSuit, uiObj, 3)
-                        except AssertionError as e:
-                            uiObj._LOGGER.info('{}: FAIL'.format(rName))
-                            uiObj.screencap('{}_fail'.format(rName),
-                                            CC.PHONE_PATH)
-                            failList.append(rName)
-                            failCount += 1
-                        except (IndexError, ValueError) as e:
-                            uiObj._LOGGER.info(
-                                '{}: FAIL(注意: 功能点用例中存在不合法的参数！)\n错误详情: {}'
-                                .format(rName, e.args[0]))
-                            # uiObj._LOGGER.exception('错误详情')
-                            abortList.append(rName)
-                            abortCount += 1
-                        except (selenium.common.exceptions.WebDriverException,
-                                URLError) as e:
-                            uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
-                                               .format(rName, str(e).strip()))
-                            uiObj.testExit()
-                            uiObj.appiumErrorHandle()
-                            uiObj = UITest(configData)
-                            time.sleep(10)
-                            exceptionList.append(rName)
-                            exceptionCount += 1
+                    except AssertionError as e:
+                        uiObj._LOGGER.info('{}: FAIL'.format(rName))
+                        uiObj.screencap('{}_fail'.format(rName),
+                                        CC.PHONE_PATH)
+                        failList.append(rName)
+                        failCount += 1
+                    except (IndexError, ValueError) as e:
+                        uiObj._LOGGER.info(
+                            '{}: FAIL(注意: 功能点用例中存在不合法的参数！)\n错误详情: {}'
+                            .format(rName, e.args[0]))
+                        # uiObj._LOGGER.exception('错误详情')
+                        abortList.append(rName)
+                        abortCount += 1
+                    except (selenium.common.exceptions.WebDriverException,
+                            URLError) as e:
+                        uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
+                                           .format(rName, str(e).strip()))
+                        uiObj.testExit()
+                        uiObj.appiumErrorHandle()
+                        uiObj = UITest(configData)
+                        time.sleep(10)
+                        exceptionList.append(rName)
+                        exceptionCount += 1
+                    else:
+                        uiObj._LOGGER.info('{}-{}-{}: PASS'.format(
+                                                        testClassName,
+                                                        moduleName,
+                                                        featureName))
+                        passCount += 1
+                    finally:
+                        totalCount += 1
+                        if testClassName == 'ad':
+                            uiObj.clearApp(isAD=True)
+                            uiObj.pressHome()
                         else:
-                            uiObj._LOGGER.info('{}-{}-{}: PASS'.format(
-                                                            testClassName,
-                                                            moduleName,
-                                                            featureName))
-                            passCount += 1
-                        finally:
-                            totalCount += 1
                             uiObj.clearApp()
-                            time.sleep(5)
+                        time.sleep(5)
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
     uiObj.set_ime()
