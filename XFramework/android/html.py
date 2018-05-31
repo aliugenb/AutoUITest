@@ -124,7 +124,9 @@ class LogFileHandle():
                 tempContents.append(' end')
                 
             else:
+                #print line  
                 contents = line.strip().split('>',1)[1]
+                #print contents
                 tempContents.append(contents)
                 
         for i in range(len(tempContents)-1):
@@ -227,7 +229,7 @@ def getDurtime(starttime, endtime):
         durtime = ''
         
     if hour_sector != 0 :
-        durtime = durtime + str(minute_sector)+'时'
+        durtime = durtime + str(hour_sector)+'时'
     else:
         durtime = durtime
         
@@ -337,7 +339,8 @@ def writeTestBottom():
 
 def writeTestDetail(filename, modulesContents):
     for i in range(len(modulesContents)):
-        modulesContents[i]= modulesContents[i].strip().split(':', 1)[1]
+        temp =  modulesContents[i]
+        modulesContents[i]= temp.strip().split(':', 1)[1]
      
     f = open(filename,'a')
     #f.write('<table border="1" class="dataframe">') 
@@ -349,14 +352,17 @@ def writeTestDetail(filename, modulesContents):
         newpngName = delSpeChar(pngName)
         #print newpngName
         pngAdds = './screencap/'+newpngName+'_fail.png'
-        print pngAdds
+        #print pngAdds
         
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
+        # '****************'
+        for j in  range(len(modulesContents[i])):
+            print modulesContents[i][j]
         testresultComment=modulesContents[i][2].strip().split(':',1)[1]
         if '(' in testresultComment:
             testresult = testresultComment.split('(',1)[0]
             comment = testresultComment.split('(',1)[1][:-1]
-           
+            print pngAdds           
             f.write('<tr style="text-align:center; color:#FF0000;">')
             f.write('<th>'+caseTestDurs[i] +'</th>')
             f.write('<th>'+modulesContents[i][0] +'</th>')
@@ -376,7 +382,8 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[1]+'</th>')
             f.write('<th>'+' '+'</th>')
             f.write('<th>'+' '+'</th>')
-            f.write('</tr>')                
+            f.write('<th>'+' '+'</th>')
+            f.write('</tr>')
     f.write('</table>')
    
     
@@ -393,16 +400,23 @@ def renameHtmlFile(root, testTime):
 if __name__=="__main__":
     #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
+  
+    # <服务器获取root代码段
     root1= os.path.abspath('..')
     root = root1+'/testLOG'
     print 'root:', root
+    # 服务器获取root代码段>
+    '''
+    # <本地获取root代码段
+    root = '/Users/nali/Downloads/137'
+    # 本地获取root代码段>
+    '''
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
            
     lfh = LogFileHandle()
     
     # 得到log.txt文件
-    #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
     if len(filename)==0:
         print "ERROR:不存在log文件"
@@ -421,6 +435,7 @@ if __name__=="__main__":
     #得到模块的测试内容
     tempContents = lfh.getModulesSplitContents(filename)
     modulesContents = getModulesContents(tempContents)
+
         
     #单个测试case测试时间
     tempTimestamps = lfh.getModulesSplitTimestamps(filename)
@@ -429,19 +444,20 @@ if __name__=="__main__":
     
     #得到测试项目信息
     projectInfo = lfh.getProjectInfo(root)
-     
-    #得到测试设备的信息       
+    
+    #得到测试设备的信息<       
     h = Handler()
     deviceName = h.getDeviceName()
     platformVersion = h.getPlatformVersion()
     deviceId = h.getDeviceId()
-        
+    #得到测试设备的信息>
+            
     testTime = lfh.getLogTime(filename) 
 
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
     writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
-    writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
+    #writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
     writeTestDetail(tempHtmlname, modulesContents)
 
