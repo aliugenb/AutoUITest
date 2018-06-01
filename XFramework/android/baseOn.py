@@ -308,6 +308,8 @@ class BaseOn(object):
                                                               valueRight))
 
     def appiumErrorHandle(self):
+        """模拟插拔USB
+        """
         command1 = CC.KILL_ADB
         command2 = CC.START_ADB
         os.popen(command1)

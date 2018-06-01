@@ -160,7 +160,10 @@ def actionHandle(control, data, realAction, uiObj):
             paraList.append(control)
         elif '-' in control:
             posList = control.strip().split('-')
-            uiObj.clickByPos(posList[0], posList[1])
+            if len(posList) == 2:
+                uiObj.clickByPos(posList[0], posList[1])
+            else:
+                raise ValueError('动作参数:{}不合法, 提醒:坐标格式错误'.format(control))
         else:
             raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
         if paraList:
