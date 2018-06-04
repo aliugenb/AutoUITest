@@ -127,7 +127,7 @@ def preconditionHandle(pre, uiObj, totalTime):
             preJudgeVal = uiObj.isIdInPage(preEl, totalTime=totalTime)
         elif preElType == 'name':
             preJudgeVal = uiObj.isNameInPage(preEl, totalTime=totalTime)
-        elif preElType == 'xpath:
+        elif preElType == 'xpath':
             preJudgeVal = uiObj.isXpathInPage(preEl, totalTime=totalTime)
         else:
             raise ValueError('前提参数:{}控件类型不合法,提醒:可能存在空格'.format(pre))
