@@ -38,6 +38,15 @@ class UITest(BaseOn, TA):
         self.driver = pi.getDriver(self.configData)
         TA.__init__(self, driver=self.driver)
         
+    def getScreenSizeIos(self):
+        """
+        获取屏幕分辨率，返回横纵坐标
+        """    
+        size = self.driver.get_window_size()
+        print size
+        return size['width'], size['height']
+    
+        
     def clickByPos(self, x, y, duration=None):
         """
         通过坐标点击；duration为持续时间，单位ms
@@ -278,7 +287,7 @@ class UITest(BaseOn, TA):
             """
             通过控件的Id属性输入文本；input_text为你想输入文本，支持中英文
             """
-        input_text = base_on.codeUnify(input_text)
+        #input_text = base_on.codeUnify(input_text)
         if 'Id_before' not in kwargs:
             kwargs['Id_before'] = Id_2
 
