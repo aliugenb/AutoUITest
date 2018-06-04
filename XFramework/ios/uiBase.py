@@ -176,7 +176,7 @@ class UITest(BaseOn, TA):
             else:
                 raise AssertionError
             raise AssertionError
-        els    e:
+        else:
             raise ValueError(u"参数输入有误，请确认后输入参数") 
         
     @setDefaultPara 
