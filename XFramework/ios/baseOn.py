@@ -74,33 +74,26 @@ class BaseOn(object):
 
   
     def getPhoneUdid():
-        cmd = CC.PhoneInfoIos().PHONE_UDID
+        cmd = CC.PHONE_UDID
         phoneUdid = os.popen(cmd).read().strip()
         #print len(phoneUdid)
         return phoneUdid
 
     def getPlatformVersionIos():
-        cmd = CC.PhoneInfoIos().PLATFORM_VERSION
+        cmd = CC.PLATFORM_VERSION
         platformVersion = os.popen(cmd).read().strip()
         return  platformVersion
 
     def getPhoneNameIos():
-        cmd = CC.PhoneInfoIos().PHONE_NAME
+        cmd = CC.PHONE_NAME
         phoneName = os.popen(cmd).read().strip()
         return phoneName
 
-    def getScreenSizeIos(self):
-        """
-        获取屏幕分辨率，返回横纵坐标
-        """    
-        size = self.driver.get_window_size()
-        print size
-        return size['width'], size['height']
+   
     
+    '''
     def clearApp(self, pkgName=CC.XIMALAYA_PKG, isAD=False):
-        '''
-        杀掉apk进程，并清理apk数据
-        '''
+       # 杀掉apk进程，并清理apk数据
         command1 = '{} {}'.format(CC.FORCE_STOP_APP, pkgName)
         command2 = '{} {}'.format(CC.CLEAR_APP_DATA, pkgName)
         if isAD:
@@ -108,21 +101,18 @@ class BaseOn(object):
         else:
             commands = [command1, command2]
         map(lambda command: os.popen(command), commands)
+    '''
     
-    def startApp(self, ActivityName=CC.XIMALAYA_ACTIVITY):
+    def startApp(self, pkgName=CC.XIMALAYA_PKG):
         '''
         启动apk
         '''
-        pkgName = ActivityName.split('/')[0]
-        command = '{} {}'.format(CC.START_APP, ActivityName)
-        if not self.searchAppPro(pkgName):
-            os.popen(command) 
-      
-
+        cmd =  'idevicedebug run '+ CC.PHONE_NAME        
+        os.popen(cmd).read().strip()
+        
+'''
     def clearAllAppointEl(self, pendingList, el):
-        '''
-        删除列表中所有指定的元素
-        '''
+        # 删除列表中所有指定的元素
         if not isinstance(pendingList, list):
             self._LOGGER.critical(u'错误: 输入参数不为列表')
             raise TypeError
@@ -132,13 +122,12 @@ class BaseOn(object):
                 list_copy.remove(i)
         return list_copy
     
-    def appiumErrorHandle(self):
-        '''
-           模拟手工插拔设备
-        '''        
+    def appiumErrorHandle(self):        
+          # 模拟手工插拔设备               
         command1 = CC.KILL_ADB
         command2 = CC.START_ADB
         os.popen(command1)
         time.sleep(1)
         os.popen(command2)
-        time.sleep(5)    
+        time.sleep(5)   
+    '''
