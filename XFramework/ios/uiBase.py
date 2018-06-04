@@ -281,12 +281,12 @@ class UITest(BaseOn, TA):
         time.sleep(1)
         self._LOGGER.debug(u'滑动结束')
 
-        
+    '''   
     @setDefaultPara 
     def setValueById(self, input_text, Id_2, *args, **kwargs):
-            """
-            通过控件的Id属性输入文本；input_text为你想输入文本，支持中英文
-            """
+           
+            #通过控件的Id属性输入文本；input_text为你想输入文本，支持中英文
+           
         #input_text = base_on.codeUnify(input_text)
         if 'Id_before' not in kwargs:
             kwargs['Id_before'] = Id_2
@@ -299,6 +299,7 @@ class UITest(BaseOn, TA):
                 self._LOGGER.debug(u'I文本: ' + input_text + u'，输入结束')
             except AttributeError as e:
                 raise AssertionError
+    '''
     
     @setDefaultPara 
     def clearText(self, *args, **kwargs):
