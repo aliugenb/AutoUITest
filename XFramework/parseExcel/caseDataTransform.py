@@ -1,6 +1,11 @@
 # _*_ coding: utf-8 _*_
+import os
+import sys
 import pandas as pd
 import xlrd
+import zipfile
+
+IMG_TYPE = ['png', 'jpg', 'jpeg', 'bmg']
 
 
 def getSheetName(filePath, allTestList):
@@ -156,3 +161,90 @@ def getTestCaseSuit(filePath, allTestList):
         testCaseUnit, realIngoreModule = getTestCaseUnit(dataFrame, sheet[1])
         testCaseSuit.append(testCaseUnit)
     return testCaseSuit, realIngoreModule
+
+
+def getFileNameWithoutSuffix(file_name):
+    """返回裁取掉后缀的文件名
+    """
+    file_type = '.{}'.format(file_name.split('.')[-1])
+    dir_name = file_name.replace(file_type, '')
+    if dir_name != '':
+        return dir_name
+    else:
+        print('The file name you gived is wrong! err: {}'.format(file_name))
+        sys.exit(1)
+
+
+def changeFileType(file_path, file_name, target_type='.zip'):
+    """将指定目录中的excel文件类型改为压缩文件
+    """
+    original_path = os.path.join(file_path, file_name)
+    # 判断如果文件不存在，提示用户并退出解释器
+    if not os.path.exists(original_path):
+        print('No such File! err: {}'.format(original_path))
+        sys.exit(1)
+    target_name = '{}{}'.format(file_name.split('.')[0], target_type)
+    target_path = os.path.join(file_path, target_name)
+    # 假如zip文件存在，将其删除
+    if os.path.exists(target_path):
+        os.remove(target_path)
+    os.rename(original_path, target_path)
+    return target_name
+
+
+def unzipFile(file_path, file_name):
+    """将指定目录下的Zip文件解压缩到当前文件
+    """
+    real_path = os.path.join(file_path, file_name)
+    # 判断文件是否为压缩文件
+    if zipfile.is_zipfile(real_path):
+        z = zipfile.ZipFile(real_path, 'r')
+        # 判断文件是否损坏
+        test_result = z.testzip()
+        if test_result is not None:
+            print('file is damaged! errFlie: {}'.format(test_result))
+            sys.exit(1)
+        dir_name = getFileNameWithoutSuffix(file_name)
+        dir_path = os.path.join(file_path, dir_name)
+        # 检测是否有同名文件夹，存在则删除
+        if os.path.exists(dir_path):
+            os.popen('rm -rf {}'.format(dir_path))
+        # 解压到指定文件目录
+        z.extractall(dir_path)
+        z.close()
+    else:
+        print('No compressed file! err: {}'.format(real_path))
+        sys.exit(1)
+
+
+def getImg(file_path, file_name):
+    """解压缩的excel目录下获取图片并用PIL读取，存储
+    """
+    img_dir = 'xl{}media'.format(os.sep)
+    dir_name = getFileNameWithoutSuffix(file_name)
+    img_path = os.path.join(file_path, dir_name, img_dir)
+    if not os.path.exists(img_path):
+        print ('No such directory! err: {}'.format(img_path))
+        sys.exit(1)
+    # 读取指定目录的图片，存储到生成器中
+    file_list = os.listdir(img_path)
+    try:
+        im_path_iter = (os.path.join(img_path, eachImg)
+                        for eachImg in file_list
+                        if eachImg.split('.')[-1] in IMG_TYPE)
+        return im_path_iter
+    except IOError as e:
+        print('No images! err: {}'.format(img_path))
+        sys.exit(1)
+
+
+def getImgFromExcel(file_path, file_name):
+    """获取excel中的所有图片，返回一个存储图片的生成器
+    """
+    # 改变文件类型为压缩文件
+    target_name = changeFileType(file_path, file_name)
+    # 解压目标文件
+    unzipFile(file_path, target_name)
+    # 复原原文件
+    changeFileType(file_path, target_name, target_type='.xlsx')
+    return getImg(file_path, file_name)
