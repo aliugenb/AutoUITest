@@ -172,36 +172,36 @@ def actionHandle(control, data, realAction, uiObj):
                     raise ValueError('动作参数:{}不合法，提醒:肯存在中文符号'.format(eachPara))
             if 'Id' in paraDict:
                 if 'rule' in paraDict and 'ins' not in paraDict:
-                    uiObj.clickByText(text=paraDict['Id'],
+                    uiObj.clickById(id=paraDict['Id'],
                                       rule=paraDict['rule'])
                 elif 'rule' in paraDict and 'ins' in paraDict:
-                    uiObj.clickByTextInstance(text=paraDict['Id'],
+                    uiObj.clickByIdInstance(id=paraDict['Id'],
                                               rule=paraDict['rule'],
                                               ins=paraDict['ins'])
                 elif 'rule' not in paraDict and 'ins' in paraDict:
-                    uiObj.clickByTextInstance(text=paraDict['Id'],
+                    uiObj.clickByIdInstance(id=paraDict['Id'],
                                               ins=paraDict['ins'])
                 else:
-                    uiObj.clickByText(text=paraDict['text'])
+                    uiObj.clickById(id=paraDict['id'])
             elif 'name' in paraDict:
                 if 'rule' in paraDict and 'ins' not in paraDict:
-                    uiObj.clickByDesc(desc=paraDict['name'],
+                    uiObj.clickByName(name=paraDict['name'],
                                       rule=paraDict['rule'])
                 elif 'rule' in paraDict and 'ins' in paraDict:
-                    uiObj.clickByDescInstance(desc=paraDict['name'],
+                    uiObj.clickByNameInstance(name=paraDict['name'],
                                               rule=paraDict['rule'],
                                               ins=paraDict['ins'])
                 elif 'rule' not in paraDict and 'ins' in paraDict:
-                    uiObj.clickByDescInstance(desc=paraDict['name'],
+                    uiObj.clickByNameInstance(name=paraDict['name'],
                                               ins=paraDict['ins'])
                 else:
-                    uiObj.clickByDesc(desc=paraDict['name'])
+                    uiObj.clickByName(name=paraDict['name'])
             elif 'xpath' in paraDict:
                 if 'ins' in paraDict:
-                    uiObj.clickByIdInstance(Id=paraDict['xpath'],
+                    uiObj.clickByXpathInstance(Xpath=paraDict['xpath'],
                                             ins=paraDict['ins'])
                 else:
-                    uiObj.clickById(Id=paraDict['xpath'])
+                    uiObj.clickByXpath(Xpath=paraDict['xpath'])
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'swipe':
@@ -239,13 +239,13 @@ def actionHandle(control, data, realAction, uiObj):
         elType, controlEl = control.strip().split('=')
         if elType == 'Id':
             uiObj.scrollByElement(Id=controlEl)
-            uiObj.clickByText(controlEl)
+            uiObj.clickById(controlEl)
         elif elType == 'name':
             uiObj.scrollByElement(name=controlEl)
-            uiObj.clickByDesc(controlEl)
+            uiObj.clickByName(controlEl)
         elif elType == 'xpath':
             uiObj.scrollByElement(xpath=controlEl)
-            uiObj.clickById(controlEl)
+            uiObj.clickByXpath(controlEl)
         else:
             raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'sleep':
@@ -501,7 +501,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj)
                                 time.sleep(1)
-                                if uiObj.isTextInPage('首页'):
+                                if uiObj.isNameInPage('首页'):
                                     break
                                 else:
                                     numCount -= 1
@@ -523,7 +523,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         abortList.append(rName)
                         abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
-                            URLError) as e:
+                            urllib2.URLError) as e:
                         uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
                                            .format(rName, str(e).strip()))
                         uiObj.testExit()
@@ -548,7 +548,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         time.sleep(5)
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
-    uiObj.set_ime()
+    #uiObj.set_ime()
     # 打印报告
     print('总共: {}个\n成功: {}个\n失败: {}个\n中止: {}个\n异常: {}个\n'.format(totalCount,
                                                                  passCount,
