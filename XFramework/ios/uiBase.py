@@ -37,6 +37,18 @@ class UITest(BaseOn, TA):
         self.configData = configData
         self.driver = pi.getDriver(self.configData)
         TA.__init__(self, driver=self.driver)
+     
+    def startApp(self):
+        '''
+        启动apk
+        '''
+        self.driver.launch_app()
+        
+    def clearApp(self):
+        '''
+        启动apk
+        '''
+        self.driver.close_app()
         
     def getScreenSizeIos(self):
         """
@@ -83,7 +95,7 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            self.__select_name_iOS(name, rule).click()
+            self.__select_name_iOS(name).click()
             self._LOGGER.debug(u'点击text: ' + name + u'，结束')
         except AttributeError as e:
             raise AssertionError(2)  
@@ -133,30 +145,50 @@ class UITest(BaseOn, TA):
             self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
         except AttributeError as e:            
             raise AssertionError(3)
-    
-    def isIdInPage(self, Id):
+    @setDefaultPara
+    def isIdInPage(self, Id, *args, **kwargs):
         """
         判断id元素是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
+            except AssertionError as e:
+                pass        
 
         if self.__select_Id_iOS(Id):
             return True
         else:
             return False      
-        
-    def isNameInPage(self, name):
+    @setDefaultPara   
+    def isNameInPage(self, name, *args, **kwargs):
         """
         判断name是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], name=name)
+            except AssertionError as e:
+                pass
+        
         if self.__select_name_iOS(name):
             return True
         else:
             return False
-       
-    def isXpathInPage(self, xpath):
+    @setDefaultPara  
+    def isXpathInPage(self, xpath, *args, **kwargs):
         """
         判断xpath是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], xpath=xpath)
+            except AssertionError as e:
+                pass
+            
         if self.__select_xpath_iOS(xpath):
             return True
         else:
@@ -202,12 +234,12 @@ class UITest(BaseOn, TA):
                 pass
 
         if int(isIn) == 0:
-            if self.__select_name_iOS(name, rule):
+            if self.__select_name_iOS(name):
                 pass
             else:
                 raise AssertionError
         elif int(isIn) == 1:
-            if not self.__select_name_iOS(name,rule):
+            if not self.__select_name_iOS(name):
                 pass
             else:
                 raise AssertionError
@@ -241,8 +273,8 @@ class UITest(BaseOn, TA):
         else:
             raise ValueError(u"参数输入有误，请确认后输入参数")
         
-    
-    def __select_Id_iOS(self, Id):
+    @baseOn.unifyParaCode
+    def __select_Id_iOS(self, Id, rule='p'):
         """
         iOS:Id
         """
@@ -250,9 +282,10 @@ class UITest(BaseOn, TA):
             el = self.driver.find_element('id', Id)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
-            return False    
-    
-    def __select_name_iOS(self, name):
+            return False
+        
+    @baseOn.unifyParaCode
+    def __select_name_iOS(self, name, rule='p'):
         """
         iOS:name
         """
@@ -262,7 +295,8 @@ class UITest(BaseOn, TA):
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
         
-    def __select_xpath_iOS(self, xpath):
+    @baseOn.unifyParaCode    
+    def __select_xpath_iOS(self, xpath, rule='p'):
         """
         iOS:xpath
         """
