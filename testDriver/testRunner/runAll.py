@@ -16,17 +16,20 @@ from XFramework.parseExcel import caseDataTransform as cdt
 import XFramework.logger.logger as LG
 
 
-def getTestExcel(casePath):
+def getTestPreconditon(casePath):
     fileName = ''
-    for path, dirs, files in os.walk(casePath):
-        for eachFile in files:
-            if '.xlsx' in eachFile or '.xls' in eachFile:
-                if '~$' not in eachFile:
-                    fileName = eachFile
-        if fileName == '':
-            print('当前目录未找到测试用例！')
-            raise IOError
-    return fileName
+    srcImgName = ''
+    files = os.listdir(casePath)
+    for eachFile in files:
+        if '.xlsx' in eachFile or '.xls' in eachFile:
+            if '~$' not in eachFile:
+                fileName = eachFile
+        if '.{}'.format(eachFile.split('.')[-1]) in cdt.IMG_TYPE:
+            srcImgName = eachFile
+    if fileName == '':
+        print('当前目录未找到测试用例！')
+        raise IOError
+    return fileName, srcImgName
 
 
 def getCaseInfo(fileName):
@@ -34,16 +37,16 @@ def getCaseInfo(fileName):
     只能用于获取父级目录文件
     '''
     casePath = '{}{}{}'.format(os.pardir, os.sep, fileName)
-    caseName = getTestExcel(casePath)
+    caseName, srcImgName = getTestPreconditon(casePath)
     realCasePath = '{}{}{}'.format(casePath, os.sep, caseName)
-    return caseName, realCasePath
+    return casePath, caseName, srcImgName, realCasePath
 
 
 def sheetNotExistwarning(getCaseInfo):
     @wraps(getCaseInfo)
     def outerFunc(func):
         def tempFunc(listPath):
-            _, realCasePath = getCaseInfo('testCase')
+            _, _, _, realCasePath = getCaseInfo('testCase')
             allTestList = func(listPath)
             data_xls = xlrd.open_workbook(realCasePath)
             sheetList = []
@@ -118,23 +121,42 @@ if __name__ == '__main__':
     configData = getConfigPara('config.json')
     # 获取需要测试的大类集合
     allTestList = getTestClass('testList.txt')
-    # 获取用例路径
-    _, realCasePath = getCaseInfo('testCase')
-    # 获取所有测试用例
+    # 获取用例路径以及源图片名字
+    casePath, caseName, srcImgName, realCasePath = getCaseInfo('testCase')
+    # # 获取所有测试用例
     allTestClass, realIngoreModule = cdt.getTestCaseSuit(realCasePath,
                                                          allTestList)
     realAllTestClass = getRealTestClass(allTestClass)
+    # 获取excel中的所有图片
+    try:
+        imgs = cdt.getImgFromExcel(casePath, caseName)
+    except SystemExit as e:
+        pass
     # 测试驱动
     if configData['platformName'] == 'Android':
         androidBO._LOGGER = LG.logCreater(logPath)
         p = androidUT(configData)
-        androidTR.test_run_all_test(realAllTestClass, realIngoreModule,
-                                    configData, p)
+        # 获取源图片尺寸
+        srcImgSize = androidTR.getImgSize('{}{}{}'.format(casePath,
+                                                          os.sep,
+                                                          srcImgName))
+        # 获取图片比例相关系数
+        kx, ky = androidTR.getCorrelationCoefficients(srcImgSize,
+                                                      p.getScreenSize())
+        # 图片所需参数集合
+        imgDict = {'testImgIter': imgs,
+                   'srcImgSize': srcImgSize,
+                   'coefficients': (kx, ky),
+                   'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
+                   'realSrcImgName': srcImgName,
+                   'srcImgPath': casePath}
+        androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
+                                 configData, p, imgDict)
     elif configData['platformName'] == 'iOS':
         iosBO._LOGGER = LG.logCreater(logPath)
         p = iosUT(configData)
-        iosTR.test_run_all_test(realAllTestClass, realIngoreModule,
-                                configData, p)
+        iosTR.testRunAllTest(realAllTestClass, realIngoreModule,
+                             configData, p)
     else:
         print('移动平台参数设置错误，退出测试！')
         sys.exit(1)

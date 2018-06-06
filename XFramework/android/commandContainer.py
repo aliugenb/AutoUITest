@@ -52,6 +52,8 @@ class CommandContainer(object):
     WIN_PATH_F = ''
     # 图片存放
     PHONE_PATH = 'sdcard/AutoTest/screencap'
+    # 对比图片存放
+    PHONE_PIC_COMPARE_PATH = "sdcard/AutoTest/temp"
     # 图片存放
     LINIX_PATH_F = "/opt/lampp/htdocs/kodexplorer/data/Group/public/home/UITest/Android/screenshot/"
 

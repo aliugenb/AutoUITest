@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+import os
 import time
 import urllib2
+from PIL import Image
 from functools import wraps
 import selenium
 from action import Action
@@ -9,7 +11,7 @@ from commandContainer import CommandContainer as CC
 
 
 def exceptionHandle(func):
-    '''
+    """错误类型集合
     异常1: 点击时找不到text控件
     异常2: 点击时找不到desc控件
     异常3: 点击时找不到Id控件
@@ -18,12 +20,11 @@ def exceptionHandle(func):
     异常6: 点击判等失败
     异常7: 点击判不等失败
     异常8: 等待控件超时
-    '''
+    异常9: 表格中图片数量不等于clickByPic动作数量
+    异常10: 目标页面上未找你输入的图片
+    """
     @wraps(func)
     def tempFunc(*args, **kwargs):
-        '''
-        错误类型集合
-        '''
         try:
             func(*args, **kwargs)
         except AssertionError as e:
@@ -57,26 +58,72 @@ def exceptionHandle(func):
                 controlData = control.strip().split('-')
                 raise AssertionError('规定时间内，仍未找到该元素: {}，fail'.format(
                                                             controlData[1]))
+            elif flowTag == 9:
+                raise AssertionError('clickByPic动作数量与表格中的图片的数量不一致，请核实! fail')
+            elif flowTag == 10:
+                raise AssertionError('规定时间内，目标页面上未找你输入的图片: {}, fail'.format(
+                                                                    e.args[1]))
             else:
                 raise RuntimeError('不存在的异常类型')
     return tempFunc
 
 
+def getImgSize(filePath):
+    """获取图片像素大小
+    """
+    reImg = Image.open(filePath)
+    return reImg.size
+
+
+def getCorrelationCoefficients(practicalSize, idealSize):
+    """获取截图像素和手机屏幕像素之比
+    """
+    practicalSizeX, practicalSizeY = practicalSize
+    idealSizeX, idealSizeY = idealSize
+    return idealSizeX/float(practicalSizeX), idealSizeY/float(practicalSizeY)
+
+
+def changeImgSize(filePath, practicalSize):
+    """将手机截图图片大小压缩为指定图片的大小
+    """
+    im = Image.open(filePath)
+    new_im = im.resize(practicalSize, Image.ANTIALIAS)
+    new_im.save(filePath)
+
+
+def getCompareImg(uiObj, imgDict):
+    """将手机的当前页面截图，并把尺寸转化为和源图片一致
+    """
+    uiObj.screencap(imgDict['srcImgName'], CC.PHONE_PIC_COMPARE_PATH)
+    uiObj.pullFile('{}/{}'.format(CC.PHONE_PIC_COMPARE_PATH,
+                                  imgDict['realSrcImgName']),
+                   imgDict['srcImgPath'])
+    changeImgSize(os.path.join(imgDict['srcImgPath'],
+                               imgDict['realSrcImgName']),
+                  imgDict['srcImgSize'])
+
+
+def getPosOnScreen(originalPos, coefficients):
+    """获取屏幕上的坐标点
+    """
+    realPosX = int(originalPos[0] * coefficients[0])
+    realPosY = int(originalPos[1] * coefficients[1])
+    return realPosX, realPosY
+
+
 def transferProperty(target, key, source):
-    '''
-    动态的向某个类写入属性
+    """动态的向某个类写入属性
     target: 类
     key: 属性名
     source: 字典
-    '''
+    """
     if key in source:
         setattr(target, key, source.get(key))
 
 
 def detailPrint(detailName, targetList):
-    '''
-    适配输出测试结果
-    '''
+    """适配输出测试结果
+    """
     if len(targetList) != 0:
         print('{}:'.format(detailName))
         for i in targetList:
@@ -85,9 +132,8 @@ def detailPrint(detailName, targetList):
 
 
 def setPara(stepEvent, stepAction):
-    '''
-    步骤事件类写入属性
-    '''
+    """步骤事件类写入属性
+    """
     transferProperty(stepEvent, 'controlType', stepAction)
     transferProperty(stepEvent, 'inputText', stepAction)
     transferProperty(stepEvent, 'controlAction', stepAction)
@@ -97,9 +143,8 @@ def setPara(stepEvent, stepAction):
 
 
 def creatEvent(stepAction):
-    '''
-    创建步骤事件
-    '''
+    """创建步骤事件
+    """
     stepEvent = Action()
     stepEventList = []
     transferProperty(stepEvent, 'precondition', stepAction)
@@ -117,9 +162,8 @@ def creatEvent(stepAction):
 
 
 def preconditionHandle(pre, uiObj, totalTime):
-    '''
-    前提参数处理
-    '''
+    """前提参数处理
+    """
     preJudgeVal = False
     if '==' in pre:
         preElType, preEl = pre.strip().split('==')
@@ -147,10 +191,9 @@ def preconditionHandle(pre, uiObj, totalTime):
 
 
 @exceptionHandle
-def actionHandle(control, data, realAction, uiObj):
-    '''
-    动作处理
-    '''
+def actionHandle(control, data, realAction, uiObj, imgDict):
+    """动作处理
+    """
     if realAction == 'click':
         paraList = []
         paraDict = {}
@@ -207,6 +250,25 @@ def actionHandle(control, data, realAction, uiObj):
                     uiObj.clickById(Id=paraDict['Id'])
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
+    elif realAction == 'clickByPic':
+        if imgDict['realSrcImgName'] == '':
+            raise AssertionError(9)
+        getCompareImg(uiObj, imgDict)
+        try:
+            targetImgName = imgDict['testImgIter'].next()
+            reInfo = uiObj.getTargetImgPos(os.path.join(
+                                                imgDict['srcImgPath'],
+                                                imgDict['realSrcImgName']),
+                                           targetImgName,
+                                           confidence=0.7)
+        except StopIteration as e:
+            raise AssertionError(9)
+        if reInfo is not None:
+            realPos = getPosOnScreen(reInfo['result'], imgDict['coefficients'])
+            uiObj.clickByPos(realPos[0], realPos[1])
+            uiObj._LOGGER.debug('点击图片结束， 结束')
+        else:
+            raise AssertionError(10, targetImgName)
     elif realAction == 'swipe':
         posList = control.strip().split('-')
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])
@@ -289,9 +351,8 @@ def actionHandle(control, data, realAction, uiObj):
 
 
 def expectTypeHandle(expect, expectInfo, uiObj):
-    '''
-    期望元素处理
-    '''
+    """期望元素处理
+    """
     expectVal = False
     if '==' in expect:
         expectEl = expect.strip().split('==')[1]
@@ -328,9 +389,8 @@ def expectTypeHandle(expect, expectInfo, uiObj):
 
 @exceptionHandle
 def expectHandle(expect, expectInfo, uiObj):
-    '''
-    期望处理
-    '''
+    """期望处理
+    """
     condition = []
     if '&&' in expect:
         for eveExpect in expect.strip().split('&&'):
@@ -355,10 +415,9 @@ def expectHandle(expect, expectInfo, uiObj):
             raise AssertionError(5)
 
 
-def executeEvent(stepEventSuit, uiObj, totalTime=0):
-    '''
-    执行动作事件
-    '''
+def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
+    """执行动作事件
+    """
     for stepEventUnit in stepEventSuit:
         for stepEvent in stepEventUnit:
             pre = stepEvent.precondition
@@ -374,7 +433,8 @@ def executeEvent(stepEventSuit, uiObj, totalTime=0):
                     if preJudgeRet:
                         break
                 if realAction != '':
-                    actionHandle(control, data, realAction.strip(), uiObj)
+                    actionHandle(control, data,
+                                 realAction.strip(), uiObj, imgDict)
                 if expect != '':
                     expectHandle(expect, expectInfo, uiObj)
             except AssertionError as e:
@@ -385,10 +445,9 @@ def executeEvent(stepEventSuit, uiObj, totalTime=0):
                     raise
 
 
-def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
-    '''
-    执行所有用例
-    '''
+def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
+    """执行所有用例
+    """
     # 总共测试次数
     totalCount = 0
     # 通过次数
@@ -435,7 +494,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
             # 检测模块中的功能点是否被全部忽略
             for tempFeature in features:
                 if '#' in tempFeature['featureName']:
-                    rfeatureName = featureName.strip().split('#')[1]
+                    rfeatureName = featureName.strip().split('#')[-1]
                     rPath = '{}-{}-{}'.format(testClassName,
                                               moduleName,
                                               rfeatureName)
@@ -495,14 +554,16 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                     try:
                         if testClassName == 'ad':
                             uiObj.startApp()
-                            executeEvent(otherEventSuit, uiObj, 3)
+                            executeEvent(otherEventSuit, uiObj,
+                                         3, imgDict)
                         else:
                             uiObj.startApp()
                             time.sleep(10)
                             # 循环点击权限弹窗
                             numCount = 10
                             while numCount > 0:
-                                executeEvent(pre_firstEventSuit, uiObj)
+                                executeEvent(pre_firstEventSuit, uiObj,
+                                             0, imgDict)
                                 time.sleep(1)
                                 if uiObj.isTextInPage('首页'):
                                     break
@@ -510,8 +571,10 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                                     numCount -= 1
                             else:
                                 uiObj._LOGGER.debug('点击app弹窗失败，请检测app控件名是否正确！')
-                            executeEvent(nor_firstEventSuit, uiObj, 3)
-                            executeEvent(otherEventSuit, uiObj, 3)
+                            executeEvent(nor_firstEventSuit, uiObj,
+                                         3, imgDict)
+                            executeEvent(otherEventSuit, uiObj,
+                                         3, imgDict)
                     except AssertionError as e:
                         uiObj._LOGGER.info('{}: FAIL'.format(rName))
                         uiObj.screencap('{}_fail'.format(rName),
@@ -526,7 +589,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                         abortList.append(rName)
                         abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
-                            URLError) as e:
+                            urllib2.URLError) as e:
                         uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
                                            .format(rName, str(e).strip()))
                         uiObj.testExit()

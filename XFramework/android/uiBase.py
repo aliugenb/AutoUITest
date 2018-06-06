@@ -10,13 +10,12 @@ from commandContainer import CommandContainer as CC
 
 
 def setDefaultPara(func):
-    '''
-    给某些函数添加默认的值
+    """给某些函数添加默认的值
     kwargs参数:
         refresh_time: 刷新时间
         totalTime: 等待总时间
         flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
-    '''
+    """
     @wraps(func)
     def tempFunc(*args, **kwargs):
         if 'refresh_time' not in kwargs:
