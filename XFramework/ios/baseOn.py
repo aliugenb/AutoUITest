@@ -8,7 +8,6 @@ import chardet
 import types
 from commandContainer import CommandContainer as CC
 
-
 def getStrEncode(oStr):
     '''
     获取字串编码方式, 返回编码方式
@@ -71,26 +70,25 @@ class BaseOn(object):
     """
     基本操作方法
     """
-
-  
-    def getPhoneUdid():
+    @classmethod
+    def getPhoneUdid(cls):
         cmd = CC.PHONE_UDID
         phoneUdid = os.popen(cmd).read().strip()
         #print len(phoneUdid)
         return phoneUdid
-
-    def getPlatformVersionIos():
+        
+    @classmethod
+    def getPlatformVersionIos(cls):
         cmd = CC.PLATFORM_VERSION
         platformVersion = os.popen(cmd).read().strip()
         return  platformVersion
 
-    def getPhoneNameIos():
+    @classmethod
+    def getPhoneNameIos(cls):
         cmd = CC.PHONE_NAME
         phoneName = os.popen(cmd).read().strip()
         return phoneName
 
-   
-    
     '''
     def clearApp(self, pkgName=CC.XIMALAYA_PKG, isAD=False):
        # 杀掉apk进程，并清理apk数据
@@ -101,16 +99,14 @@ class BaseOn(object):
         else:
             commands = [command1, command2]
         map(lambda command: os.popen(command), commands)
-    '''
     
-    def startApp(self, pkgName=CC.XIMALAYA_PKG):
-        '''
-        启动apk
-        '''
-        cmd =  'idevicedebug run '+ CC.PHONE_NAME        
+    
+    def startApp(self):
+        #启动apk
+        cmd =  'idevicedebug run '+ CC.XIMALAYA_PKG       
         os.popen(cmd).read().strip()
         
-'''
+
     def clearAllAppointEl(self, pendingList, el):
         # 删除列表中所有指定的元素
         if not isinstance(pendingList, list):
