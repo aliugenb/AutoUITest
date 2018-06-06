@@ -139,20 +139,21 @@ if __name__ == '__main__':
     if configData['platformName'] == 'Android':
         androidBO._LOGGER = LG.logCreater(logPath)
         p = androidUT(configData)
-        # 获取源图片尺寸
-        srcImgSize = androidTR.getImgSize('{}{}{}'.format(casePath,
-                                                          os.sep,
-                                                          srcImgName))
-        # 获取图片比例相关系数
-        kx, ky = androidTR.getCorrelationCoefficients(srcImgSize,
-                                                      p.getScreenSize())
-        # 图片所需参数集合
-        imgDict = {'testImgIter': imgs,
-                   'srcImgSize': srcImgSize,
-                   'coefficients': (kx, ky),
-                   'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
-                   'realSrcImgName': srcImgName,
-                   'srcImgPath': casePath}
+        imgDict = {}
+        # # 获取源图片尺寸
+        # srcImgSize = androidTR.getImgSize('{}{}{}'.format(casePath,
+        #                                                   os.sep,
+        #                                                   srcImgName))
+        # # 获取图片比例相关系数
+        # kx, ky = androidTR.getCorrelationCoefficients(srcImgSize,
+        #                                               p.getScreenSize())
+        # # 图片所需参数集合
+        # imgDict = {'testImgIter': imgs,
+        #            'srcImgSize': srcImgSize,
+        #            'coefficients': (kx, ky),
+        #            'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
+        #            'realSrcImgName': srcImgName,
+        #            'srcImgPath': casePath}
         androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
                                  configData, p, imgDict)
     # elif configData['platformName'] == 'iOS':
