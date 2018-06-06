@@ -1,16 +1,17 @@
 # -*- coding:utf-8 -*-
 from appium import webdriver
 from baseOn import BaseOn as bo
+import os
 
 configData_default = {}
-configData_default["platformName"] = "ios"
+configData_default["platformName"] = "iOS"
 configData_default["newCommandTimeout"] = 3000
-configData_default["testAppPath"] = '/Users/nali/Downloads/ting-6.3.72-666.ipa'
+configData_default["testAppPath"] = '/Users/nali/Downloads/ting-6.3.99-666.ipa'
 
 
 
 def getDriver(configData=configData_default):
-    app = os.path.join(os.path.dirname(__file__), configData[testAppPath])
+    app = os.path.join(os.path.dirname(__file__), configData['testAppPath'])
     app = os.path.abspath(app)   
 
     desired_caps = {}
@@ -27,4 +28,4 @@ def getDriver(configData=configData_default):
     desired_caps["unicodeKeyboard"] = True  # 支持中文
     driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
     
-    return desired_caps
+    return driver
