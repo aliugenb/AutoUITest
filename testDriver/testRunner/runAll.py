@@ -36,14 +36,14 @@ def getCaseInfo(fileName):
     casePath = '{}{}{}'.format(os.pardir, os.sep, fileName)
     caseName = getTestExcel(casePath)
     realCasePath = '{}{}{}'.format(casePath, os.sep, caseName)
-    return caseName, realCasePath
+    return casePath, caseName, realCasePath
 
 
 def sheetNotExistwarning(getCaseInfo):
     @wraps(getCaseInfo)
     def outerFunc(func):
         def tempFunc(listPath):
-            _, realCasePath = getCaseInfo('testCase')
+            _, _, realCasePath = getCaseInfo('testCase')
             allTestList = func(listPath)
             data_xls = xlrd.open_workbook(realCasePath)
             sheetList = []
@@ -119,11 +119,13 @@ if __name__ == '__main__':
     # 获取需要测试的大类集合
     allTestList = getTestClass('testList.txt')
     # 获取用例路径
-    _, realCasePath = getCaseInfo('testCase')
+    casePath, caseName, realCasePath = getCaseInfo('testCase')
     # 获取所有测试用例
     allTestClass, realIngoreModule = cdt.getTestCaseSuit(realCasePath,
                                                          allTestList)
     realAllTestClass = getRealTestClass(allTestClass)
+    # 获取excel中的所有图片
+    #imgs = cdt.getImgFromExcel(casePath, caseName)
     # 测试驱动
     if configData['platformName'] == 'Android':
         androidBO._LOGGER = LG.logCreater(logPath)
