@@ -40,7 +40,7 @@ def getCaseInfo(fileName):
     只能用于获取父级目录文件
     '''
     casePath = '{}{}{}'.format(os.pardir, os.sep, fileName)
-    caseName, srcImgName = getTestPreconditon(casePath)
+    caseName, srcImgName, targetImgSuit = getTestPreconditon(casePath)
     realCasePath = '{}{}{}'.format(casePath, os.sep, caseName)
     return casePath, caseName, srcImgName, realCasePath
 
