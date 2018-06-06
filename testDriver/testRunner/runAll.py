@@ -11,7 +11,7 @@ from XFramework.android.uiBase import UITest as androidUT
 import XFramework.android.TestRunner as androidTR
 # from XFramework.ios.baseOn import BaseOn as iosBO
 # from XFramework.ios.uiBase import UITest as iosUT
-import XFramework.ios.TestRunner as iosTR
+# import XFramework.ios.TestRunner as iosTR
 from XFramework.parseExcel import caseDataTransform as cdt
 import XFramework.logger.logger as LG
 
@@ -19,6 +19,7 @@ import XFramework.logger.logger as LG
 def getTestPreconditon(casePath):
     fileName = ''
     srcImgName = ''
+    targetImgSuit = ''
     files = os.listdir(casePath)
     for eachFile in files:
         if '.xlsx' in eachFile or '.xls' in eachFile:
@@ -26,10 +27,12 @@ def getTestPreconditon(casePath):
                 fileName = eachFile
         if '.{}'.format(eachFile.split('.')[-1]) in cdt.IMG_TYPE:
             srcImgName = eachFile
+        if os.path.isdir(os.path.join(casePath, eachFile)):
+            targetImgPath = os.path.join(casePath, eachFile)
     if fileName == '':
         print('当前目录未找到测试用例！')
         raise IOError
-    return fileName, srcImgName
+    return fileName, srcImgName, targetImgSuit
 
 
 def getCaseInfo(fileName):
