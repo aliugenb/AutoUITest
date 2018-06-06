@@ -47,7 +47,6 @@ class UITest(BaseOn, TA):
         """
         self.driver.tap([(x, y)], duration)
         time.sleep(1)
-        self._LOGGER.debug(u'点击坐标结束')
 
     def swipeByPos(self, start_x, start_y, end_x, end_y, duration=None):
         """

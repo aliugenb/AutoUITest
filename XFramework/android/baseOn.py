@@ -336,7 +336,7 @@ class BaseOn(object):
                 infoDict['density'] = val[0]
         return infoDict
 
-    def getTargetImgPos(self, imgsrc, imgobj, confidence=0.5):
+    def getTargetImgPos(self, imgsrc, imgobj, confidence):
         """对比两个图片，返回目标图片在源图片上的所在位置坐标
         """
         imsrc = ac.imread(imgsrc)

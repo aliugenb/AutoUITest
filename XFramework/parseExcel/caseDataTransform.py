@@ -5,7 +5,9 @@ import pandas as pd
 import xlrd
 import zipfile
 
-IMG_TYPE = ['.png', '.jpg', '.jpeg', '.bmg']
+EXCEL_TYPE = ('.xlsx', '.xls')
+IMG_TYPE = ('.png', '.jpg', '.jpeg', '.bmg')
+COMPRESSED_FILES_TYPE = ('.zip', '.rar')
 
 
 def getSheetName(filePath, allTestList):
@@ -218,7 +220,7 @@ def unzipFile(file_path, file_name):
 
 
 def getImg(file_path, file_name):
-    """解压缩的excel目录下获取图片并用PIL读取，存储
+    """解压缩的excel目录下获取图片
     """
     img_dir = 'xl{}media'.format(os.sep)
     dir_name = getFileNameWithoutSuffix(file_name)

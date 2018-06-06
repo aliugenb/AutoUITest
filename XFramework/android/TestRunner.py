@@ -59,7 +59,8 @@ def exceptionHandle(func):
                 raise AssertionError('规定时间内，仍未找到该元素: {}，fail'.format(
                                                             controlData[1]))
             elif flowTag == 9:
-                raise AssertionError('clickByPic动作数量与表格中的图片的数量不一致，请核实! fail')
+                raise AssertionError('图片资源缺失，请核实! err: {}, fail'.format(
+                                                                    e.args[1]))
             elif flowTag == 10:
                 raise AssertionError('规定时间内，目标页面上未找你输入的图片: {}, fail'.format(
                                                                     e.args[1]))
@@ -205,6 +206,8 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
             posList = control.strip().split('-')
             if len(posList) == 2:
                 uiObj.clickByPos(posList[0], posList[1])
+                uiObj._LOGGER.debug('点击坐标: {}-{}结束'.format(posList[0],
+                                                           posList[1]))
             else:
                 raise ValueError('动作参数:{}不合法, 提醒:坐标格式错误'.format(control))
         else:
@@ -251,24 +254,37 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'clickByPic':
-        if imgDict['realSrcImgName'] == '':
-            raise AssertionError(9)
+        if imgDict == {}:
+            raise AssertionError(9, '上传文件中图片资源缺失！')
         getCompareImg(uiObj, imgDict)
+        totalTime = 10
+        countTime = 0
         try:
-            targetImgName = imgDict['testImgIter'].next()
-            reInfo = uiObj.getTargetImgPos(os.path.join(
-                                                imgDict['srcImgPath'],
-                                                imgDict['realSrcImgName']),
-                                           targetImgName,
-                                           confidence=0.7)
-        except StopIteration as e:
-            raise AssertionError(9)
+            targetImgName = os.path.join(imgDict['testImgPath'],
+                                         '{}.png'.format(control))
+            if not os.path.exists(targetImgName):
+                targetImgName = os.path.join(imgDict['testImgPath'],
+                                             imgDict['testImgPathName'],
+                                             '{}.png'.format(control))
+            # 10s内刷新匹配图片
+            while countTime < totalTime:
+                reInfo = uiObj.getTargetImgPos(os.path.join(
+                                                    imgDict['srcImgPath'],
+                                                    imgDict['realSrcImgName']),
+                                               targetImgName,
+                                               confidence=0.7)
+                if reInfo is not None:
+                    break
+                time.sleep(1)
+                countTime += 1
+        except (IOError, RuntimeError) as e:
+            raise AssertionError(9, e)
         if reInfo is not None:
             realPos = getPosOnScreen(reInfo['result'], imgDict['coefficients'])
             uiObj.clickByPos(realPos[0], realPos[1])
-            uiObj._LOGGER.debug('点击图片结束， 结束')
+            uiObj._LOGGER.debug('点击图片: {}，结束'.format(control))
         else:
-            raise AssertionError(10, targetImgName)
+            raise AssertionError(10, control)
     elif realAction == 'swipe':
         posList = control.strip().split('-')
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])

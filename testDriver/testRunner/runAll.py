@@ -22,13 +22,14 @@ def getTestPreconditon(casePath):
     targetImgSuit = ''
     files = os.listdir(casePath)
     for eachFile in files:
-        if '.xlsx' in eachFile or '.xls' in eachFile:
+        suffixType = '.{}'.format(eachFile.split('.')[-1])
+        if suffixType in cdt.EXCEL_TYPE:
             if '~$' not in eachFile:
                 fileName = eachFile
-        if '.{}'.format(eachFile.split('.')[-1]) in cdt.IMG_TYPE:
+        if suffixType in cdt.IMG_TYPE:
             srcImgName = eachFile
-        if os.path.isdir(os.path.join(casePath, eachFile)):
-            targetImgPath = os.path.join(casePath, eachFile)
+        if suffixType in cdt.COMPRESSED_FILES_TYPE:
+            targetImgSuit = eachFile
     if fileName == '':
         print('当前目录未找到测试用例！')
         raise IOError
@@ -41,17 +42,16 @@ def getCaseInfo(fileName):
     '''
     casePath = '{}{}{}'.format(os.pardir, os.sep, fileName)
     caseName, srcImgName, targetImgSuit = getTestPreconditon(casePath)
-    realCasePath = '{}{}{}'.format(casePath, os.sep, caseName)
-    return casePath, caseName, srcImgName, realCasePath
+    return casePath, caseName, srcImgName, targetImgSuit
 
 
 def sheetNotExistwarning(getCaseInfo):
     @wraps(getCaseInfo)
     def outerFunc(func):
         def tempFunc(listPath):
-            _, _, _, realCasePath = getCaseInfo('testCase')
+            casePath, caseName, _, _ = getCaseInfo('testCase')
             allTestList = func(listPath)
-            data_xls = xlrd.open_workbook(realCasePath)
+            data_xls = xlrd.open_workbook(os.path.join(casePath, caseName))
             sheetList = []
             realList = [i for i in allTestList]
             for index, sheet in enumerate(data_xls.sheets()):
@@ -125,37 +125,47 @@ if __name__ == '__main__':
     # 获取需要测试的大类集合
     allTestList = getTestClass('testList.txt')
     # 获取用例路径以及源图片名字
-    casePath, caseName, srcImgName, realCasePath = getCaseInfo('testCase')
+    casePath, caseName, srcImgName, targetImgSuit = getCaseInfo('testCase')
     # # 获取所有测试用例
-    allTestClass, realIngoreModule = cdt.getTestCaseSuit(realCasePath,
+    allTestClass, realIngoreModule = cdt.getTestCaseSuit(os.path.join(
+                                                                    casePath,
+                                                                    caseName),
                                                          allTestList)
     realAllTestClass = getRealTestClass(allTestClass)
-    # 获取excel中的所有图片
-    try:
-        imgs = cdt.getImgFromExcel(casePath, caseName)
-    except SystemExit as e:
-        pass
     # 测试驱动
     if configData['platformName'] == 'Android':
         androidBO._LOGGER = LG.logCreater(logPath)
         p = androidUT(configData)
         imgDict = {}
-        # # 获取源图片尺寸
-        # srcImgSize = androidTR.getImgSize('{}{}{}'.format(casePath,
-        #                                                   os.sep,
-        #                                                   srcImgName))
-        # # 获取图片比例相关系数
-        # kx, ky = androidTR.getCorrelationCoefficients(srcImgSize,
-        #                                               p.getScreenSize())
-        # # 图片所需参数集合
-        # imgDict = {'testImgIter': imgs,
-        #            'srcImgSize': srcImgSize,
-        #            'coefficients': (kx, ky),
-        #            'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
-        #            'realSrcImgName': srcImgName,
-        #            'srcImgPath': casePath}
-        androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
-                                 configData, p, imgDict)
+        if srcImgName != '' and targetImgSuit != '':
+            # 解压测试图片所属压缩文件
+            cdt.unzipFile(casePath, targetImgSuit)
+            # 获取解压后的测试图片文件目录
+            testImgPathName = cdt.getFileNameWithoutSuffix(targetImgSuit)
+            testImgPath = os.path.join(casePath, testImgPathName)
+            # 获取源图片尺寸
+            srcImgSize = androidTR.getImgSize(os.path.join(casePath,
+                                                           srcImgName))
+            # 获取图片比例相关系数
+            kx, ky = androidTR.getCorrelationCoefficients(srcImgSize,
+                                                          p.getScreenSize())
+            # 图片所需参数集合
+            imgDict = {'testImgPath': testImgPath,
+                       'testImgPathName': testImgPathName,
+                       'srcImgSize': srcImgSize,
+                       'coefficients': (kx, ky),
+                       'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
+                       'realSrcImgName': srcImgName,
+                       'srcImgPath': casePath}
+        else:
+            print("警告: 测试图片压缩文件和源图片未同时存在于上传文件中，默认你未使用图片点击功能！")
+        try:
+            androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
+                                     configData, p, imgDict)
+        except Exception as e:
+            p._LOGGER.info('Test End...')
+            print(e)
+            sys.exit(1)
     # elif configData['platformName'] == 'iOS':
     #     iosBO._LOGGER = LG.logCreater(logPath)
     #     p = iosUT(configData)
