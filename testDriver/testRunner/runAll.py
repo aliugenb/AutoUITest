@@ -9,8 +9,8 @@ common.pathGet()
 from XFramework.android.baseOn import BaseOn as androidBO
 from XFramework.android.uiBase import UITest as androidUT
 import XFramework.android.TestRunner as androidTR
-from XFramework.ios.baseOn import BaseOn as iosBO
-from XFramework.ios.uiBase import UITest as iosUT
+# from XFramework.ios.baseOn import BaseOn as iosBO
+# from XFramework.ios.uiBase import UITest as iosUT
 import XFramework.ios.TestRunner as iosTR
 from XFramework.parseExcel import caseDataTransform as cdt
 import XFramework.logger.logger as LG
@@ -152,11 +152,11 @@ if __name__ == '__main__':
                    'srcImgPath': casePath}
         androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
                                  configData, p, imgDict)
-    elif configData['platformName'] == 'iOS':
-        iosBO._LOGGER = LG.logCreater(logPath)
-        p = iosUT(configData)
-        iosTR.testRunAllTest(realAllTestClass, realIngoreModule,
-                             configData, p)
+    # elif configData['platformName'] == 'iOS':
+    #     iosBO._LOGGER = LG.logCreater(logPath)
+    #     p = iosUT(configData)
+    #     iosTR.testRunAllTest(realAllTestClass, realIngoreModule,
+    #                          configData, p)
     else:
         print('移动平台参数设置错误，退出测试！')
         sys.exit(1)
