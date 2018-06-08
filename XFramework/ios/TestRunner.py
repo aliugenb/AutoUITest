@@ -382,7 +382,7 @@ def executeEvent(stepEventSuit, uiObj, totalTime=0):
                     raise
 
 
-def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
+def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
     '''
     执行所有用例
     '''
@@ -501,7 +501,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj)
                                 time.sleep(1)
-                                if uiObj.isTextInPage('首页'):
+                                if uiObj.isNameInPage('首页'):
                                     break
                                 else:
                                     numCount -= 1
