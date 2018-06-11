@@ -7,7 +7,7 @@ class CommandContainer(object):
     """
     PHONE_UDID = 'idevice_id -l'
     #获取手机的设备版本：
-    PLATFORM_VERSION = 'Ideviceinfo -k ProductVersion'
+    PLATFORM_VERSION = 'ideviceinfo -k ProductVersion'
     #获取手机的设备名：
     PHONE_NAME = 'ideviceinfo -k ProductType'   
         
