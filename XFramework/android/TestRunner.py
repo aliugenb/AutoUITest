@@ -256,23 +256,27 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
     elif realAction == 'clickByPic':
         if imgDict == {}:
             raise AssertionError(9, '上传文件中图片资源缺失！')
-        getCompareImg(uiObj, imgDict)
         totalTime = 10
         countTime = 0
         try:
             targetImgName = os.path.join(imgDict['testImgPath'],
                                          '{}.png'.format(control))
+            # 防止压缩策略问题
             if not os.path.exists(targetImgName):
+                fields = os.listdir(imgDict['testImgPath'])
+                targetPath = [field for field in fields
+                              if '__' not in field and '.' not in field]
                 targetImgName = os.path.join(imgDict['testImgPath'],
-                                             imgDict['testImgPathName'],
+                                             targetPath[0],
                                              '{}.png'.format(control))
             # 10s内刷新匹配图片
             while countTime < totalTime:
+                getCompareImg(uiObj, imgDict)
                 reInfo = uiObj.getTargetImgPos(os.path.join(
                                                     imgDict['srcImgPath'],
                                                     imgDict['realSrcImgName']),
                                                targetImgName,
-                                               confidence=0.7)
+                                               confidence=0.6)
                 if reInfo is not None:
                     break
                 time.sleep(1)
