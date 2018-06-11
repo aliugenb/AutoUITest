@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from appium import webdriver
 from baseOn import BaseOn as bo
-import { AndroidUiautomator2Driver } from `appium-uiautomator2-driver`
 
 configData_default = {}
 configData_default["platformName"] = "Android"
@@ -23,7 +22,5 @@ def getDriver(configData=configData_default):
     desired_caps['newCommandTimeout'] = configData['newCommandTimeout']
     desired_caps['noReset'] = True
     desired_caps["unicodeKeyboard"] = True  # 支持中文
-    #driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
-    driver = new AndroidUiautomator2Driver()
-    driver = driver.creatSession(desired)
+    driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
     return driver
