@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from appium import webdriver
 from baseOn import BaseOn as bo
-import AndroidUiautomator2Driver from appium-uiautomator2-driver
+import { AndroidUiautomator2Driver } from 'appium-uiautomator2-driver'
 
 configData_default = {}
 configData_default["platformName"] = "Android"
