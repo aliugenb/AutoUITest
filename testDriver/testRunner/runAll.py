@@ -19,6 +19,8 @@ import XFramework.logger.logger as LG
 def getTestPreconditon(casePath):
     fileName = ''
     srcImgName = ''
+    targetImgField = ''
+    targetImgZip = ''
     targetImgSuit = ''
     files = os.listdir(casePath)
     for eachFile in files:
@@ -28,8 +30,11 @@ def getTestPreconditon(casePath):
                 fileName = eachFile
         if suffixType in cdt.IMG_TYPE:
             srcImgName = eachFile
+        if os.path.isdir(os.path.join(casePath, eachFile)):
+            targetImgField = eachFile
         if suffixType in cdt.COMPRESSED_FILES_TYPE:
-            targetImgSuit = eachFile
+            targetImgZip = eachFile
+    targetImgSuit = targetImgField if targetImgField else targetImgZip
     if fileName == '':
         print('当前目录未找到测试用例！')
         raise IOError
@@ -118,15 +123,13 @@ def getConfigPara(configPath):
 
 
 if __name__ == '__main__':
-    # 获取log文件生成路径
-    logPath = LG.setLogPath()
     # 获取手机参数信息
     configData = getConfigPara('config.json')
     # 获取需要测试的大类集合
     allTestList = getTestClass('testList.txt')
     # 获取用例路径以及源图片名字
     casePath, caseName, srcImgName, targetImgSuit = getCaseInfo('testCase')
-    # # 获取所有测试用例
+    # 获取所有测试用例
     allTestClass, realIngoreModule = cdt.getTestCaseSuit(os.path.join(
                                                                     casePath,
                                                                     caseName),
@@ -134,14 +137,16 @@ if __name__ == '__main__':
     realAllTestClass = getRealTestClass(allTestClass)
     # 测试驱动
     if configData['platformName'] == 'Android':
-        androidBO._LOGGER = LG.logCreater(logPath)
         p = androidUT(configData)
         imgDict = {}
         if srcImgName != '' and targetImgSuit != '':
             # 解压测试图片所属压缩文件
-            cdt.unzipFile(casePath, targetImgSuit)
-            # 获取解压后的测试图片文件目录
-            testImgPathName = cdt.getFileNameWithoutSuffix(targetImgSuit)
+            if '.' in targetImgSuit:
+                cdt.unzipFile(casePath, targetImgSuit)
+                # 获取解压后的测试图片文件目录
+                testImgPathName = cdt.getFileNameWithoutSuffix(targetImgSuit)
+            else:
+                testImgPathName = targetImgSuit
             testImgPath = os.path.join(casePath, testImgPathName)
             # 获取源图片尺寸
             srcImgSize = androidTR.getImgSize(os.path.join(casePath,
@@ -159,12 +164,16 @@ if __name__ == '__main__':
                        'srcImgPath': casePath}
         else:
             print("警告: 测试图片压缩文件和源图片未同时存在于上传文件中，默认你未使用图片点击功能！")
+        # 获取log文件生成路径
+        logPath = LG.setLogPath()
+        # 为driver动态添加logger
+        androidBO._LOGGER = LG.logCreater(logPath)
         try:
             androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
                                      configData, p, imgDict)
         except Exception as e:
             p._LOGGER.info('Test End...')
-            print(e)
+            p._LOGGER.exception(e)
             sys.exit(1)
     # elif configData['platformName'] == 'iOS':
     #     iosBO._LOGGER = LG.logCreater(logPath)
