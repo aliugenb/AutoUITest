@@ -69,6 +69,16 @@ def exceptionHandle(func):
     return tempFunc
 
 
+def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.txt'):
+    """将结果写入到指定文件中
+    """
+    if filePath is None:
+        filePath = os.path.join(os.pardir, 'testLOG')
+    realPath = os.path.join(filePath, fileName)
+    with open(realPath, 'a+') as f:
+        f.write(lineContent)
+
+
 def getImgSize(filePath):
     """获取图片像素大小
     """
@@ -127,9 +137,12 @@ def detailPrint(detailName, targetList):
     """
     if len(targetList) != 0:
         print('{}:'.format(detailName))
+        writeResultToTxt('{}:\n'.format(detailName))
         for i in targetList:
             print('\t{}'.format(i))
+            writeResultToTxt('\t{}\n'.format(i))
         print('='*60)
+        writeResultToTxt('{}\n'.format('='*60))
 
 
 def setPara(stepEvent, stepAction):
@@ -637,12 +650,15 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                                                           moduleName))
     uiObj.set_ime()
     # 打印报告
-    print('总共: {}个\n成功: {}个\n失败: {}个\n中止: {}个\n异常: {}个\n'.format(totalCount,
-                                                                 passCount,
-                                                                 failCount,
-                                                                 abortCount,
-                                                                 exceptionCount
-                                                                 ))
+    totalResult = '总共: {}个\n成功: {}个\n失败: {}个\n中止: {}个\n异常: {}个\n'\
+                  .format(totalCount,
+                          passCount,
+                          failCount,
+                          abortCount,
+                          exceptionCount
+                          )
+    print(totalResult)
+    writeResultToTxt('{}\n'.format(totalResult))
     detailPrint('失败用例', failList)
     detailPrint('中止用例', abortList)
     detailPrint('异常用例', exceptionList)
