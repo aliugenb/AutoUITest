@@ -173,7 +173,7 @@ if __name__ == '__main__':
                                      configData, p, imgDict)
         except Exception as e:
             p._LOGGER.info('Test End...')
-            print(e)
+            p._LOGGER.exception(e)
             sys.exit(1)
     # elif configData['platformName'] == 'iOS':
     #     iosBO._LOGGER = LG.logCreater(logPath)

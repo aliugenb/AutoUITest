@@ -514,7 +514,8 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
             # 检测模块中的功能点是否被全部忽略
             for tempFeature in features:
                 if '#' in tempFeature['featureName']:
-                    rfeatureName = featureName.strip().split('#')[-1]
+                    rfeatureName = tempFeature['featureName'].strip()\
+                                                             .split('#')[-1]
                     rPath = '{}-{}-{}'.format(testClassName,
                                               moduleName,
                                               rfeatureName)
