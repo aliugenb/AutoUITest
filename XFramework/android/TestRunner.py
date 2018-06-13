@@ -618,7 +618,7 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                         failCount += 1
                     except (IndexError, ValueError) as e:
                         uiObj._LOGGER.info(
-                            '{}: FAIL(注意: 功能点用例中存在不合法的参数！)\n错误详情: {}'
+                            '{}: FAIL(注意: 功能点用例中存在不合法的参数！) 错误详情: {}'
                             .format(rName, e.args[0]))
                         # uiObj._LOGGER.exception('错误详情')
                         abortList.append(rName)
