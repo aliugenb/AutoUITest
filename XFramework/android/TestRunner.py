@@ -72,11 +72,12 @@ def exceptionHandle(func):
 def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.log'):
     """将结果写入到指定文件中
     """
-    if filePath is None:
-        filePath = os.path.join(os.pardir, 'testLOG')
-    realPath = os.path.join(filePath, fileName)
-    with open(realPath, 'a+') as f:
-        f.write(lineContent)
+    # if filePath is None:
+    #     filePath = os.path.join(os.pardir, 'testLOG')
+    # realPath = os.path.join(filePath, fileName)
+    # with open(realPath, 'a+') as f:
+    #     f.write(lineContent)
+    pass
 
 
 def getImgSize(filePath):
