@@ -48,6 +48,23 @@ class LogFileHandle():
             jenkinsAddress = projectInfo[2]
             savedNum = projectInfo[3]
             return projectInfo
+        
+    def getSimResultInfo(self, root): 
+        simResultInfo = []
+        g=os.walk(root)
+        for path, dir, filelist in g:
+            for filename in filelist:
+                if filename.endswith('txt'):
+                    if filename == 'simpleResult.txt':
+                        simResultPath=os.path.join(path,filename)
+                        #print projectPath
+                        
+                        for line in open(simResultPath):
+                            simResultInfo.append(line)
+
+                    else:
+                        pass
+        return simResultInfo    
     
     def getLogFiles(self,root):
         fileNames = []
@@ -55,7 +72,7 @@ class LogFileHandle():
         for path, dir, filelist in g:
             for filename in filelist:
                 if filename.endswith('txt'):
-                    if filename == 'project.txt':
+                    if filename == 'project.txt' | filename == 'simpleResult.txt':
                         pass        
                     else:
                         print '找到log文件'
@@ -332,6 +349,18 @@ def writeTestResult(filename, startTime, endTime, durTime="60min"):
     f.write('</table>')
     f.write('<br/>')
     f.write('<br/>')
+    
+def writeSimResultInfo(filename, simResult):
+    f = open(filename,'a')
+    f.write('<font style="color: green"><b>测试结果</b></font>')
+    f.write('<hr>')
+    f.write('<table>')
+    for i in range(4):
+        f.write('<tr align="left"><th>'+simResult[i]+'</th></tr>')
+    f.write('</table>')
+    f.write('<br/>')
+    f.write('<br/>')
+
 def writeTestBottom():
     f.write('<br/>')    
     f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
@@ -453,12 +482,15 @@ if __name__=="__main__":
     #得到测试设备的信息>
             
     testTime = lfh.getLogTime(filename) 
+    simResult = lfh.getSimResultInfo(root)
 
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
     writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
     #writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
+   
+    writeSimResultInfo(tempHtmlname, simResult)
     writeTestDetail(tempHtmlname, modulesContents)
 
     #已测试开始时间重命名test.html
