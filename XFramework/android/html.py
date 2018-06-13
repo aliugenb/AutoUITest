@@ -72,8 +72,10 @@ class LogFileHandle():
         for path, dir, filelist in g:
             for filename in filelist:
                 if filename.endswith('txt'):
-                    if filename == 'project.txt' | filename == 'simpleResult.txt':
-                        pass        
+                    if filename == 'project.txt' :
+                        pass
+                    elif filename == 'simpleResult.txt':
+                        pass
                     else:
                         print '找到log文件'
                         fileNames.append(os.path.join(path, filename))
