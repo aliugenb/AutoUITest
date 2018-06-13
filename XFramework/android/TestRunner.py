@@ -69,7 +69,7 @@ def exceptionHandle(func):
     return tempFunc
 
 
-def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.txt'):
+def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.log'):
     """将结果写入到指定文件中
     """
     if filePath is None:
