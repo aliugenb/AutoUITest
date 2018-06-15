@@ -52,7 +52,15 @@ class UITest(BaseOn, TA):
         print size
         return size['width'], size['height']
     
+    def screencap(self, pic_name, PIC_SAVEPATH):
+        """
+        获取屏幕分辨率，返回横纵坐标
+        """
+        os.chdir(PIC_SAVEPATH)
+        cmd = CC.SCREENCAP+' '+pic_name+'.png'
+        os.popen(cmd).read().strip()
         
+            
     def clickByPos(self, x, y, duration=None):
         """
         通过坐标点击；duration为持续时间，单位ms
@@ -442,6 +450,9 @@ class UITest(BaseOn, TA):
         formatTime = time.strftime("%Y-%m-%d-%H:%M:%S", timeArray)
         return formatTime
 
-
-
-    
+        
+'''
+if __name__ == "__main__":
+    screencap('testtesttesttest')
+'''
+   
