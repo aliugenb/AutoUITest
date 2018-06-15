@@ -5,7 +5,7 @@ import os
 
 configData_default = {}
 configData_default["platformName"] = "iOS"
-configData_default["newCommandTimeout"] = 3000
+configData_default["newCommandTimeout"] = 1000
 configData_default["testAppPath"] = '/Users/nali/Downloads/ting-6.3.99-666-2.ipa'
 
 
@@ -26,7 +26,7 @@ def getDriver(configData=configData_default):
     desired_caps['allowTouchIdEnroll']=True
     desired_caps['xcodeOrgId'] = 'AS4ANJJUVM'
     desired_caps['xcodeSigningId'] = 'iPhone Developer'
-    desired_caps['noReset'] = True
+    #desired_caps['noReset'] = True
     desired_caps["unicodeKeyboard"] = True  # 支持中文
     driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
     
