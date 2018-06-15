@@ -89,7 +89,7 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            self.__select_name_iOS(name, rule).click()
+            self.__select_name_iOS(name).click()
             self._LOGGER.debug(u'点击text: ' + name + u'，结束')
         except AttributeError as e:
             raise AssertionError(2)  
@@ -105,7 +105,7 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            self.__select_xpath_iOS(xpath, rule).click()
+            self.__select_xpath_iOS(xpath).click()
             self._LOGGER.debug(u'点击text: ' + xpath + u'，结束')
         except AttributeError as e:
             raise AssertionError(3)        
@@ -139,30 +139,53 @@ class UITest(BaseOn, TA):
             self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
         except AttributeError as e:            
             raise AssertionError(3)
-    
-    def isIdInPage(self, Id):
+
+    @setDefaultPara
+    def isIdInPage(self, Id, *args, **kwargs):
         """
         判断id元素是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], Id=Id)
+            except AssertionError as e:
+                pass
 
         if self.__select_Id_iOS(Id):
             return True
         else:
-            return False      
-        
-    def isNameInPage(self, name):
+            return False
+
+    @setDefaultPara
+    def isNameInPage(self, name, *args, **kwargs):
         """
         判断name是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], name=name)
+            except AssertionError as e:
+                pass
+        
         if self.__select_name_iOS(name):
             return True
         else:
             return False
-       
-    def isXpathInPage(self, xpath):
+
+    @setDefaultPara
+    def isXpathInPage(self, xpath, *args, **kwargs):
         """
         判断xpath是否存在，有返回值
         """
+        if str(kwargs['flowTag']) == '1':
+            try:
+                self.sleep(kwargs['totalTime'],
+                           refresh_time=kwargs['refresh_time'], xpath=xpath)
+            except AssertionError as e:
+                pass
+        
         if self.__select_xpath_iOS(xpath):
             return True
         else:
@@ -208,12 +231,12 @@ class UITest(BaseOn, TA):
                 pass
 
         if int(isIn) == 0:
-            if self.__select_name_iOS(name, rule):
+            if self.__select_name_iOS(name):
                 pass
             else:
                 raise AssertionError
         elif int(isIn) == 1:
-            if not self.__select_name_iOS(name,rule):
+            if not self.__select_name_iOS(name):
                 pass
             else:
                 raise AssertionError
@@ -338,10 +361,10 @@ class UITest(BaseOn, TA):
                 while timeCount <= t:
                     # 判断传入的控件类型
                     if 'id' in kwargs:
-                        if self.__select_Id_iOS()(kwargs['id'], 'e'):
+                        if self.__select_Id_iOS()(kwargs['id']):
                             break
                     elif 'name' in kwargs:
-                        if self.__select_name_iOS(kwargs['name'], 'e'):
+                        if self.__select_name_iOS(kwargs['name']):
                             break
                     elif 'xpath' in kwargs:
                         if self.__select_xpath_iOS(kwargs['xpath']):
