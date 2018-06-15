@@ -172,36 +172,36 @@ def actionHandle(control, data, realAction, uiObj):
                     raise ValueError('动作参数:{}不合法，提醒:肯存在中文符号'.format(eachPara))
             if 'Id' in paraDict:
                 if 'rule' in paraDict and 'ins' not in paraDict:
-                    uiObj.clickByText(text=paraDict['Id'],
+                    uiObj.clickById(Id=paraDict['Id'],
                                       rule=paraDict['rule'])
                 elif 'rule' in paraDict and 'ins' in paraDict:
-                    uiObj.clickByTextInstance(text=paraDict['Id'],
+                    uiObj.clickByIdInstance(Id=paraDict['Id'],
                                               rule=paraDict['rule'],
                                               ins=paraDict['ins'])
                 elif 'rule' not in paraDict and 'ins' in paraDict:
-                    uiObj.clickByTextInstance(text=paraDict['Id'],
+                    uiObj.clickByIdInstance(Id=paraDict['Id'],
                                               ins=paraDict['ins'])
                 else:
-                    uiObj.clickByText(text=paraDict['text'])
+                    uiObj.clickById(Id=paraDict['Id'])
             elif 'name' in paraDict:
                 if 'rule' in paraDict and 'ins' not in paraDict:
-                    uiObj.clickByDesc(desc=paraDict['name'],
+                    uiObj.clickByName(name=paraDict['name'],
                                       rule=paraDict['rule'])
                 elif 'rule' in paraDict and 'ins' in paraDict:
-                    uiObj.clickByDescInstance(desc=paraDict['name'],
+                    uiObj.clickByNameInstance(name=paraDict['name'],
                                               rule=paraDict['rule'],
                                               ins=paraDict['ins'])
                 elif 'rule' not in paraDict and 'ins' in paraDict:
-                    uiObj.clickByDescInstance(desc=paraDict['name'],
+                    uiObj.clickByNameInstance(name=paraDict['name'],
                                               ins=paraDict['ins'])
                 else:
-                    uiObj.clickByDesc(desc=paraDict['name'])
+                    uiObj.clickByName(name=paraDict['name'])
             elif 'xpath' in paraDict:
                 if 'ins' in paraDict:
-                    uiObj.clickByIdInstance(Id=paraDict['xpath'],
+                    uiObj.clickByXpathInstance(xpath=paraDict['xpath'],
                                             ins=paraDict['ins'])
                 else:
-                    uiObj.clickById(Id=paraDict['xpath'])
+                    uiObj.clickByXpath(xpath=paraDict['xpath'])
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'swipe':
