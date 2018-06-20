@@ -100,7 +100,7 @@ class BaseOn(object):
         # 检测是否有非法字符，并用 - 代替非法字符
         expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
         record_name = re.sub(expression, '-', record_name)
-        filename = '{}/{}.mp4'.format(sdcard_path, pic_name)
+        filename = '{}/{}.mp4'.format(sdcard_path, record_name)
         command = '{} {}'.format(CC.PHONE_SCREENRECORD, filename)
         os.popen(command)
 

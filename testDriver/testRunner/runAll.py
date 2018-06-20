@@ -174,7 +174,12 @@ if __name__ == '__main__':
         except Exception as e:
             p._LOGGER.info('Test End...')
             p._LOGGER.exception(e)
-            sys.exit(1)
+        finally:
+            # 防止主程序意外退出，杀掉其下所有子进程
+            while not androidTR.childPQ.empty():
+                childPid = androidTR.childPQ.get()
+                os.popen('kill -9 {}'.format(childPid))
+            sys.exit(0)
     # elif configData['platformName'] == 'iOS':
     #     iosBO._LOGGER = LG.logCreater(logPath)
     #     p = iosUT(configData)
