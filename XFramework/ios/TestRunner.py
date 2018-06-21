@@ -495,12 +495,12 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
                             executeEvent(otherEventSuit, uiObj, 3)
                         else:
                             uiObj.startApp()
-                            time.sleep(10)
+                            time.sleep(15)
                             # 循环点击权限弹窗
                             numCount = 10
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj)
-                                time.sleep(1)
+                                time.sleep(5)
                                 if uiObj.isNameInPage('首页'):
                                     break
                                 else:
@@ -512,7 +512,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
                     except AssertionError as e:
                         uiObj._LOGGER.info('{}: FAIL'.format(rName))
                         uiObj.screencap('{}_fail'.format(rName),
-                                        CC.PHONE_PATH)
+                                        CC.PIC_SAVEPATH)
                         failList.append(rName)
                         failCount += 1
                     except (IndexError, ValueError) as e:
@@ -548,7 +548,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
                         time.sleep(5)
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
-    uiObj.set_ime()
+    #uiObj.set_ime()
     # 打印报告
     print('总共: {}个\n成功: {}个\n失败: {}个\n中止: {}个\n异常: {}个\n'.format(totalCount,
                                                                  passCount,
