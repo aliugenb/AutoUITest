@@ -495,7 +495,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
                             executeEvent(otherEventSuit, uiObj, 3)
                         else:
                             uiObj.startApp()
-                            time.sleep(15)
+                            time.sleep(10)
                             # 循环点击权限弹窗
                             numCount = 10
                             while numCount > 0:
