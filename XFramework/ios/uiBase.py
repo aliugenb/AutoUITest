@@ -354,7 +354,7 @@ class UITest(BaseOn, TA):
         #     self.__select_name_iOS(kwargs['name']).clear()
         else:
             raise ValueError
-    
+    '''
     @setDefaultPara     
     def sleep(self, t, *args, **kwargs):
         """
@@ -393,7 +393,10 @@ class UITest(BaseOn, TA):
                 else:
                     self._LOGGER.warning(u'无效参数，将为你执行默认方法，等待%ss' % t)
             time.sleep(t)
-
+'''
+    def sleep(self, t, *args, **kwargs):
+        time.sleep(t)
+    
 
     @setDefaultPara 
     def scrollByElement(self, *args, **kwargs):
