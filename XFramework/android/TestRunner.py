@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 import time
+import re
 import urllib2
 from PIL import Image
 from multiprocessing import Process, Queue
@@ -485,7 +486,10 @@ def screenRecordForFeature(rName, uiObj):
     # 引入子进程队列
     global childPQ
     childPQ.put(os.getpid())
-    sdcardPath = 'sdcard/AutoTest/screenrecord/{}'.format(rName)
+    # 检测是否有非法字符，并用 - 代替非法字符
+    expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
+    record_field = re.sub(expression, '-', rName)
+    sdcardPath = 'sdcard/AutoTest/screenrecord/{}'.format(record_field)
     record_name = 1
     while True:
         uiObj.screenRecord(str(record_name), sdcardPath)
