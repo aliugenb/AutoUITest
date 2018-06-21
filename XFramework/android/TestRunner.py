@@ -1,13 +1,18 @@
 # -*- coding:utf-8 -*-
 import os
 import time
+import re
 import urllib2
 from PIL import Image
+from multiprocessing import Process, Queue
 from functools import wraps
 import selenium
 from action import Action
 from uiBase import UITest
 from commandContainer import CommandContainer as CC
+
+# 设置记录子进程 pid 的队列
+childPQ = Queue()
 
 
 def exceptionHandle(func):
@@ -79,7 +84,6 @@ def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.txt'):
         f.write(lineContent)
 
 
-
 def getImgSize(filePath):
     """获取图片像素大小
     """
@@ -125,9 +129,6 @@ def getPosOnScreen(originalPos, coefficients):
 
 def transferProperty(target, key, source):
     """动态的向某个类写入属性
-    target: 类
-    key: 属性名
-    source: 字典
     """
     if key in source:
         setattr(target, key, source.get(key))
@@ -290,7 +291,7 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
                                                     imgDict['srcImgPath'],
                                                     imgDict['realSrcImgName']),
                                                targetImgName,
-                                               confidence=0.6)
+                                               confidence=0.5)
                 if reInfo is not None:
                     break
                 time.sleep(1)
@@ -479,9 +480,27 @@ def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
                     raise
 
 
+def screenRecordForFeature(rName, uiObj):
+    """为每个功能点录屏
+    """
+    # 引入子进程队列
+    global childPQ
+    childPQ.put(os.getpid())
+    # 检测是否有非法字符，并用 - 代替非法字符
+    expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
+    record_field = re.sub(expression, '-', rName)
+    sdcardPath = 'sdcard/AutoTest/screenrecord/{}'.format(record_field)
+    record_name = 1
+    while True:
+        uiObj.screenRecord(str(record_name), sdcardPath)
+        record_name += 1
+
+
 def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
     """执行所有用例
     """
+    # 引入子进程队列
+    global childPQ
     # 总共测试次数
     totalCount = 0
     # 通过次数
@@ -500,6 +519,8 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
     exceptionList = []
     # 忽略详情列表
     ingoreFeature = []
+    # 安卓测试机本身 log 存放地址
+    androidLogField = os.path.join(os.pardir, 'testLOG', 'androidLog')
     # 处理大类
     for eachTestClass in allTestClass:
         # 获取每个测试大类名称
@@ -587,6 +608,12 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                                               featureName)
                     # 开始测试
                     try:
+                        # 清理安卓机的 log
+                        os.popen('{} -c'.format(CC.ANDROIDLOG))
+                        # 启动子进程为case录制视频
+                        childP = Process(target=screenRecordForFeature,
+                                         args=(rName, uiObj,))
+                        childP.start()
                         if testClassName == 'ad':
                             uiObj.startApp()
                             executeEvent(otherEventSuit, uiObj,
@@ -614,20 +641,51 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                         uiObj._LOGGER.info('{}: FAIL'.format(rName))
                         uiObj.screencap('{}_fail'.format(rName),
                                         CC.PHONE_PATH)
+                        # 结束录屏
+                        if not childPQ.empty():
+                            childPQ.get()
+                        childP.terminate()
+                        # 输出本次测试安卓产生的 log 到指定文件中
+                        os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
+                                                     os.path.join(
+                                                      androidLogField,
+                                                      '{}.txt'.format(rName))))
                         failList.append(rName)
                         failCount += 1
                     except (IndexError, ValueError) as e:
                         uiObj._LOGGER.info(
                             '{}: FAIL(注意: 功能点用例中存在不合法的参数！) 错误详情: {}'
                             .format(rName, e.args[0]))
+                        # 结束录屏并删除录像
+                        if not childPQ.empty():
+                            childPQ.get()
+                        childP.terminate()
+                        os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
+                                 .format(CC.PHONE_SHELL, rName))
                         # uiObj._LOGGER.exception('错误详情')
+                        # 输出本次测试安卓产生的 log 到指定文件中
+                        os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
+                                                     os.path.join(
+                                                      androidLogField,
+                                                      '{}.txt'.format(rName))))
                         abortList.append(rName)
                         abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
                             urllib2.URLError) as e:
                         uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
                                            .format(rName, str(e).strip()))
+                        # 结束录屏并删除录像
+                        if not childPQ.empty():
+                            childPQ.get()
+                        childP.terminate()
+                        os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
+                                 .format(CC.PHONE_SHELL, rName))
                         uiObj.testExit()
+                        # 输出本次测试安卓产生的 log 到指定文件中
+                        os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
+                                                     os.path.join(
+                                                      androidLogField,
+                                                      '{}.txt'.format(rName))))
                         uiObj.appiumErrorHandle()
                         uiObj = UITest(configData)
                         time.sleep(10)
@@ -638,6 +696,12 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                                                         testClassName,
                                                         moduleName,
                                                         featureName))
+                        # 结束录屏并删除录像
+                        if not childPQ.empty():
+                            childPQ.get()
+                        childP.terminate()
+                        os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
+                                 .format(CC.PHONE_SHELL, rName))
                         passCount += 1
                     finally:
                         totalCount += 1

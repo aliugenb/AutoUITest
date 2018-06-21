@@ -77,14 +77,31 @@ class BaseOn(object):
         屏幕截图.sdcard_path(手机路径),pic_name(图片名字)
         截图命名方式: 测试用例名_截图时间戳.png
         """
+        # 检测文件夹是否存在，不存在创建
         command1 = '{} ls {}'.format(CC.PHONE_SHELL, sdcard_path)
         jPath = os.popen(command1).read()
         if jPath == '' or 'No such file or directory' in jPath:
             self.new_floder(sdcard_path)
+        # 检测是否有非法字符，并用 - 代替非法字符
         expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
         pic_name = re.sub(expression, '-', pic_name)
         filename = '{}/{}.png'.format(sdcard_path, pic_name)
         command = '{} {}'.format(CC.PHONE_SCREENCAP, filename)
+        os.popen(command)
+
+    def screenRecord(self, record_name, sdcard_path):
+        """手机屏幕录制
+        """
+        # 检测文件夹是否存在，不存在创建
+        command1 = '{} ls {}'.format(CC.PHONE_SHELL, sdcard_path)
+        jPath = os.popen(command1).read()
+        if jPath == '' or 'No such file or directory' in jPath:
+            self.new_floder(sdcard_path)
+        # 检测是否有非法字符，并用 - 代替非法字符
+        expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
+        record_name = re.sub(expression, '-', record_name)
+        filename = '{}/{}.mp4'.format(sdcard_path, record_name)
+        command = '{} {}'.format(CC.PHONE_SCREENRECORD, filename)
         os.popen(command)
 
     def get_had_ime(self):
@@ -313,8 +330,12 @@ class BaseOn(object):
         """
         command1 = CC.KILL_ADB
         command2 = CC.START_ADB
+        command3 = 'kill -9 $(lsof -i :5037 | awk {} | awk -F{} {})'.format(
+            "'{print $2}'", '"PID"', "'{ print $1 }'")
         os.popen(command1)
-        time.sleep(1)
+        time.sleep(0.5)
+        os.popen(command3)
+        time.sleep(0.5)
         os.popen(command2)
         time.sleep(5)
 
