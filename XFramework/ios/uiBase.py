@@ -395,7 +395,7 @@ class UITest(BaseOn, TA):
             time.sleep(t)
 '''
     def sleep(self, t, *args, **kwargs):
-        time.sleep(t)
+        time.sleep(5)
     
 
     @setDefaultPara 
