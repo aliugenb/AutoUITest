@@ -291,7 +291,7 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
                                                     imgDict['srcImgPath'],
                                                     imgDict['realSrcImgName']),
                                                targetImgName,
-                                               confidence=0.55)
+                                               confidence=0.53)
                 if reInfo is not None:
                     break
                 time.sleep(1)
