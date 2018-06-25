@@ -287,11 +287,15 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
             # 10s内刷新匹配图片
             while countTime < totalTime:
                 getCompareImg(uiObj, imgDict)
+                # reInfo = uiObj.getTargetImgPos(os.path.join(
+                #                                     imgDict['srcImgPath'],
+                #                                     imgDict['realSrcImgName']),
+                #                                targetImgName,
+                #                                confidence=0.55)
                 reInfo = uiObj.getTargetImgPos(os.path.join(
                                                     imgDict['srcImgPath'],
                                                     imgDict['realSrcImgName']),
-                                               targetImgName,
-                                               confidence=0.55)
+                                               targetImgName)
                 if reInfo is not None:
                     break
                 time.sleep(1)
