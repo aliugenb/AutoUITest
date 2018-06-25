@@ -368,17 +368,16 @@ class BaseOn(object):
     #         match_result['shape'] = (imsrc.shape[1], imsrc.shape[0])
     #     return match_result
 
-    def getTargetImgPos(self, imgsrc, imgobj, confidence):
+    def getTargetImgPos(self, imgsrc, imgobj):
         """对比两个图片，返回目标图片在源图片上的所在位置坐标
         """
         imsrc = cv.imread(imgsrc, 0)
         imobj = cv.imread(imgobj, 0)
         w, h = imobj.shape[::-1]
-        res = cv.matchTemplate(img, template, eval('cv.TM_CCOEFF_NORMED'))
+        res = cv.matchTemplate(imsrc, imobj, eval('cv.TM_CCOEFF_NORMED'))
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
         if max_loc == (0, 0):
             center_loc = None
         top_left = max_loc
-        bottom_right = (top_left[0] + w, top_left[1] + h)
         center_loc = (top_left[0] + w/2, top_left[1] + h/2)
         return center_loc
