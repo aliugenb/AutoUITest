@@ -303,7 +303,8 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
         except (IOError, RuntimeError) as e:
             raise AssertionError(9, e)
         if reInfo is not None:
-            realPos = getPosOnScreen(reInfo['result'], imgDict['coefficients'])
+            # realPos = getPosOnScreen(reInfo['result'], imgDict['coefficients'])
+            realPos = getPosOnScreen(reInfo, imgDict['coefficients'])
             uiObj.clickByPos(realPos[0], realPos[1])
             uiObj._LOGGER.debug('点击图片: {}，结束'.format(control))
         else:
