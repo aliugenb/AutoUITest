@@ -340,24 +340,6 @@ class BaseOn(object):
         os.popen(command2)
         time.sleep(5)
 
-    def getScreenDetail(self):
-        command = CC.GET_SCREEN_DETAIL
-        tempData = os.popen(command).read()
-        pendingList = tempData.strip().split('\n')
-        infoDict = {}
-        needList = []
-        for each in pendingList:
-            if 'app=' in each:
-                needList = each.strip().split(' ')
-        for el in needList:
-            if '=' in el:
-                val = el.strip().split('=')
-                infoDict[val[0]] = val[1]
-            else:
-                val = el.strip().split('dpi')
-                infoDict['density'] = val[0]
-        return infoDict
-
     # def getTargetImgPos(self, imgsrc, imgobj, confidence):
     #     """对比两个图片，返回目标图片在源图片上的所在位置坐标
     #     """
