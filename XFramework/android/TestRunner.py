@@ -287,11 +287,15 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
             # 10s内刷新匹配图片
             while countTime < totalTime:
                 getCompareImg(uiObj, imgDict)
+                # reInfo = uiObj.getTargetImgPos(os.path.join(
+                #                                     imgDict['srcImgPath'],
+                #                                     imgDict['realSrcImgName']),
+                #                                targetImgName,
+                #                                confidence=0.55)
                 reInfo = uiObj.getTargetImgPos(os.path.join(
                                                     imgDict['srcImgPath'],
                                                     imgDict['realSrcImgName']),
-                                               targetImgName,
-                                               confidence=0.5)
+                                               targetImgName)
                 if reInfo is not None:
                     break
                 time.sleep(1)
@@ -480,6 +484,13 @@ def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
                     raise
 
 
+def replaceIllegalCharacter(targrtString):
+    """检测传入字符是否含非法字符，并用 - 代替非法字符
+    """
+    expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
+    return re.sub(expression, '-', targrtString)
+
+
 def screenRecordForFeature(rName, uiObj):
     """为每个功能点录屏
     """
@@ -487,8 +498,7 @@ def screenRecordForFeature(rName, uiObj):
     global childPQ
     childPQ.put(os.getpid())
     # 检测是否有非法字符，并用 - 代替非法字符
-    expression = re.compile(CC.SPECIAL_CHARACTER_LIST, re.U)
-    record_field = re.sub(expression, '-', rName)
+    record_field = replaceIllegalCharacter(rName)
     sdcardPath = 'sdcard/AutoTest/screenrecord/{}'.format(record_field)
     record_name = 1
     while True:
@@ -603,9 +613,12 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                 else:
                     for eachStep in steps:
                         otherEventSuit.append(creatEvent(eachStep))
+                    # 用例拼接名
                     rName = '{}-{}-{}'.format(testClassName,
                                               moduleName,
                                               featureName)
+                    # 转换非法字符
+                    tName = replaceIllegalCharacter(rName)
                     # 开始测试
                     try:
                         # 清理安卓机的 log
@@ -649,7 +662,7 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                         os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
                                                      os.path.join(
                                                       androidLogField,
-                                                      '{}.txt'.format(rName))))
+                                                      '{}.txt'.format(tName))))
                         failList.append(rName)
                         failCount += 1
                     except (IndexError, ValueError) as e:
@@ -661,13 +674,13 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                             childPQ.get()
                         childP.terminate()
                         os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
-                                 .format(CC.PHONE_SHELL, rName))
+                                 .format(CC.PHONE_SHELL, tName))
                         # uiObj._LOGGER.exception('错误详情')
                         # 输出本次测试安卓产生的 log 到指定文件中
                         os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
                                                      os.path.join(
                                                       androidLogField,
-                                                      '{}.txt'.format(rName))))
+                                                      '{}.txt'.format(tName))))
                         abortList.append(rName)
                         abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
@@ -679,13 +692,13 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                             childPQ.get()
                         childP.terminate()
                         os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
-                                 .format(CC.PHONE_SHELL, rName))
+                                 .format(CC.PHONE_SHELL, tName))
                         uiObj.testExit()
                         # 输出本次测试安卓产生的 log 到指定文件中
                         os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
                                                      os.path.join(
                                                       androidLogField,
-                                                      '{}.txt'.format(rName))))
+                                                      '{}.txt'.format(tName))))
                         uiObj.appiumErrorHandle()
                         uiObj = UITest(configData)
                         time.sleep(10)
@@ -701,7 +714,7 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                             childPQ.get()
                         childP.terminate()
                         os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
-                                 .format(CC.PHONE_SHELL, rName))
+                                 .format(CC.PHONE_SHELL, tName))
                         passCount += 1
                     finally:
                         totalCount += 1
