@@ -151,15 +151,20 @@ if __name__ == '__main__':
             # 获取源图片尺寸
             srcImgSize = androidTR.getImgSize(os.path.join(casePath,
                                                            srcImgName))
+            print 'srcImgSize is {}'.format(srcImgSize)
+            # 获取自适配系数
+            kx1, ky1 = androidTR.adaptiveCoefficient()
             # 获取图片比例相关系数
-            kx, ky = androidTR.getCorrelationCoefficients(srcImgSize,
-                                                          p.getScreenSize())
+            kx2, ky2 = androidTR.getCorrelationCoefficients(srcImgSize,
+                                                            p.getScreenSize(),
+                                                            (kx1, ky1))
             # 图片所需参数集合
             imgDict = {'testImgPath': testImgPath,
                        'testImgPathName': testImgPathName,
                        'srcImgSize': srcImgSize,
-                       'coefficients': (kx, ky),
                        'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
+                       'acPara': (kx1, ky1),
+                       'ccPara': (kx2, ky2),
                        'realSrcImgName': srcImgName,
                        'srcImgPath': casePath}
         else:
