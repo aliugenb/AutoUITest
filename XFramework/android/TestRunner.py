@@ -136,10 +136,7 @@ def changeImgSize(filePath, practicalSize, acPara):
     """将手机截图图片大小压缩为指定图片的大小
     """
     im = Image.open(filePath)
-    print('practicalSize is {}'.format(practicalSize))
     rp = (int(practicalSize[0]/acPara[0]), int(practicalSize[1]/acPara[1]))
-    print('acPara is {}'.format(acPara))
-    print 'rp is {}'.format(rp)
     new_im = im.resize(rp, Image.ANTIALIAS)
     new_im.save(filePath)
 
@@ -334,7 +331,6 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
                                                     imgDict['srcImgPath'],
                                                     imgDict['realSrcImgName']),
                                                targetImgName)
-                print 'reInfo is {}'.format(reInfo)
                 if reInfo is not None:
                     break
                 time.sleep(1)
@@ -344,7 +340,6 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
         if reInfo is not None:
             # realPos = getPosOnScreen(reInfo['result'], imgDict['ccPara'])
             realPos = getPosOnScreen(reInfo, imgDict['ccPara'])
-            print 'realPos is {}'.format(realPos)
             uiObj.clickByPos(realPos[0], realPos[1])
             uiObj._LOGGER.debug('点击图片: {}，结束'.format(control))
         else:
