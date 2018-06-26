@@ -284,7 +284,7 @@ class UITest(BaseOn, TA):
         iOS:Id
         """
         try:
-            el = self.driver.find_element('id', Id)
+            el = self.driver.find_element_by_id(Id)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False    
@@ -294,7 +294,7 @@ class UITest(BaseOn, TA):
         iOS:name
         """
         try:
-            el = self.driver.find_element('name', name)
+            el = self.driver.find_elements_by_name(name)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
@@ -304,7 +304,7 @@ class UITest(BaseOn, TA):
         iOS:xpath
         """
         try:
-            el = self.driver.find_element('xpath', xpath)
+            el = self.driver.find_element_by_xpath(xpath)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False  
