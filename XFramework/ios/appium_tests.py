@@ -50,19 +50,21 @@ class AppiumTests(unittest.TestCase):
         el1 = self.driver.find_element('name', '密码登录')
         el1.click()
         print '点击密码登录'
-        sleep(10)
-        
-        '''
-        username = self.driver.find_element_by_ios_predicate('value == "请输入手机号"')
+        sleep(2)
+         
+        username = self.driver.find_element_by_xpath('//XCUIElementTypeApplication[@name="喜马拉雅FM"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeScrollView/XCUIElementTypeOther[2]/XCUIElementTypeOther[1]/XCUIElementTypeTextField')       
+        #username = self.driver.find_element_by_ios_predicate('value == "请输入手机号"')
         if username:
+            print username
             print '存在value=请输入手机号'
             username.click()
             print '光标定位到用户名输入框'            
             sleep(2)
             username.send_keys(u'15010000001') 
+            print '*************'
             
-            
-        password = self.driver.find_element_by_ios_predicate('value == "请输入密码"')
+        password = self.driver.find_element_by_xpath('//XCUIElementTypeApplication[@name="喜马拉雅FM"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeScrollView/XCUIElementTypeOther[2]/XCUIElementTypeOther[2]/XCUIElementTypeSecureTextField')
+        #password = self.driver.find_element_by_ios_predicate('value == "请输入密码"')
         if password:
             print '存在value=请输入密码'
             password.click()
@@ -76,7 +78,7 @@ class AppiumTests(unittest.TestCase):
             print '点击登录'
             
         sleep(10)
-        '''
+        
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(AppiumTests)
