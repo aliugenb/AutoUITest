@@ -358,8 +358,9 @@ class BaseOn(object):
         w, h = imobj.shape[::-1]
         res = cv.matchTemplate(imsrc, imobj, eval('cv.TM_CCOEFF_NORMED'))
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
-        if max_loc == (0, 0) or max_val >= similarity:
+        if max_loc == (0, 0) or max_val < similarity:
             center_loc = None
-        top_left = max_loc
-        center_loc = (top_left[0] + w/2, top_left[1] + h/2)
+        else:
+            top_left = max_loc
+            center_loc = (top_left[0] + w/2, top_left[1] + h/2)
         return center_loc
