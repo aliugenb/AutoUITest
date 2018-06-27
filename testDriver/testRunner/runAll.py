@@ -146,7 +146,7 @@ if __name__ == '__main__':
         imgDict = {}
         if srcImgName != '' and targetImgSuit != '':
             # 获取手机屏幕详情
-            infoDict = getScreenDetail()
+            infoDict = androidTR.getScreenDetail()
             rx, ry = [int(i) for i in infoDict.get('app').split('x')]
             # 解压测试图片所属压缩文件
             if '.' in targetImgSuit:
