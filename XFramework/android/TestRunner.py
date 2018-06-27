@@ -675,10 +675,11 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj,
                                              0, imgDict)
-                                time.sleep(1)
                                 if uiObj.isIdInPage('com.ximalaya.ting.android:id/main_count_down_text'):
                                     uiObj.clickById('com.ximalaya.ting.android:id/main_count_down_text')
-                                if uiObj.isTextInPage('首页'):
+                                time.sleep(1)
+                                if uiObj.isTextInPage('首页')\
+                                   and not uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_btn_skip'):
                                     break
                                 else:
                                     numCount -= 1
