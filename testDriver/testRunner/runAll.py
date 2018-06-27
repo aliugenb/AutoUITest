@@ -137,9 +137,17 @@ if __name__ == '__main__':
     realAllTestClass = getRealTestClass(allTestClass)
     # 测试驱动
     if configData['platformName'] == 'Android':
+        # 获取log文件生成路径
+        logPath = LG.setLogPath()
+        # 为driver动态添加logger
+        androidBO._LOGGER = LG.logCreater(logPath)
+        # 创建 driver 实例
         p = androidUT(configData)
         imgDict = {}
         if srcImgName != '' and targetImgSuit != '':
+            # 获取手机屏幕详情
+            infoDict = getScreenDetail()
+            rx, ry = [int(i) for i in infoDict.get('app').split('x')]
             # 解压测试图片所属压缩文件
             if '.' in targetImgSuit:
                 cdt.unzipFile(casePath, targetImgSuit)
@@ -151,12 +159,11 @@ if __name__ == '__main__':
             # 获取源图片尺寸
             srcImgSize = androidTR.getImgSize(os.path.join(casePath,
                                                            srcImgName))
-            print 'srcImgSize is {}'.format(srcImgSize)
             # 获取自适配系数
-            kx1, ky1 = androidTR.adaptiveCoefficient()
+            kx1, ky1 = androidTR.adaptiveCoefficient(infoDict)
             # 获取图片比例相关系数
             kx2, ky2 = androidTR.getCorrelationCoefficients(srcImgSize,
-                                                            p.getScreenSize(),
+                                                            (rx, ry),
                                                             (kx1, ky1))
             # 图片所需参数集合
             imgDict = {'testImgPath': testImgPath,
@@ -169,10 +176,7 @@ if __name__ == '__main__':
                        'srcImgPath': casePath}
         else:
             print("警告: 测试图片压缩文件和源图片未同时存在于上传文件中，默认你未使用图片点击功能！")
-        # 获取log文件生成路径
-        logPath = LG.setLogPath()
-        # 为driver动态添加logger
-        androidBO._LOGGER = LG.logCreater(logPath)
+
         try:
             androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
                                      configData, p, imgDict)

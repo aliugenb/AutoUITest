@@ -112,10 +112,9 @@ def getScreenDetail():
     return infoDict
 
 
-def adaptiveCoefficient():
+def adaptiveCoefficient(infoDict):
     """获取当前手机屏幕参数，并转化为标准参数系数
     """
-    infoDict = getScreenDetail()
     cx, cy = [int(i) for i in infoDict.get('app').split('x')]
     kx1 = float(cx*int(infoDict.get('density')))/(1080*440)
     ky1 = float(cy*int(infoDict.get('density')))/(1920*440)
