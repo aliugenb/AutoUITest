@@ -173,14 +173,15 @@ if __name__ == '__main__':
                        'acPara': (kx1, ky1),
                        'ccPara': (kx2, ky2),
                        'realSrcImgName': srcImgName,
-                       'srcImgPath': casePath}
+                       'srcImgPath': casePath,
+                       'screenDetail': infoDict}
         else:
             print("警告: 测试图片压缩文件和源图片未同时存在于上传文件中，默认你未使用图片点击功能！")
 
         try:
             androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
                                      configData, p, imgDict)
-        except Exception as e:
+        except (Exception, KeyboardInterrupt, SystemExit) as e:
             p._LOGGER.info('Test End...')
             p._LOGGER.exception(e)
         finally:

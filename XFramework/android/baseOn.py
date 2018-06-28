@@ -340,6 +340,16 @@ class BaseOn(object):
         os.popen(command2)
         time.sleep(5)
 
+    def getSwipeCommand(self, x1, y1, x2, y2, direction):
+        """获取滑动命令
+        """
+        command = CC.ADB_SWIPE
+        if direction == 1:
+            excCommand = '{} {} {} {} {}'.format(command, x2, y2, x1, y1)
+        else:
+            excCommand = '{} {} {} {} {}'.format(command, x1, y1, x2, y2)
+        return excCommand
+
     # def getTargetImgPos(self, imgsrc, imgobj, confidence):
     #     """对比两个图片，返回目标图片在源图片上的所在位置坐标
     #     """

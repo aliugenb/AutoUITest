@@ -3,6 +3,7 @@ import os
 import time
 import re
 import urllib2
+import cv2 as cv
 from PIL import Image
 from multiprocessing import Process, Queue
 from functools import wraps
@@ -131,6 +132,19 @@ def getCorrelationCoefficients(practicalSize, idealSize, acPara):
     return kx2, ky2
 
 
+def adaptiveImageSize(infoDict, imgDict):
+    """图片适配全面屏，将截图裁剪掉多余部分
+    """
+    cx, cy = [int(i) for i in infoDict.get('app').split('x')]
+    ix, iy = [int(i) for i in infoDict.get('cur').split('x')]
+    if iy > cy:
+        oImg = cv.imread(os.path.join(imgDict['srcImgPath'],
+                                      imgDict['realSrcImgName']))
+        rImg = oImg[0:cy, 0:cx]
+        cv.imwrite(os.path.join(imgDict['srcImgPath'],
+                                imgDict['realSrcImgName']), rImg)
+
+
 def changeImgSize(filePath, practicalSize, acPara):
     """将手机截图图片大小压缩为指定图片的大小
     """
@@ -147,6 +161,7 @@ def getCompareImg(uiObj, imgDict):
     uiObj.pullFile('{}/{}'.format(CC.PHONE_PIC_COMPARE_PATH,
                                   imgDict['realSrcImgName']),
                    imgDict['srcImgPath'])
+    adaptiveImageSize(imgDict.get('screenDetail'), imgDict)
     changeImgSize(os.path.join(imgDict['srcImgPath'],
                                imgDict['realSrcImgName']),
                   imgDict['srcImgSize'],
@@ -238,6 +253,66 @@ def preconditionHandle(pre, uiObj, totalTime):
     else:
         raise ValueError('前提参数:{}不合法, 提醒:可能存在中文符号'.format(pre))
     return preJudgeVal
+
+
+# def paraParse(control):
+#     """控件类型列，参数解析
+#     """
+#     paraList = []
+#     paraDict = {}
+#     if ',' in control:
+#         paraList = control.strip().split(',')
+#     elif ',' not in control and '=' in control:
+#         paraList.append(control)
+#     elif '-' in control:
+#         posList = control.strip().split('-')
+#     else:
+#         raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
+#
+#
+# def click(paraList):
+#     """点击实现
+#     """
+#     for eachPara in paraList:
+#         if '=' in eachPara:
+#             paraKey, paraValue = eachPara.strip().split('=')
+#             paraDict[paraKey] = paraValue
+#         else:
+#             raise ValueError('动作参数:{}不合法，提醒:肯存在中文符号'.format(eachPara))
+#     if 'text' in paraDict:
+#         if 'rule' in paraDict and 'ins' not in paraDict:
+#             uiObj.clickByText(text=paraDict['text'],
+#                               rule=paraDict['rule'])
+#         elif 'rule' in paraDict and 'ins' in paraDict:
+#             uiObj.clickByTextInstance(text=paraDict['text'],
+#                                       rule=paraDict['rule'],
+#                                       ins=paraDict['ins'])
+#         elif 'rule' not in paraDict and 'ins' in paraDict:
+#             uiObj.clickByTextInstance(text=paraDict['text'],
+#                                       ins=paraDict['ins'])
+#         else:
+#             uiObj.clickByText(text=paraDict['text'])
+#     elif 'desc' in paraDict:
+#         if 'rule' in paraDict and 'ins' not in paraDict:
+#             uiObj.clickByDesc(desc=paraDict['desc'],
+#                               rule=paraDict['rule'])
+#         elif 'rule' in paraDict and 'ins' in paraDict:
+#             uiObj.clickByDescInstance(desc=paraDict['desc'],
+#                                       rule=paraDict['rule'],
+#                                       ins=paraDict['ins'])
+#         elif 'rule' not in paraDict and 'ins' in paraDict:
+#             uiObj.clickByDescInstance(desc=paraDict['desc'],
+#                                       ins=paraDict['ins'])
+#         else:
+#             uiObj.clickByDesc(desc=paraDict['desc'])
+#     elif 'Id' in paraDict:
+#         if 'ins' in paraDict:
+#             uiObj.clickByIdInstance(Id=paraDict['Id'],
+#                                     ins=paraDict['ins'])
+#         else:
+#             uiObj.clickById(Id=paraDict['Id'])
+#     else:
+#         raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
 
 
 @exceptionHandle
@@ -693,9 +768,9 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                         uiObj.screencap('{}_fail'.format(rName),
                                         CC.PHONE_PATH)
                         # 结束录屏
+                        childP.terminate()
                         if not childPQ.empty():
                             childPQ.get()
-                        childP.terminate()
                         # 输出本次测试安卓产生的 log 到指定文件中
                         os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
                                                      os.path.join(
@@ -708,9 +783,9 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                             '{}: FAIL(注意: 功能点用例中存在不合法的参数！) 错误详情: {}'
                             .format(rName, e.args[0]))
                         # 结束录屏并删除录像
+                        childP.terminate()
                         if not childPQ.empty():
                             childPQ.get()
-                        childP.terminate()
                         os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
                                  .format(CC.PHONE_SHELL, tName))
                         # uiObj._LOGGER.exception('错误详情')
@@ -722,16 +797,16 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                         abortList.append(rName)
                         abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
-                            urllib2.URLError) as e:
+                            urllib2.URLError, WebDriverException) as e:
                         uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
                                            .format(rName, str(e).strip()))
                         # 结束录屏并删除录像
+                        childP.terminate()
                         if not childPQ.empty():
                             childPQ.get()
-                        childP.terminate()
                         os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
                                  .format(CC.PHONE_SHELL, tName))
-                        uiObj.testExit()
+                        # uiObj.testExit()
                         # 输出本次测试安卓产生的 log 到指定文件中
                         os.popen('{} -d > {}'.format(CC.ANDROIDLOG,
                                                      os.path.join(
@@ -748,9 +823,9 @@ def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
                                                         moduleName,
                                                         featureName))
                         # 结束录屏并删除录像
+                        childP.terminate()
                         if not childPQ.empty():
                             childPQ.get()
-                        childP.terminate()
                         os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
                                  .format(CC.PHONE_SHELL, tName))
                         passCount += 1
