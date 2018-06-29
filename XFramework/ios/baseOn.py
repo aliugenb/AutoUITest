@@ -99,14 +99,16 @@ class BaseOn(object):
         else:
             commands = [command1, command2]
         map(lambda command: os.popen(command), commands)
-    
+    '''
     
     def startApp(self):
-        #启动apk
+        '''
+        启动apk
+        '''
         cmd =  'idevicedebug run '+ CC.XIMALAYA_PKG       
         os.popen(cmd).read().strip()
         
-
+'''
     def clearAllAppointEl(self, pendingList, el):
         # 删除列表中所有指定的元素
         if not isinstance(pendingList, list):

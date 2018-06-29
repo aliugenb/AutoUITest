@@ -5,7 +5,9 @@ import pandas as pd
 import xlrd
 import zipfile
 
-IMG_TYPE = ['png', 'jpg', 'jpeg', 'bmg']
+EXCEL_TYPE = ('.xlsx', '.xls')
+IMG_TYPE = ('.png', '.jpg', '.jpeg', '.bmg')
+COMPRESSED_FILES_TYPE = ('.zip', '.rar')
 
 
 def getSheetName(filePath, allTestList):
@@ -38,7 +40,7 @@ def getModuleGroup(dataFrame):
                 moduleDict[startList[index][1]] = \
                     '{}-{}'.format(startList[index][0], endList[index][0])
             else:
-                moduleName = startList[index][1].strip().split('#')[1]
+                moduleName = startList[index][1].strip().split('#')[-1]
                 ingoreModule.append(moduleName)
     return moduleDict, ingoreModule
 
@@ -218,7 +220,7 @@ def unzipFile(file_path, file_name):
 
 
 def getImg(file_path, file_name):
-    """解压缩的excel目录下获取图片并用PIL读取，存储
+    """解压缩的excel目录下获取图片
     """
     img_dir = 'xl{}media'.format(os.sep)
     dir_name = getFileNameWithoutSuffix(file_name)
@@ -228,14 +230,10 @@ def getImg(file_path, file_name):
         sys.exit(1)
     # 读取指定目录的图片，存储到生成器中
     file_list = os.listdir(img_path)
-    try:
-        im_path_iter = (os.path.join(img_path, eachImg)
-                        for eachImg in file_list
-                        if eachImg.split('.')[-1] in IMG_TYPE)
-        return im_path_iter
-    except IOError as e:
-        print('No images! err: {}'.format(img_path))
-        sys.exit(1)
+    im_path_iter = (os.path.join(img_path, eachImg)
+                    for eachImg in file_list
+                    if '.{}'.format(eachImg.split('.')[-1]) in IMG_TYPE)
+    return im_path_iter
 
 
 def getImgFromExcel(file_path, file_name):

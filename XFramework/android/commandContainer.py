@@ -35,6 +35,8 @@ class CommandContainer(object):
     KILL_ADB = 'adb kill-server'
     GET_SCREEN_DETAIL = 'adb shell dumpsys window displays | head -n 3'
     FORCE_STOP_APP = 'adb shell am force-stop'
+    ANDROIDLOG = 'adb logcat'
+    PHONE_SCREENRECORD = 'adb shell screenrecord --time-limit 180'
 
     """
     包名/Activity名
@@ -52,6 +54,8 @@ class CommandContainer(object):
     WIN_PATH_F = ''
     # 图片存放
     PHONE_PATH = 'sdcard/AutoTest/screencap'
+    # 对比图片存放
+    PHONE_PIC_COMPARE_PATH = "sdcard/AutoTest/temp"
     # 图片存放
     LINIX_PATH_F = "/opt/lampp/htdocs/kodexplorer/data/Group/public/home/UITest/Android/screenshot/"
 

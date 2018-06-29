@@ -172,17 +172,17 @@ def actionHandle(control, data, realAction, uiObj):
                     raise ValueError('动作参数:{}不合法，提醒:肯存在中文符号'.format(eachPara))
             if 'Id' in paraDict:
                 if 'rule' in paraDict and 'ins' not in paraDict:
-                    uiObj.clickById(id=paraDict['Id'],
+                    uiObj.clickById(Id=paraDict['Id'],
                                       rule=paraDict['rule'])
                 elif 'rule' in paraDict and 'ins' in paraDict:
-                    uiObj.clickByIdInstance(id=paraDict['Id'],
+                    uiObj.clickByIdInstance(Id=paraDict['Id'],
                                               rule=paraDict['rule'],
                                               ins=paraDict['ins'])
                 elif 'rule' not in paraDict and 'ins' in paraDict:
-                    uiObj.clickByIdInstance(id=paraDict['Id'],
+                    uiObj.clickByIdInstance(Id=paraDict['Id'],
                                               ins=paraDict['ins'])
                 else:
-                    uiObj.clickById(id=paraDict['id'])
+                    uiObj.clickById(Id=paraDict['Id'])
             elif 'name' in paraDict:
                 if 'rule' in paraDict and 'ins' not in paraDict:
                     uiObj.clickByName(name=paraDict['name'],
@@ -198,10 +198,10 @@ def actionHandle(control, data, realAction, uiObj):
                     uiObj.clickByName(name=paraDict['name'])
             elif 'xpath' in paraDict:
                 if 'ins' in paraDict:
-                    uiObj.clickByXpathInstance(Xpath=paraDict['xpath'],
+                    uiObj.clickByXpathInstance(xpath=paraDict['xpath'],
                                             ins=paraDict['ins'])
                 else:
-                    uiObj.clickByXpath(Xpath=paraDict['xpath'])
+                    uiObj.clickByXpath(xpath=paraDict['xpath'])
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'swipe':
@@ -239,13 +239,13 @@ def actionHandle(control, data, realAction, uiObj):
         elType, controlEl = control.strip().split('=')
         if elType == 'Id':
             uiObj.scrollByElement(Id=controlEl)
-            uiObj.clickById(controlEl)
+            uiObj.clickByText(controlEl)
         elif elType == 'name':
             uiObj.scrollByElement(name=controlEl)
-            uiObj.clickByName(controlEl)
+            uiObj.clickByDesc(controlEl)
         elif elType == 'xpath':
             uiObj.scrollByElement(xpath=controlEl)
-            uiObj.clickByXpath(controlEl)
+            uiObj.clickById(controlEl)
         else:
             raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'sleep':
@@ -382,7 +382,7 @@ def executeEvent(stepEventSuit, uiObj, totalTime=0):
                     raise
 
 
-def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
+def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
     '''
     执行所有用例
     '''
@@ -500,7 +500,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                             numCount = 10
                             while numCount > 0:
                                 executeEvent(pre_firstEventSuit, uiObj)
-                                time.sleep(1)
+                                time.sleep(5)
                                 if uiObj.isNameInPage('首页'):
                                     break
                                 else:
@@ -512,7 +512,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj):
                     except AssertionError as e:
                         uiObj._LOGGER.info('{}: FAIL'.format(rName))
                         uiObj.screencap('{}_fail'.format(rName),
-                                        CC.PHONE_PATH)
+                                        CC.PIC_SAVEPATH)
                         failList.append(rName)
                         failCount += 1
                     except (IndexError, ValueError) as e:

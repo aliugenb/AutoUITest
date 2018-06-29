@@ -10,13 +10,12 @@ from commandContainer import CommandContainer as CC
 
 
 def setDefaultPara(func):
-    '''
-    给某些函数添加默认的值
+    """给某些函数添加默认的值
     kwargs参数:
         refresh_time: 刷新时间
         totalTime: 等待总时间
         flowTag: 新旧标志，默认为0，0代表执行不等待直接点击，1代表执行等待点击
-    '''
+    """
     @wraps(func)
     def tempFunc(*args, **kwargs):
         if 'refresh_time' not in kwargs:
@@ -48,7 +47,6 @@ class UITest(BaseOn, TA):
         """
         self.driver.tap([(x, y)], duration)
         time.sleep(1)
-        self._LOGGER.debug(u'点击坐标结束')
 
     def swipeByPos(self, start_x, start_y, end_x, end_y, duration=None):
         """
@@ -401,30 +399,16 @@ class UITest(BaseOn, TA):
         """
         通过text,desc或者Id滑动，direction为0代表下滑，为1反之；step为步数，默认滑动40下
         """
-        # 默认方向为下滑
-        if 'direction' not in kwargs:
-            kwargs['direction'] = 0
-
-        # 默认下滑步数40
-        if 'step' not in kwargs:
-            kwargs['step'] = 50
-
         # 获取滑动指令
         screenX, screenY = self.getScreenSize()
-        command = CC.ADB_SWIPE
-        if kwargs['direction'] == 0:
-            excCommand = (command + ' ' + str(screenX/2) + ' ' +
-                          str(screenY*3/4) + ' ' + str(screenX/2) + ' ' +
-                          str(screenY/2))
-        elif kwargs['direction'] == 1:
-            excCommand = (command + ' ' + str(screenX/2) + ' ' +
-                          str(screenY/4) + ' ' + str(screenX/2) + ' ' +
-                          str(screenY/2))
-        else:
-            raise ValueError(u'你输入的参数有误')
-
+        excCommand = self.getSwipeCommand(str(screenX/2),
+                                          str(screenY*3/4),
+                                          str(screenX/2),
+                                          str(screenY/2),
+                                          kwargs.get('direction'))
+        # 已执行步骤数
         stepCount = 0
-        while stepCount <= kwargs['step']:
+        while stepCount < kwargs.get('step', 50):
             # 判断传入的控件类型
             if 'text' in kwargs:
                 if self.__select_text_Android(kwargs['text'], 'e'):
@@ -450,6 +434,79 @@ class UITest(BaseOn, TA):
             else:
                 pass
 
+    def wSwipeAndAssert(self, *args, **kwargs):
+        """左右滑动并判断元素个数
+        """
+        # 获取滑动指令
+        screenX, screenY = self.getScreenSize()
+        excCommand = self.getSwipeCommand(str(screenX*4/5),
+                                          kwargs.get('posY', screenY/4),
+                                          str(screenX/5),
+                                          kwargs.get('posY', screenY/4),
+                                          kwargs.get('direction'))
+        # 指定元素出现次数
+        iCount = 0
+        # 已执行步骤数
+        stepCount = 0
+        while stepCount < kwargs.get('step', 9):
+            os.system(excCommand)
+            # 判断传入的控件类型
+            if 'text' in kwargs:
+                if self.__select_text_Android(kwargs['text'], 'e'):
+                    iCount += 1
+            elif 'desc' in kwargs:
+                if self.__select_desc_Android(kwargs['desc'], 'e'):
+                    iCount += 1
+            elif 'Id' in kwargs:
+                if self.__select_Id_Android(kwargs['Id']):
+                    iCount += 1
+            else:
+                raise ValueError(u'核心参数未给出，或者参数形式有误，请参考文档后，再使用！')
+            time.sleep(1)
+            stepCount += 1
+        else:
+            self._LOGGER.debug('滑动结束，共滑动 {}次'.format(kwargs.get('step', 9)))
+        if iCount == kwargs.get('pCount'):
+            return (True, iCount)
+        else:
+            return (False, iCount)
+
+    def hSwipeAndAssert(self, *args, **kwargs):
+        """上下滑动并判断元素个数
+        """
+        # 获取滑动指令
+        screenX, screenY = self.getScreenSize()
+        excCommand = self.getSwipeCommand(kwargs.get('posX', screenX/2),
+                                          str(screenY*3/4),
+                                          kwargs.get('posX', screenX/2),
+                                          str(screenY*3/10),
+                                          kwargs.get('direction'))
+        # 指定元素出现次数
+        iCount = 0
+        # 已执行步骤数
+        stepCount = 0
+        while stepCount < kwargs.get('step', 9):
+            os.system(excCommand)
+            # 判断传入的控件类型
+            if 'text' in kwargs:
+                if self.__select_text_Android(kwargs['text'], 'e'):
+                    iCount += 1
+            elif 'desc' in kwargs:
+                if self.__select_desc_Android(kwargs['desc'], 'e'):
+                    iCount += 1
+            elif 'Id' in kwargs:
+                if self.__select_Id_Android(kwargs['Id']):
+                    iCount += 1
+            else:
+                raise ValueError(u'核心参数未给出，或者参数形式有误，请参考文档后，再使用！')
+            time.sleep(1)
+            stepCount += 1
+        else:
+            self._LOGGER.debug('滑动结束，共滑动 {}次'.format(kwargs.get('step', 9)))
+        if iCount == kwargs.get('pCount'):
+            return (True, iCount)
+        else:
+            return (False, iCount)
     # def longPressByElement(self, el, duration=1000):
     #     '''
     #     长按元素

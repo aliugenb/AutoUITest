@@ -37,18 +37,12 @@ class UITest(BaseOn, TA):
         self.configData = configData
         self.driver = pi.getDriver(self.configData)
         TA.__init__(self, driver=self.driver)
-     
-    def startApp(self):
-        '''
-        启动apk
-        '''
-        self.driver.launch_app()
         
     def clearApp(self):
         '''
         启动apk
         '''
-        self.driver.close_app()
+        self.driver.reset()
         
     def getScreenSizeIos(self):
         """
@@ -58,7 +52,15 @@ class UITest(BaseOn, TA):
         print size
         return size['width'], size['height']
     
+    def screencap(self, pic_name, PIC_SAVEPATH):
+        """
+        获取屏幕分辨率，返回横纵坐标
+        """
+        os.chdir(PIC_SAVEPATH)
+        cmd = CC.SCREENCAP+' '+pic_name+'.png'
+        os.popen(cmd).read().strip()
         
+            
     def clickByPos(self, x, y, duration=None):
         """
         通过坐标点击；duration为持续时间，单位ms
@@ -111,7 +113,7 @@ class UITest(BaseOn, TA):
             except AssertionError as e:
                 pass
         try:
-            self.__select_xpath_iOS(xpath, rule).click()
+            self.__select_xpath_iOS(xpath).click()
             self._LOGGER.debug(u'点击text: ' + xpath + u'，结束')
         except AttributeError as e:
             raise AssertionError(3)        
@@ -145,6 +147,7 @@ class UITest(BaseOn, TA):
             self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
         except AttributeError as e:            
             raise AssertionError(3)
+
     @setDefaultPara
     def isIdInPage(self, Id, *args, **kwargs):
         """
@@ -155,13 +158,14 @@ class UITest(BaseOn, TA):
                 self.sleep(kwargs['totalTime'],
                            refresh_time=kwargs['refresh_time'], Id=Id)
             except AssertionError as e:
-                pass        
+                pass
 
         if self.__select_Id_iOS(Id):
             return True
         else:
-            return False      
-    @setDefaultPara   
+            return False
+
+    @setDefaultPara
     def isNameInPage(self, name, *args, **kwargs):
         """
         判断name是否存在，有返回值
@@ -177,7 +181,8 @@ class UITest(BaseOn, TA):
             return True
         else:
             return False
-    @setDefaultPara  
+
+    @setDefaultPara
     def isXpathInPage(self, xpath, *args, **kwargs):
         """
         判断xpath是否存在，有返回值
@@ -188,7 +193,7 @@ class UITest(BaseOn, TA):
                            refresh_time=kwargs['refresh_time'], xpath=xpath)
             except AssertionError as e:
                 pass
-            
+        
         if self.__select_xpath_iOS(xpath):
             return True
         else:
@@ -273,35 +278,33 @@ class UITest(BaseOn, TA):
         else:
             raise ValueError(u"参数输入有误，请确认后输入参数")
         
-    @baseOn.unifyParaCode
-    def __select_Id_iOS(self, Id, rule='p'):
+    
+    def __select_Id_iOS(self, Id):
         """
         iOS:Id
         """
         try:
-            el = self.driver.find_element('id', Id)
+            el = self.driver.find_element_by_id(Id)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
-            return False
-        
-    @baseOn.unifyParaCode
-    def __select_name_iOS(self, name, rule='p'):
+            return False    
+    
+    def __select_name_iOS(self, name):
         """
         iOS:name
         """
         try:
-            el = self.driver.find_element('name', name)
+            el = self.driver.find_elements_by_name(name)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
         
-    @baseOn.unifyParaCode    
-    def __select_xpath_iOS(self, xpath, rule='p'):
+    def __select_xpath_iOS(self, xpath):
         """
         iOS:xpath
         """
         try:
-            el = self.driver.find_element('xpath', xpath)
+            el = self.driver.find_element_by_xpath(xpath)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False  
@@ -351,7 +354,7 @@ class UITest(BaseOn, TA):
         #     self.__select_name_iOS(kwargs['name']).clear()
         else:
             raise ValueError
-    
+    '''
     @setDefaultPara     
     def sleep(self, t, *args, **kwargs):
         """
@@ -366,10 +369,10 @@ class UITest(BaseOn, TA):
                 while timeCount <= t:
                     # 判断传入的控件类型
                     if 'id' in kwargs:
-                        if self.__select_Id_iOS()(kwargs['id'], 'e'):
+                        if self.__select_Id_iOS()(kwargs['id']):
                             break
                     elif 'name' in kwargs:
-                        if self.__select_name_iOS(kwargs['name'], 'e'):
+                        if self.__select_name_iOS(kwargs['name']):
                             break
                     elif 'xpath' in kwargs:
                         if self.__select_xpath_iOS(kwargs['xpath']):
@@ -390,7 +393,10 @@ class UITest(BaseOn, TA):
                 else:
                     self._LOGGER.warning(u'无效参数，将为你执行默认方法，等待%ss' % t)
             time.sleep(t)
-
+'''
+    def sleep(self, t, *args, **kwargs):
+        time.sleep(5)
+    
 
     @setDefaultPara 
     def scrollByElement(self, *args, **kwargs):
@@ -447,6 +453,9 @@ class UITest(BaseOn, TA):
         formatTime = time.strftime("%Y-%m-%d-%H:%M:%S", timeArray)
         return formatTime
 
-
-
-    
+        
+'''
+if __name__ == "__main__":
+    screencap('testtesttesttest')
+'''
+   

@@ -165,7 +165,7 @@ class Handler:
                 """
                 获取手机名字
                 """
-                command = 'adb shell getprop ro.product.model'
+                command = 'ideviceinfo -k ProductType'
                 deviceName = os.popen(command).read().strip()
                 if deviceName == '':
                         print '获取手机名称失败'
@@ -176,7 +176,7 @@ class Handler:
                 """
                 获取平台版本
                 """
-                command = 'adb shell getprop ro.build.version.release'
+                command = 'ideviceinfo -k ProductVersion'
                 platformVersion = os.popen(command).read().strip()
                 if platformVersion == '':
                         print '获取手机名称失败'
@@ -189,13 +189,9 @@ class Handler:
                 """
                 command = 'adb devices'
                 #deviceIdInfo 得到devices命令
-                deviceIdSourceInfo=os.popen(command).read().strip()
-                # 得到第二行后的信息
-                deviceIdInfo=deviceIdSourceInfo.split('\n',2)[1]
-                # 得到设备号
-                deviceId=deviceIdInfo.split('\t',1)[0]
+                deviceId=os.popen(idevice_id -l).read().strip()
                 if deviceId == '':
-                        print '获取设备id失败'
+                        print '获取设备UUid失败'
                         raise RuntimeError
                 return deviceId
        
