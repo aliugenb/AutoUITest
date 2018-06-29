@@ -8,7 +8,6 @@ import re
 import chardet
 import types
 import cv2 as cv
-import aircv as ac
 from commandContainer import CommandContainer as CC
 
 
@@ -349,16 +348,6 @@ class BaseOn(object):
         else:
             excCommand = '{} {} {} {} {}'.format(command, x1, y1, x2, y2)
         return excCommand
-
-    # def getTargetImgPos(self, imgsrc, imgobj, confidence):
-    #     """对比两个图片，返回目标图片在源图片上的所在位置坐标
-    #     """
-    #     imsrc = ac.imread(imgsrc)
-    #     imobj = ac.imread(imgobj)
-    #     match_result = ac.find_template(imsrc, imobj, confidence)
-    #     if match_result is not None:
-    #         match_result['shape'] = (imsrc.shape[1], imsrc.shape[0])
-    #     return match_result
 
     def getTargetImgPos(self, imgsrc, imgobj, similarity=0.5):
         """对比两个图片，返回目标图片在源图片上的所在位置坐标

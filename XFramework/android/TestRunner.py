@@ -255,64 +255,96 @@ def preconditionHandle(pre, uiObj, totalTime):
     return preJudgeVal
 
 
-# def paraParse(control):
-#     """控件类型列，参数解析
-#     """
-#     paraList = []
-#     paraDict = {}
-#     if ',' in control:
-#         paraList = control.strip().split(',')
-#     elif ',' not in control and '=' in control:
-#         paraList.append(control)
-#     elif '-' in control:
-#         posList = control.strip().split('-')
-#     else:
-#         raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
-#
-#
-# def click(paraList):
-#     """点击实现
-#     """
-#     for eachPara in paraList:
-#         if '=' in eachPara:
-#             paraKey, paraValue = eachPara.strip().split('=')
-#             paraDict[paraKey] = paraValue
-#         else:
-#             raise ValueError('动作参数:{}不合法，提醒:肯存在中文符号'.format(eachPara))
-#     if 'text' in paraDict:
-#         if 'rule' in paraDict and 'ins' not in paraDict:
-#             uiObj.clickByText(text=paraDict['text'],
-#                               rule=paraDict['rule'])
-#         elif 'rule' in paraDict and 'ins' in paraDict:
-#             uiObj.clickByTextInstance(text=paraDict['text'],
-#                                       rule=paraDict['rule'],
-#                                       ins=paraDict['ins'])
-#         elif 'rule' not in paraDict and 'ins' in paraDict:
-#             uiObj.clickByTextInstance(text=paraDict['text'],
-#                                       ins=paraDict['ins'])
-#         else:
-#             uiObj.clickByText(text=paraDict['text'])
-#     elif 'desc' in paraDict:
-#         if 'rule' in paraDict and 'ins' not in paraDict:
-#             uiObj.clickByDesc(desc=paraDict['desc'],
-#                               rule=paraDict['rule'])
-#         elif 'rule' in paraDict and 'ins' in paraDict:
-#             uiObj.clickByDescInstance(desc=paraDict['desc'],
-#                                       rule=paraDict['rule'],
-#                                       ins=paraDict['ins'])
-#         elif 'rule' not in paraDict and 'ins' in paraDict:
-#             uiObj.clickByDescInstance(desc=paraDict['desc'],
-#                                       ins=paraDict['ins'])
-#         else:
-#             uiObj.clickByDesc(desc=paraDict['desc'])
-#     elif 'Id' in paraDict:
-#         if 'ins' in paraDict:
-#             uiObj.clickByIdInstance(Id=paraDict['Id'],
-#                                     ins=paraDict['ins'])
-#         else:
-#             uiObj.clickById(Id=paraDict['Id'])
-#     else:
-#         raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
+def getDecompressPath(control, imgDict):
+    """获取解压缩文件所在位置
+    """
+    targetImgName = os.path.join(imgDict['testImgPath'],
+                                 '{}.png'.format(control))
+    # 防止压缩策略问题
+    if not os.path.exists(targetImgName):
+        fields = os.listdir(imgDict['testImgPath'])
+        targetPath = [field for field in fields
+                      if '__' not in field and '.' not in field]
+        targetImgName = os.path.join(imgDict['testImgPath'],
+                                     targetPath[0],
+                                     '{}.png'.format(control))
+    return targetImgName
+
+
+def getPosOfPic(targetImgName, imgDict, uiObj):
+    """获取测试图片所在位置
+    """
+    # 点击总次数
+    totalTime = 10
+    # 实际已点次数
+    countTime = 0
+    # 10s内刷新匹配图片
+    while countTime < totalTime:
+        getCompareImg(uiObj, imgDict)
+        reInfo = uiObj.getTargetImgPos(os.path.join(
+                                            imgDict['srcImgPath'],
+                                            imgDict['realSrcImgName']),
+                                       targetImgName)
+        if reInfo is not None:
+            break
+        time.sleep(1)
+        countTime += 1
+    return reInfo
+
+
+def paraParse(control):
+    """控件类型列，参数解析
+    """
+    allParaList = control.split(',')
+    paraList = []
+    paraDict = {}
+    for i in allParaList:
+        if '=' in i:
+            paraKey, paraValue = eachPara.strip().split('=')
+            paraDict[paraKey] = paraValue
+        else:
+            paraList.append(i)
+    return paraList, paraDict
+
+
+def click(control, uiObj):
+    """点击实现
+    """
+    # paraList, paraDict = paraParse(control)
+    if 'text' in paraDict:
+        uiObj.clickByText(**paraDict)
+    elif 'desc' in paraDict:
+        uiObj.clickByText(**paraDict)
+    elif 'Id' in paraDict:
+        uiObj.clickById(**paraDict)
+    elif len(paraList) == 1 and '-' in paraList[0]:
+        uiObj.clickByPos(*(paraList.split('-')))
+        uiObj._LOGGER.debug('点击坐标: {}-{}结束'.format(*(paraList.split('-'))))
+    elif len(paraList) == 2:
+        uiObj.clickByPos(*(paraList))
+        uiObj._LOGGER.debug('点击坐标: {}-{}结束'.format(*(paraList)))
+    else:
+        raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
+
+
+def clickByPic(control, imgDict, uiObj):
+    """图片点击实现
+    """
+    if imgDict == {}:
+        raise AssertionError(9, '上传文件中图片资源缺失！')
+    try:
+        # 获取测试图片位置
+        targetImgName = getDecompressPath(control, imgDict)
+        # 获取测试图片在当前界面所处位置
+        reInfo = getPosOfPic(targetImgName, imgDict, uiObj)
+    except IOError as e:
+        raise AssertionError(9, e)
+    if reInfo is not None:
+        realPos = getPosOnScreen(reInfo, imgDict['ccPara'])
+        uiObj.clickByPos(realPos[0], realPos[1])
+        uiObj._LOGGER.debug('点击图片: {}，结束'.format(control))
+    else:
+        raise AssertionError(10, control)
 
 
 @exceptionHandle
@@ -378,46 +410,7 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'clickByPic':
-        if imgDict == {}:
-            raise AssertionError(9, '上传文件中图片资源缺失！')
-        totalTime = 10
-        countTime = 0
-        try:
-            targetImgName = os.path.join(imgDict['testImgPath'],
-                                         '{}.png'.format(control))
-            # 防止压缩策略问题
-            if not os.path.exists(targetImgName):
-                fields = os.listdir(imgDict['testImgPath'])
-                targetPath = [field for field in fields
-                              if '__' not in field and '.' not in field]
-                targetImgName = os.path.join(imgDict['testImgPath'],
-                                             targetPath[0],
-                                             '{}.png'.format(control))
-            # 10s内刷新匹配图片
-            while countTime < totalTime:
-                getCompareImg(uiObj, imgDict)
-                # reInfo = uiObj.getTargetImgPos(os.path.join(
-                #                                     imgDict['srcImgPath'],
-                #                                     imgDict['realSrcImgName']),
-                #                                targetImgName,
-                #                                confidence=0.55)
-                reInfo = uiObj.getTargetImgPos(os.path.join(
-                                                    imgDict['srcImgPath'],
-                                                    imgDict['realSrcImgName']),
-                                               targetImgName)
-                if reInfo is not None:
-                    break
-                time.sleep(1)
-                countTime += 1
-        except (IOError, RuntimeError) as e:
-            raise AssertionError(9, e)
-        if reInfo is not None:
-            # realPos = getPosOnScreen(reInfo['result'], imgDict['ccPara'])
-            realPos = getPosOnScreen(reInfo, imgDict['ccPara'])
-            uiObj.clickByPos(realPos[0], realPos[1])
-            uiObj._LOGGER.debug('点击图片: {}，结束'.format(control))
-        else:
-            raise AssertionError(10, control)
+        clickByPic(control, imgDict, uiObj)
     elif realAction == 'swipe':
         posList = control.strip().split('-')
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])
@@ -495,6 +488,18 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
             raise AssertionError(7)
     elif realAction == 'back':
         uiObj.pressBack()
+    elif realAction == 'wSwipe&&Assert':
+        paraList, paraDict = paraParse(control)
+        if paraList == []:
+            uiObj.wSwipeAndAssert(**paraDict)
+        else:
+            raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
+    elif realAction == 'hSwipe&&Assert':
+        paraList, paraDict = paraParse(control)
+        if paraList == []:
+            uiObj.hSwipeAndAssert(**paraDict)
+        else:
+            raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
     else:
         raise ValueError('不存在的动作类型:{},提醒:可能存在空格'.format(realAction))
 
@@ -611,9 +616,15 @@ def screenRecordForFeature(rName, uiObj):
     record_field = replaceIllegalCharacter(rName)
     sdcardPath = 'sdcard/AutoTest/screenrecord/{}'.format(record_field)
     record_name = 1
+    command = 'adb devices'
     while True:
         uiObj.screenRecord(str(record_name), sdcardPath)
         record_name += 1
+        # 检测是否有手机，没有则结束循环
+        f = os.popen(command).read().strip()
+        fl = f.split('\n')
+        if len(fl) == 1:
+            break
 
 
 def testRunAllTest(allTestClass, realIngoreModule, configData, uiObj, imgDict):
