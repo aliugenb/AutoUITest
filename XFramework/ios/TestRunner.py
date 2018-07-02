@@ -28,16 +28,17 @@ def exceptionHandle(func):
             func(*args, **kwargs)
         except AssertionError as e:
             flowTag = e.args[0]
+            print '******* '+ args[0]
             if flowTag == 1:
-                elType, controlEl = args[0].strip().split('=')
+                elType, controlEl = args[0].strip().split('=',1)
                 raise AssertionError(u"找不到你输入的id: {}，请确认!"
                                      .format(controlEl))
             elif flowTag == 2:
-                elType, controlEl = args[0].strip().split('=')
+                elType, controlEl = args[0].strip().split('=',1)
                 raise AssertionError(u"找不到你输入的name: {}，请确认!"
                                      .format(controlEl))
             elif flowTag == 3:
-                elType, controlEl = args[0].strip().split('=')
+                elType, controlEl = args[0].strip().split('=',1)
                 raise AssertionError(u"找不到你输入的xpath: {}，请确认!"
                                      .format(controlEl))
             elif flowTag == 4:
@@ -46,15 +47,15 @@ def exceptionHandle(func):
             elif flowTag == 5:
                 raise AssertionError('{}_fail'.format(args[1]))
             elif flowTag == 6:
-                elType, controlEl = args[0].strip().split('=')
+                elType, controlEl = args[0].strip().split('=',1)
                 raise AssertionError('点击操作后，此元素{}的text值发生改变，fail'.format(
                                                                     controlEl))
             elif flowTag == 7:
-                elType, controlEl = args[0].strip().split('=')
+                elType, controlEl = args[0].strip().split('=',1)
                 raise AssertionError('点击操作后，此元素{}的text值未发生改变，fail'.format(
                                                                     controlEl))
             elif flowTag == 8:
-                controlData = control.strip().split('-')
+                controlData = control.strip().split('-',1)
                 raise AssertionError('规定时间内，仍未找到该元素: {}，fail'.format(
                                                             controlData[1]))
             else:
@@ -122,7 +123,7 @@ def preconditionHandle(pre, uiObj, totalTime):
     '''
     preJudgeVal = False
     if '==' in pre:
-        preElType, preEl = pre.strip().split('==')
+        preElType, preEl = pre.strip().split('==',1)
         if preElType == 'Id':
             preJudgeVal = uiObj.isIdInPage(preEl, totalTime=totalTime)
         elif preElType == 'name':
@@ -132,7 +133,7 @@ def preconditionHandle(pre, uiObj, totalTime):
         else:
             raise ValueError('前提参数:{}控件类型不合法,提醒:可能存在空格'.format(pre))
     elif '!=' in pre:
-        preElType, preEl = pre.strip().split('!=')
+        preElType, preEl = pre.strip().split('!=',1)
         if preElType == 'Id':
             preJudgeVal = not uiObj.isIdInPage(preEl, totalTime=totalTime)
         elif preElType == 'name':
@@ -155,18 +156,18 @@ def actionHandle(control, data, realAction, uiObj):
         paraList = []
         paraDict = {}
         if ',' in control:
-            paraList = control.strip().split(',')
+            paraList = control.strip().split(',',1)
         elif ',' not in control and '=' in control:
             paraList.append(control)
         elif '-' in control:
-            posList = control.strip().split('-')
+            posList = control.strip().split('-',1)
             uiObj.clickByPos(posList[0], posList[1])
         else:
             raise ValueError('动作参数:{}不合法, 提醒:可能存在中文符号'.format(control))
         if paraList:
             for eachPara in paraList:
                 if '=' in eachPara:
-                    paraKey, paraValue = eachPara.strip().split('=')
+                    paraKey, paraValue = eachPara.strip().split('=',1)
                     paraDict[paraKey] = paraValue
                 else:
                     raise ValueError('动作参数:{}不合法，提醒:肯存在中文符号'.format(eachPara))
@@ -205,52 +206,52 @@ def actionHandle(control, data, realAction, uiObj):
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'swipe':
-        posList = control.strip().split('-')
+        posList = control.strip().split('-',1)
         uiObj.swipeByPos(posList[0], posList[1], posList[2], posList[3])
     elif realAction == 'drag':
         d_start, d_end = control.strip().split('&&')
-        el_start = d_start.split('=')[1]
-        el_end = d_end.split('=')[1]
+        el_start = d_start.split('=',1)[1]
+        el_end = d_end.split('=',1)[1]
         uiObj.dragByElement(el_start=el_start, el_end=el_end)
     elif realAction == 'typewrite':
         if control == '':
             uiObj.set_input_text(data)
         else:
-            elType, controlEl = control.strip().split('=')
-            if elType == 'text':
-                uiObj.setValueByText(data, controlEl)
-            elif elType == 'desc':
-                uiObj.setValueByDesc(data, controlEl)
-            elif elType == 'Id':
+            elType, controlEl = control.strip().split('=',1)
+            if elType == 'Id':
                 uiObj.setValueById(data, controlEl)
+            elif elType == 'name':
+                uiObj.setValueByName(data, controlEl)
+            elif elType == 'xpath':
+                uiObj.setValueByXpath(data, controlEl)
             else:
                 raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'scroll':
-        elType, controlEl = control.strip().split('=')
+        elType, controlEl = control.strip().split('=',1)
         if elType == 'Id':
-            uiObj.scrollByElement(text=controlEl)
-        elif elType == 'name':
-            uiObj.scrollByElement(desc=controlEl)
-        elif elType == 'xpath':
             uiObj.scrollByElement(Id=controlEl)
+        elif elType == 'name':
+            uiObj.scrollByElement(name=controlEl)
+        elif elType == 'xpath':
+            uiObj.scrollByElement(xpath=controlEl)
         else:
             raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'scroll&&click':
-        elType, controlEl = control.strip().split('=')
+        elType, controlEl = control.strip().split('=',1)
         if elType == 'Id':
             uiObj.scrollByElement(Id=controlEl)
-            uiObj.clickByText(controlEl)
+            uiObj.clickById(controlEl)
         elif elType == 'name':
             uiObj.scrollByElement(name=controlEl)
-            uiObj.clickByDesc(controlEl)
+            uiObj.clickByName(controlEl)
         elif elType == 'xpath':
             uiObj.scrollByElement(xpath=controlEl)
-            uiObj.clickById(controlEl)
+            uiObj.clickByXpath(controlEl)
         else:
             raise ValueError('动作参数:{}中的控件类型不合法,提醒:可能存在空格'.format(control))
     elif realAction == 'sleep':
         if '-' in control:
-            controlData = control.strip().split('-')
+            controlData = control.strip().split('-',1)
             if len(controlData) == 2:
                 t, el = controlData
                 uiObj.sleep(t, el=el)
@@ -262,7 +263,7 @@ def actionHandle(control, data, realAction, uiObj):
         else:
             uiObj.sleep(int(control))
     elif realAction == 'click&&equal':
-        elType, controlEl = control.strip().split('=')
+        elType, controlEl = control.strip().split('=',1)
         textBefore = uiObj.getTextById(controlEl)
         uiObj.clickById(controlEl)
         textAfter = uiObj.getTextById(controlEl)
@@ -271,7 +272,7 @@ def actionHandle(control, data, realAction, uiObj):
         else:
             raise AssertionError(6)
     elif realAction == 'click&&unequal':
-        elType, controlEl = control.strip().split('=')
+        elType, controlEl = control.strip().split('=',1)
         textBefore = uiObj.getTextById(controlEl)
         uiObj.clickById(controlEl)
         textAfter = uiObj.getTextById(controlEl)
@@ -291,7 +292,7 @@ def expectTypeHandle(expect, expectInfo, uiObj):
     '''
     expectVal = False
     if '==' in expect:
-        expectEl = expect.strip().split('==')[1]
+        expectEl = expect.strip().split('==',1)[1]
         try:
             if 'Id' in expect:
                 uiObj.isExistById(expectEl, expectInfo)
@@ -305,7 +306,7 @@ def expectTypeHandle(expect, expectInfo, uiObj):
         except AssertionError as e:
             pass
     elif '!=' in expect:
-        expectEl = expect.strip().split('!=')[1]
+        expectEl = expect.strip().split('!=',1)[1]
         try:
             if 'Id' in expect:
                 uiObj.isExistById(expectEl, expectInfo, isIn=1)
@@ -330,7 +331,7 @@ def expectHandle(expect, expectInfo, uiObj):
     '''
     condition = []
     if '&&' in expect:
-        for eveExpect in expect.strip().split('&&'):
+        for eveExpect in expect.strip().split('&&',1):
             tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
             condition.append(tempData)
         if condition[0] and condition[1]:
@@ -338,7 +339,7 @@ def expectHandle(expect, expectInfo, uiObj):
         else:
             raise AssertionError(5)
     elif '||' in expect:
-        for eveExpect in expect.strip().split('||'):
+        for eveExpect in expect.strip().split('||',1):
             tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
             condition.append(tempData)
         if condition[0] or condition[1]:
@@ -412,8 +413,8 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
         if testClassName == 'ad':
             uiObj.clearApp(isAD=True)
             uiObj.pressHome()
-        else:
-            uiObj.clearApp()
+        #else:
+            #uiObj.clearApp()
         # 处理模块
         for eachModule in testCase:
             # 获取每个测试大类下测试模块名称
@@ -432,7 +433,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
             # 检测模块中的功能点是否被全部忽略
             for tempFeature in features:
                 if '#' in tempFeature['featureName']:
-                    rfeatureName = featureName.strip().split('#')[1]
+                    rfeatureName = featureName.strip().split('#',1)[1]
                     rPath = '{}-{}-{}'.format(testClassName,
                                               moduleName,
                                               rfeatureName)
@@ -527,7 +528,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
                         uiObj._LOGGER.info('{}:FAIL(causeByAppium).错误详情:{}'
                                            .format(rName, str(e).strip()))
                         uiObj.testExit()
-                        uiObj.appiumErrorHandle()
+                        #uiObj.appiumErrorHandle()
                         uiObj = UITest(configData)
                         time.sleep(10)
                         exceptionList.append(rName)
@@ -543,8 +544,8 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
                         if testClassName == 'ad':
                             uiObj.clearApp(isAD=True)
                             uiObj.pressHome()
-                        else:
-                            uiObj.clearApp()
+                        #else:
+                            #uiObj.clearApp()
                         time.sleep(5)
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
