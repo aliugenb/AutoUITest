@@ -94,12 +94,15 @@ class UITest(BaseOn, TA):
         if str(kwargs['flowTag']) == '1':
             try:
                 self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], name=name)
+                print 1
             except AssertionError as e:
+                print 2
                 pass
         try:
             self.__select_name_iOS(name).click()
             self._LOGGER.debug(u'点击text: ' + name + u'，结束')
         except AttributeError as e:
+            print e
             raise AssertionError(2)  
         
     @setDefaultPara    
@@ -294,7 +297,7 @@ class UITest(BaseOn, TA):
         iOS:name
         """
         try:
-            el = self.driver.find_elements_by_name(name)
+            el = self.driver.find_element_by_name(name)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False
