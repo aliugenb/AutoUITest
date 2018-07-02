@@ -71,7 +71,8 @@ class AppiumTests(unittest.TestCase):
             print '光标定位到密码框'
             password.send_keys(u'a123456') 
             
-        siginbut = self.driver.find_element_by_ios_predicate('label == "登录"')
+        #siginbut = self.driver.find_element_by_ios_predicate('label == "登录"')
+        siginbut = self.driver.find_element('name', '登录')
         if siginbut:
             print '存在label=登录的button'
             siginbut.click()
