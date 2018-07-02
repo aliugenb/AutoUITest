@@ -648,7 +648,7 @@ def getRecordCommandIter(sdcardPath):
     """返回录屏命令生成器
     """
     recordCommandIter = (['adb', 'shell', 'screenrecord', '--time-limit',
-                          '20', r'{}/{}.mp4'.format(sdcardPath, i)]
+                          '180', r'{}/{}.mp4'.format(sdcardPath, i)]
                          for i in range(1, 1000))
     return recordCommandIter
 
