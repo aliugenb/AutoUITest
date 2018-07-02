@@ -4,8 +4,7 @@ import chardet
 import re
 from dateutil import parser
 
-class LogFileHandle():
-    
+class LogFileHandle():    
     def  getLogTime(self,logfile):
         #logfile='/Users/nali/Documents/Task/20180105144105_log.txt'
         count = -1
@@ -40,7 +39,6 @@ class LogFileHandle():
                         #print projectPath
                         for line in open(projectPath):
                             projectInfo.append(line.split('\n',1)[0])
-
                     else:
                         pass
             projectName = projectInfo[0]
@@ -57,8 +55,7 @@ class LogFileHandle():
                 if filename.endswith('txt'):
                     if filename == 'simpleResult.txt':
                         simResultPath=os.path.join(path,filename)
-                        #print projectPath
-                        
+                        #print projectPath                        
                         for line in open(simResultPath):
                             simResultInfo.append(line)
 
@@ -280,10 +277,8 @@ def getModuleTimestamps(slines,  elines, tempTimes):
             caseTestDur.append(durtime)
         '''
         for x in range(len(caseTestDur)):
-            print i,x, caseTestDur[x]'''
-            
-        caseTestDurs.extend(caseTestDur)
-    
+            print i,x, caseTestDur[x]'''            
+        caseTestDurs.extend(caseTestDur)    
     return caseTestDurs
 
 
@@ -363,11 +358,27 @@ def writeSimResultInfo(filename, simResult):
     f.write('<br/>')
     f.write('<br/>')
 
+def writeLinkedHtml(linkedFilepath, pngAdds, recordAdds):
+    lf = open(linkedFilepath,'a')
+    lf.write('<tr><th><img src='+pngAdds+'alt="temp" height="35%"/></th></tr>')
+    lf.write('<tr>')
+    tempFilenames = os.listdir(recordAdds)
+    filenames = []
+    for i in range(len(tempFilenames)):
+        if  '.mp4' in tempFilenames[i]:
+            filenames.append(tempFilenames[i])
+    for i in range(len(filenames)):
+        adds = recordAdds+str(i+1)+'.mp4'
+        lf.write('<th><video src=' +adds+'controls="controls" height="35%"><th>')        
+    lf.write('</tr>')
+    lf.write('<table>')
+
 def writeTestBottom():
-    f.write('<br/>')    
+    f.write('<br/>') 
+    f.write('<br/>')   
     f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
     
-
+    
 def writeTestDetail(filename, modulesContents):
     for i in range(len(modulesContents)):
         temp =  modulesContents[i]
@@ -375,14 +386,17 @@ def writeTestDetail(filename, modulesContents):
      
     f = open(filename,'a')
     #f.write('<table border="1" class="dataframe">') 
-    f.write('<table width="100%" border="1"  class="dataframe">') 
-    f.write('<thead><tr style="text-align: center;background: #ccc"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')  
+    f.write('<table width="100%" border="1" class="dataframe">') 
+    f.write('<thead><tr style="text-align: center;background: #ccc"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图录像</th><th>重要日志</th>')  
     for i in range(len(zip(caseTestDurs,  modulesContents))):
-        pngName = modulesContents[i].split(':',2)[0].strip()
+        sourceName = modulesContents[i].split(':',2)[0].strip()
         #print pngName
-        newpngName = delSpeChar(pngName)
+        targetName = delSpeChar(sourceName)
         #print newpngName
-        pngAdds = './screencap/'+newpngName+'_fail.png'
+        pngAdds = './screencap/'+targetName+'_fail.png'
+        logAdds= './androidLog/'+targetName+'.txt'
+        recordAdds= './screenrecord/'+targetName
+        linkedFilepath = './linkedHtmls/'+targetName+'.html'
         #print pngAdds
         
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
@@ -401,8 +415,9 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th >'+ testresult+'</th>')
             f.write('<th >'+ comment +'</th>')
-            f.write('<th ><a target=_blank href=" '+pngAdds+'">查看</a></th>')
-            f.write('<th>'+' '+'</th>')
+            f.write('<th ><a target=_blank href=" '+linkedFilepath+'">查看</a></th>')
+            f.write('<th ><a target=_blank href=" '+logAdds+'">查看</a></th>')
+            writeLinkedHtml(linkedFilepath, pngAdds, recordAdds)
             f.write('</tr>')                
         else:
             f.write('<tr style="text-align: center;">')
@@ -415,8 +430,7 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+' '+'</th>')
             f.write('<th>'+' '+'</th>')
             f.write('</tr>')
-    f.write('</table>')
-   
+    f.write('</table>')   
     
 def renameHtmlFile(root, testTime):
     testTime1 = testTime[0].replace('-','')
@@ -432,7 +446,7 @@ if __name__=="__main__":
     #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
   
-    # <服务器获取root代码段
+    #<服务器获取root代码段
     root1= os.path.abspath('..')
     root = root1+'/testLOG'
     print 'root:', root
@@ -443,7 +457,7 @@ if __name__=="__main__":
     # 本地获取root代码段>
     '''
     tempHtmlname = os.path.join(root, 'test.html')
-    print tempHtmlname
+    #print tempHtmlname
            
     lfh = LogFileHandle()
     
@@ -451,6 +465,7 @@ if __name__=="__main__":
     filename = lfh.getLogFiles(root)
     if len(filename)==0:
         print "ERROR:不存在log文件"
+        sys.exit(1)
     else:  
         print filename
         filename = filename[0]    
@@ -489,11 +504,12 @@ if __name__=="__main__":
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
     writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
-    #writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
+    writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
    
     writeSimResultInfo(tempHtmlname, simResult)
     writeTestDetail(tempHtmlname, modulesContents)
+    writeTestBottom()
 
     #已测试开始时间重命名test.html
     #renameHtmlFile(root, testTime)
