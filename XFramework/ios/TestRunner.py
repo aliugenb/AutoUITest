@@ -414,7 +414,7 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
             uiObj.clearApp(isAD=True)
             uiObj.pressHome()
         #else:
-            #uiObj.clearApp()
+            uiObj.clearApp()
         # 处理模块
         for eachModule in testCase:
             # 获取每个测试大类下测试模块名称
@@ -544,8 +544,8 @@ def test_run_all_test(allTestClass, realIngoreModule, configData, uiObj=None):
                         if testClassName == 'ad':
                             uiObj.clearApp(isAD=True)
                             uiObj.pressHome()
-                        #else:
-                            #uiObj.clearApp()
+                        else:
+                            uiObj.clearApp()
                         time.sleep(5)
             uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
                                                           moduleName))
