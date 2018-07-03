@@ -349,7 +349,7 @@ def click(paraList, paraDict, control, uiObj):
     if 'text' in paraDict:
         uiObj.clickByText(**paraDict)
     elif 'desc' in paraDict:
-        uiObj.clickByText(**paraDict)
+        uiObj.clickByDesc(**paraDict)
     elif 'Id' in paraDict:
         uiObj.clickById(**paraDict)
     elif len(paraList) == 1 and '-' in paraList[0]:
