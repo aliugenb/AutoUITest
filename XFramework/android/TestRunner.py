@@ -353,7 +353,7 @@ def click(paraList, paraDict, control, uiObj):
     elif 'Id' in paraDict:
         uiObj.clickById(**paraDict)
     elif len(paraList) == 1 and '-' in paraList[0]:
-        uiObj.clickByPos(*(paraList.split('-')))
+        uiObj.clickByPos(*(paraList[0].split('-')))
         uiObj._LOGGER.debug('点击坐标: {}-{}结束'.format(*(paraList.split('-'))))
     elif len(paraList) == 2:
         uiObj.clickByPos(*(paraList))
