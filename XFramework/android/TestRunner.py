@@ -354,10 +354,10 @@ def click(paraList, paraDict, control, uiObj):
         uiObj.clickById(**paraDict)
     elif len(paraList) == 1 and '-' in paraList[0]:
         uiObj.clickByPos(*(paraList[0].split('-')))
-        uiObj._LOGGER.debug('点击坐标: {}-{}结束'.format(*(paraList.split('-'))))
+        uiObj._LOGGER.debug('点击坐标: {}-{} 结束'.format(*(paraList[0].split('-'))))
     elif len(paraList) == 2:
         uiObj.clickByPos(*(paraList))
-        uiObj._LOGGER.debug('点击坐标: {},{}结束'.format(*(paraList)))
+        uiObj._LOGGER.debug('点击坐标: {},{} 结束'.format(*(paraList)))
     else:
         raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
 
@@ -387,10 +387,11 @@ def swipe(paraList, control, uiObj):
     """
     if len(paraList) == 1 and '-' in paraList[0]:
         uiObj.swipeByPos(*(paraList[0].split('-')))
-        uiObj._LOGGER.debug('滑动: {}-{}-{}-{}结束'.format(*(paraList.split('-'))))
+        uiObj._LOGGER.debug('滑动: {}-{}-{}-{} 结束'.format(
+                                                    *(paraList[0].split('-'))))
     elif len(paraList) == 4:
         uiObj.swipeByPos(*(paraList))
-        uiObj._LOGGER.debug('滑动: {},{},{},{}结束'.format(*(paraList)))
+        uiObj._LOGGER.debug('滑动: {},{},{},{} 结束'.format(*(paraList)))
     else:
         raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
 
@@ -487,7 +488,7 @@ def clickAndUnequal(paraList, paraDict, control, uiObj):
         raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
-def back():
+def back(uiObj):
     """返回实现
     """
     uiObj.pressBack()
@@ -532,12 +533,14 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
         scrollAndClick(paraDict, control, uiObj)
     elif realAction == 'sleep':
         sleep(paraList, paraDict, control, uiObj)
+    elif realAction == 'isChecked':
+        isChecked(paraDict, control, uiObj)
     elif realAction == 'click&&equal':
         clickAndEqual(paraList, paraDict, control, uiObj)
     elif realAction == 'click&&unequal':
         clickAndUnequal(paraList, paraDict, control, uiObj)
     elif realAction == 'back':
-        back()
+        back(uiObj)
     elif realAction == 'wSwipe&&Assert':
         wSwipeAndAssert(paraList, paraDict, control, uiObj)
     elif realAction == 'hSwipe&&Assert':
@@ -550,35 +553,18 @@ def expectTypeHandle(paraDict, expect, uiObj):
     """期望元素处理
     """
     expectVal = False
-    if '==' in expect:
-        try:
-            if 'text' in expect:
-                uiObj.isExistByText(**paraDict)
-            elif 'desc' in expect:
-                uiObj.isExistByDesc(**paraDict)
-            elif 'Id' in expect:
-                uiObj.isExistById(**paraDict)
-            else:
-                raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
-            expectVal = True
-        except AssertionError as e:
-            pass
-    elif '!=' in expect:
-        paraDict['isIn'] = 1
-        try:
-            if 'text' in expect:
-                uiObj.isExistByText(**paraDict)
-            elif 'desc' in expect:
-                uiObj.isExistByDesc(**paraDict)
-            elif 'Id' in expect:
-                uiObj.isExistById(**paraDict)
-            else:
-                raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
-            expectVal = True
-        except AssertionError as e:
-            pass
-    else:
-        raise ValueError('期望参数:{}不合法, 提醒:可能存在中文符号'.format(expect))
+    try:
+        if 'text' in paraDict:
+            uiObj.isExistByText(**paraDict)
+        elif 'desc' in paraDict:
+            uiObj.isExistByDesc(**paraDict)
+        elif 'Id' in paraDict:
+            uiObj.isExistById(**paraDict)
+        else:
+            raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
+        expectVal = True
+    except AssertionError as e:
+        pass
     return expectVal
 
 
@@ -590,12 +576,14 @@ def expectParaParse(expectPara, expect):
     for eachPara in allParaList:
         if '==' in eachPara:
             paraKey, paraValue = eachPara.strip().split('==')
-            paraDict[paraKey] = paraValue
+        elif '!=' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('!=')
+            paraDict['isIn'] = 1
         elif '=' in eachPara:
             paraKey, paraValue = eachPara.strip().split('=')
-            paraDict[paraKey] = paraValue
         else:
             raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(expect))
+        paraDict[paraKey] = paraValue
     return paraDict
 
 
@@ -641,15 +629,13 @@ def expectHandle(expect, expectInfo, uiObj):
     judgeTag = None
     if '&&' in expect:
         expectParaList = expect.strip().split('&&')
-        condition = getExpectList(expectParaList, expect, expectInfo, uiObj)
         judgeTag = 0
     elif '||' in expect:
         expectParaList = expect.strip().split('||')
-        condition = getExpectList(expectParaList, expect, expectInfo, uiObj)
         judgeTag = 1
     else:
         expectParaList = [expect.strip()]
-        condition = getExpectList(expectParaList, expect, expectInfo, uiObj)
+    condition = getExpectList(expectParaList, expect, expectInfo, uiObj)
     getExpectResult(condition, judgeTag, expectInfo, uiObj)
 
 
@@ -733,8 +719,9 @@ def screenRecordForFeature(rName, uiObj, rpObj):
         fl = f.split('\n')
         if len(fl) == 1:
             break
-    grandchildP.kill()
-    grandchildP.wait()
+    if grandchildP is not None:
+        grandchildP.kill()
+        grandchildP.wait()
 
 
 def showReport(rpObj):
@@ -826,6 +813,10 @@ def ingorePartFilter(features, testClassName, moduleName):
 def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
     """执行所有用例
     """
+    # 获取手机厂商
+    df = os.popen(CC.GET_PHONE_PRODUCER).read().upper()
+    # 定义子进程
+    childP = None
     # 安卓测试机本身 log 存放地址
     androidLogField = os.path.join(os.pardir, 'testLOG', 'androidLog')
     # 处理大类
@@ -889,10 +880,12 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                     try:
                         # 清理安卓机的 log
                         os.popen('{} -c'.format(CC.ANDROIDLOG))
-                        # 启动子进程为case录制视频
-                        childP = Process(target=screenRecordForFeature,
-                                         args=(rName, uiObj, rpObj,))
-                        childP.start()
+
+                        # 启动子进程为case录制视频，华为手机无此功能
+                        if 'HONOR' not in df:
+                            childP = Process(target=screenRecordForFeature,
+                                             args=(rName, uiObj, rpObj,))
+                            childP.start()
                         if testClassName == 'ad':
                             uiObj.startApp()
                             executeEvent(otherEventSuit, uiObj,
@@ -934,12 +927,13 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         rpObj.passCount += 1
                     finally:
                         # 结束录屏
-                        rpObj.childPK.put_nowait('1')
-                        childP.join(3)
-                        if childP.is_alive():
-                            childP.terminate()
-                        emptyQueue(rpObj.childPQ)
-                        emptyQueue(rpObj.childPK)
+                        if childP is not None:
+                            rpObj.childPK.put_nowait('1')
+                            childP.join(3)
+                            if childP.is_alive():
+                                childP.terminate()
+                            emptyQueue(rpObj.childPQ)
+                            emptyQueue(rpObj.childPK)
                         # 检测是否为正常失败
                         if rpObj.realFailTag == 1:
                             # 截图
