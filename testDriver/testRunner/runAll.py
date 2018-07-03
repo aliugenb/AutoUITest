@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 import os
-import sys
 import xlrd
 import json
 from functools import wraps
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import common
 common.pathGet()
 from XFramework.android.baseOn import BaseOn as androidBO
@@ -192,8 +194,8 @@ if __name__ == '__main__':
             androidTR.testRunAllTest(realAllTestClass,
                                      configData, imgDict, p, rp)
         except (Exception, KeyboardInterrupt, SystemExit) as e:
-            p._LOGGER.info('Test End...')
             p._LOGGER.exception(e)
+            p._LOGGER.info('Test End...')
         finally:
             # 防止主程序意外退出，杀掉其下所有子进程
             while not rp.childPQ.empty():

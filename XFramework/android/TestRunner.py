@@ -45,6 +45,17 @@ class ResultPara(object):
     childPK = Queue()
 
 
+def getValidValueFromStr(valueList, control):
+    """从字串中获取有效值
+    """
+    reminderValue = None
+    for i in valueList:
+        if i in control:
+            reminderValue = control.split('{}='.format(i))[-1].split(',')[0]
+            break
+    return reminderValue
+
+
 def exceptionHandle(func):
     """错误类型集合
     异常1: 点击时找不到text控件
@@ -64,35 +75,31 @@ def exceptionHandle(func):
             func(*args, **kwargs)
         except AssertionError as e:
             flowTag = e.args[0]
+            reminderValue = getValidValueFromStr(['text', 'desc', 'Id'],
+                                                 args[0])
             if flowTag == 1:
-                elType, controlEl = args[0].strip().split('=')
                 raise AssertionError(u"找不到你输入的text: {}，请确认!"
-                                     .format(controlEl))
+                                     .format(reminderValue))
             elif flowTag == 2:
-                elType, controlEl = args[0].strip().split('=')
                 raise AssertionError(u"找不到你输入的desc: {}，请确认!"
-                                     .format(controlEl))
+                                     .format(reminderValue))
             elif flowTag == 3:
-                elType, controlEl = args[0].strip().split('=')
                 raise AssertionError(u"找不到你输入的Id: {}，请确认!"
-                                     .format(controlEl))
+                                     .format(reminderValue))
             elif flowTag == 4:
                 raise AssertionError(u"文本: {} 输入失败，请确认!"
                                      .format(args[1]))
             elif flowTag == 5:
                 raise AssertionError('{}_fail'.format(args[1]))
             elif flowTag == 6:
-                elType, controlEl = args[0].strip().split('=')
                 raise AssertionError('点击操作后，此元素{}的text值发生改变，fail'.format(
-                                                                    controlEl))
+                                        reminderValue))
             elif flowTag == 7:
-                elType, controlEl = args[0].strip().split('=')
                 raise AssertionError('点击操作后，此元素{}的text值未发生改变，fail'.format(
-                                                                    controlEl))
+                                        reminderValue))
             elif flowTag == 8:
-                controlData = control.strip().split('-')
                 raise AssertionError('规定时间内，仍未找到该元素: {}，fail'.format(
-                                                            controlData[1]))
+                                        reminderValue))
             elif flowTag == 9:
                 raise AssertionError('图片资源缺失，请核实! err: {}, fail'.format(
                                                                     e.args[1]))
@@ -324,7 +331,7 @@ def getPosOfPic(targetImgName, imgDict, uiObj):
 def paraParse(control):
     """控件类型列，参数解析
     """
-    allParaList = control.split(',')
+    allParaList = control.strip().split(',')
     paraList = []
     paraDict = {}
     for eachPara in allParaList:
@@ -403,12 +410,13 @@ def typewrite(paraDict, control, data, uiObj):
     if control == '':
         uiObj.set_input_text(data)
     else:
+        paraDict['input_text'] = data
         if 'text' in paraDict:
-            uiObj.setValueByText(data, **paraDict)
+            uiObj.setValueByText(**paraDict)
         elif 'desc' in paraDict:
-            uiObj.setValueByDesc(data, **paraDict)
+            uiObj.setValueByDesc(**paraDict)
         elif 'Id' in paraDict:
-            uiObj.setValueById(data, **paraDict)
+            uiObj.setValueById(**paraDict)
         else:
             raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
 
@@ -542,33 +550,32 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
         raise ValueError('不存在的动作类型:{}'.format(realAction))
 
 
-def expectTypeHandle(expect, expectInfo, uiObj):
+def expectTypeHandle(paraDict, expect, uiObj):
     """期望元素处理
     """
     expectVal = False
     if '==' in expect:
-        expectEl = expect.strip().split('==')[1]
         try:
             if 'text' in expect:
-                uiObj.isExistByText(expectEl, expectInfo)
+                uiObj.isExistByText(**paraDict)
             elif 'desc' in expect:
-                uiObj.isExistByDesc(expectEl, expectInfo)
+                uiObj.isExistByDesc(**paraDict)
             elif 'Id' in expect:
-                uiObj.isExistById(expectEl, expectInfo)
+                uiObj.isExistById(**paraDict)
             else:
                 raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
             expectVal = True
         except AssertionError as e:
             pass
     elif '!=' in expect:
-        expectEl = expect.strip().split('!=')[1]
+        paraDict['isIn'] = 1
         try:
             if 'text' in expect:
-                uiObj.isExistByText(expectEl, expectInfo, isIn=1)
+                uiObj.isExistByText(**paraDict)
             elif 'desc' in expect:
-                uiObj.isExistByDesc(expectEl, expectInfo, isIn=1)
+                uiObj.isExistByDesc(**paraDict)
             elif 'Id' in expect:
-                uiObj.isExistById(expectEl, expectInfo, isIn=1)
+                uiObj.isExistById(**paraDict)
             else:
                 raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
             expectVal = True
@@ -579,32 +586,75 @@ def expectTypeHandle(expect, expectInfo, uiObj):
     return expectVal
 
 
+def expectParaParse(expectPara, expect):
+    """期望类型列，参数解析
+    """
+    allParaList = expectPara.strip().split(',')
+    paraDict = {}
+    for eachPara in allParaList:
+        if '==' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('==')
+            paraDict[paraKey] = paraValue
+        elif '=' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('=')
+            paraDict[paraKey] = paraValue
+        else:
+            raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(expect))
+    return paraDict
+
+
+def getExpectList(expectParaList, expect, expectInfo, uiObj):
+    """获取期望列表
+    """
+    condition = []
+    for eachPara in expectParaList:
+        paraDict = expectParaParse(eachPara, expect)
+        paraDict['instruction'] = expectInfo
+        tempData = expectTypeHandle(paraDict, expect, uiObj)
+        condition.append(tempData)
+    return condition
+
+
+def getExpectResult(condition, judgeTag, expectInfo, uiObj):
+    """等到期望结果
+    """
+    if judgeTag == 0:
+        for i in condition:
+            if not i:
+                raise AssertionError(5)
+        else:
+            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
+    elif judgeTag == 1:
+        for i in condition:
+            if i:
+                uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
+                break
+        else:
+            raise AssertionError(5)
+    else:
+        if condition[0]:
+            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
+        else:
+            raise AssertionError(5)
+
+
 @exceptionHandle
 def expectHandle(expect, expectInfo, uiObj):
     """期望处理
     """
-    condition = []
+    judgeTag = None
     if '&&' in expect:
-        for eveExpect in expect.strip().split('&&'):
-            tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
-            condition.append(tempData)
-        if condition[0] and condition[1]:
-            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
-        else:
-            raise AssertionError(5)
+        expectParaList = expect.strip().split('&&')
+        condition = getExpectList(expectParaList, expect, expectInfo, uiObj)
+        judgeTag = 0
     elif '||' in expect:
-        for eveExpect in expect.strip().split('||'):
-            tempData = expectTypeHandle(eveExpect, expectInfo, uiObj)
-            condition.append(tempData)
-        if condition[0] or condition[1]:
-            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
-        else:
-            raise AssertionError(5)
+        expectParaList = expect.strip().split('||')
+        condition = getExpectList(expectParaList, expect, expectInfo, uiObj)
+        judgeTag = 1
     else:
-        if expectTypeHandle(expect, expectInfo, uiObj):
-            uiObj._LOGGER.debug('{}， 结束'.format(expectInfo))
-        else:
-            raise AssertionError(5)
+        expectParaList = [expect.strip()]
+        condition = getExpectList(expectParaList, expect, expectInfo, uiObj)
+    getExpectResult(condition, judgeTag, expectInfo, uiObj)
 
 
 def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
