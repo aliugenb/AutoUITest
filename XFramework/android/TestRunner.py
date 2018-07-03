@@ -882,7 +882,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         os.popen('{} -c'.format(CC.ANDROIDLOG))
 
                         # 启动子进程为case录制视频，华为手机无此功能
-                        if 'HONOR' not in df:
+                        if 'HONOR' not in df and 'HUAWEI' not in df:
                             childP = Process(target=screenRecordForFeature,
                                              args=(rName, uiObj, rpObj,))
                             childP.start()
