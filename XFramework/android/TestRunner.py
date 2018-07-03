@@ -386,7 +386,7 @@ def swipe(paraList, control, uiObj):
     """滑动实现
     """
     if len(paraList) == 1 and '-' in paraList[0]:
-        uiObj.swipeByPos(*(paraList.split('-')))
+        uiObj.swipeByPos(*(paraList[0].split('-')))
         uiObj._LOGGER.debug('滑动: {}-{}-{}-{}结束'.format(*(paraList.split('-'))))
     elif len(paraList) == 4:
         uiObj.swipeByPos(*(paraList))
@@ -424,11 +424,7 @@ def typewrite(paraDict, control, data, uiObj):
 def scroll(paraDict, control, uiObj):
     """滚动实现
     """
-    if 'text' in paraDict:
-        uiObj.scrollByElement(**paraDict)
-    elif 'desc' in paraDict:
-        uiObj.scrollByElement(**paraDict)
-    elif 'Id' in paraDict:
+    if 'text' in paraDict or 'desc' in paraDict or 'Id' in paraDict:
         uiObj.scrollByElement(**paraDict)
     else:
         raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
