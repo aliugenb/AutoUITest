@@ -358,7 +358,13 @@ def writeSimResultInfo(filename, simResult):
     f.write('<br/>')
     f.write('<br/>')
 
-def writeLinkedHtml(linkedFilepath, pngAdds, recordAdds):
+def writeLinkedHtml(targetName,pngAdds, recordAdds):
+    linkfolder = os.path.abspath('..') +'/testLOG/linkedHtml/'
+    if not os.path.exists(linkfolder):
+        os.makedirs(linkfolder)
+   
+    linkedFilepath = os.path.join(linkfolder, targetName+'.html')   
+    
     lf = open(linkedFilepath,'a')
     lf.write('<tr><th><img src='+pngAdds+'alt="temp" height="35%"/></th></tr>')
     lf.write('<tr>')
@@ -417,7 +423,7 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th >'+ comment +'</th>')
             f.write('<th ><a target=_blank href=" '+linkedFilepath+'">查看</a></th>')
             f.write('<th ><a target=_blank href=" '+logAdds+'">查看</a></th>')
-            writeLinkedHtml(linkedFilepath, pngAdds, recordAdds)
+            writeLinkedHtml(targetName, pngAdds, recordAdds)
             f.write('</tr>')                
         else:
             f.write('<tr style="text-align: center;">')
