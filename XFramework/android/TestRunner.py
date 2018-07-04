@@ -147,14 +147,18 @@ def getImgSize(filePath):
 def getScreenDetail():
     """获取手机屏幕详情
     """
-    command = CC.GET_SCREEN_DETAIL
-    tempData = os.popen(command).read()
-    pendingList = tempData.strip().split('\n')
     infoDict = {}
     needList = []
+    if 'win' in sys.platform:
+        command = 'adb shell dumpsys window displays | findstr app='
+    else:
+        command = CC.GET_SCREEN_DETAIL
+    tempData = os.popen(command).read()
+    pendingList = tempData.strip().split('\n')
     for each in pendingList:
-        if 'app=' in each:
+        if 'cur=' in each:
             needList = each.strip().split(' ')
+            break
     for el in needList:
         if '=' in el:
             val = el.strip().split('=')
