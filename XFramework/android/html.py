@@ -396,7 +396,7 @@ def writeTestDetail(filename, modulesContents):
         pngAdds = './screencap/'+targetName+'_fail.png'
         logAdds= './androidLog/'+targetName+'.txt'
         recordAdds= './screenrecord/'+targetName
-        linkedFilepath = './linkedHtmls/'+targetName+'.html'
+        linkedFilepath = './linkedHtmls/'+targetName
         #print pngAdds
         
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
