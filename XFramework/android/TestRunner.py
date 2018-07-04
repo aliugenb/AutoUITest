@@ -45,13 +45,24 @@ class ResultPara(object):
     childPK = Queue()
 
 
-def getValidValueFromStr(valueList, control):
+def getValidValueFromStr(control):
     """从字串中获取有效值
     """
     reminderValue = None
-    for i in valueList:
+    for i in ['text', 'desc', 'Id']:
         if i in control:
             reminderValue = control.split('{}='.format(i))[-1].split(',')[0]
+            break
+    return reminderValue
+
+
+def getValidValueFromDict(targetDict):
+    """从字典中获取有效值
+    """
+    reminderValue = None
+    for i in ['text', 'desc', 'Id']:
+        if targetDict.get(i):
+            reminderValue = targetDict.get(i)
             break
     return reminderValue
 
@@ -75,8 +86,7 @@ def exceptionHandle(func):
             func(*args, **kwargs)
         except AssertionError as e:
             flowTag = e.args[0]
-            reminderValue = getValidValueFromStr(['text', 'desc', 'Id'],
-                                                 args[0])
+            reminderValue = getValidValueFromStr(args[0])
             if flowTag == 1:
                 raise AssertionError(u"找不到你输入的text: {}，请确认!"
                                      .format(reminderValue))
@@ -92,10 +102,10 @@ def exceptionHandle(func):
             elif flowTag == 5:
                 raise AssertionError('{}_fail'.format(args[1]))
             elif flowTag == 6:
-                raise AssertionError('点击操作后，此元素{}的text值发生改变，fail'.format(
+                raise AssertionError('点击操作后，此元素 {} 的text值发生改变，fail'.format(
                                         reminderValue))
             elif flowTag == 7:
-                raise AssertionError('点击操作后，此元素{}的text值未发生改变，fail'.format(
+                raise AssertionError('点击操作后，此元素 {} 的text值未发生改变，fail'.format(
                                         reminderValue))
             elif flowTag == 8:
                 raise AssertionError('规定时间内，仍未找到该元素: {}，fail'.format(
@@ -106,6 +116,12 @@ def exceptionHandle(func):
             elif flowTag == 10:
                 raise AssertionError('规定时间内，目标页面上未找你输入的图片: {}, fail'.format(
                                                                     e.args[1]))
+            elif flowTag == 11:
+                raise AssertionError('你给定的控件: {} 未被选中, fail'.format(
+                                        reminderValue))
+            elif flowTag == 12:
+                raise AssertionError('{}滑动{}步, 控件 {} 共出现{} 次与预期出现次数{} {}，fail'
+                                     .format(*(e.args[1])))
             else:
                 raise RuntimeError('不存在的异常类型')
     return tempFunc
@@ -275,7 +291,7 @@ def preconditionHandle(pre, uiObj, totalTime):
         elif preElType == 'Id':
             preJudgeVal = uiObj.isIdInPage(preEl, totalTime=totalTime)
         else:
-            raise ValueError('前提参数:{}控件类型不合法,提醒:可能存在空格'.format(pre))
+            raise ValueError('前提参数: {} 控件类型不合法,提醒:可能存在空格'.format(pre))
     elif '!=' in pre:
         preElType, preEl = pre.strip().split('!=')
         if preElType == 'text':
@@ -285,9 +301,9 @@ def preconditionHandle(pre, uiObj, totalTime):
         elif preElType == 'Id':
             preJudgeVal = not uiObj.isIdInPage(preEl, totalTime=totalTime)
         else:
-            raise ValueError('前提参数:{}控件类型不合法,提醒:可能存在空格'.format(pre))
+            raise ValueError('前提参数: {} 控件类型不合法,提醒:可能存在空格'.format(pre))
     else:
-        raise ValueError('前提参数:{}不合法, 提醒:可能存在中文符号'.format(pre))
+        raise ValueError('前提参数: {} 不合法, 提醒:可能存在中文符号'.format(pre))
     return preJudgeVal
 
 
@@ -359,7 +375,7 @@ def click(paraList, paraDict, control, uiObj):
         uiObj.clickByPos(*(paraList))
         uiObj._LOGGER.debug('点击坐标: {},{} 结束'.format(*(paraList)))
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def clickByPic(control, imgDict, uiObj):
@@ -377,7 +393,7 @@ def clickByPic(control, imgDict, uiObj):
     if reInfo is not None:
         realPos = getPosOnScreen(reInfo, imgDict['ccPara'])
         uiObj.clickByPos(realPos[0], realPos[1])
-        uiObj._LOGGER.debug('点击图片: {}，结束'.format(control))
+        uiObj._LOGGER.debug('点击图片: {} ，结束'.format(control))
     else:
         raise AssertionError(10, control)
 
@@ -393,7 +409,7 @@ def swipe(paraList, control, uiObj):
         uiObj.swipeByPos(*(paraList))
         uiObj._LOGGER.debug('滑动: {},{},{},{} 结束'.format(*(paraList)))
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def drag(paraList, paraDict, control, uiObj):
@@ -402,7 +418,7 @@ def drag(paraList, paraDict, control, uiObj):
     if paraList == []:
         uiObj.dragByElement(**paraDict)
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def typewrite(paraDict, control, data, uiObj):
@@ -419,7 +435,7 @@ def typewrite(paraDict, control, data, uiObj):
         elif 'Id' in paraDict:
             uiObj.setValueById(**paraDict)
         else:
-            raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+            raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def scroll(paraDict, control, uiObj):
@@ -428,7 +444,7 @@ def scroll(paraDict, control, uiObj):
     if 'text' in paraDict or 'desc' in paraDict or 'Id' in paraDict:
         uiObj.scrollByElement(**paraDict)
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def scrollAndClick(paraDict, control, uiObj):
@@ -444,7 +460,7 @@ def scrollAndClick(paraDict, control, uiObj):
         uiObj.scrollByElement(**paraDict)
         uiObj.clickById(**paraDict)
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def sleep(paraList, paraDict, control, uiObj):
@@ -455,7 +471,7 @@ def sleep(paraList, paraDict, control, uiObj):
     elif len(paraList) == 1 and paraDict != {}:
         uiObj.sleep(int(paraList[0]), **paraDict)
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def clickAndEqual(paraList, paraDict, control, uiObj):
@@ -470,7 +486,7 @@ def clickAndEqual(paraList, paraDict, control, uiObj):
         else:
             raise AssertionError(6)
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def clickAndUnequal(paraList, paraDict, control, uiObj):
@@ -485,7 +501,7 @@ def clickAndUnequal(paraList, paraDict, control, uiObj):
         else:
             raise AssertionError(7)
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def back(uiObj):
@@ -498,18 +514,50 @@ def wSwipeAndAssert(paraList, paraDict, control, uiObj):
     """横向滑动，并判断某个元素出现次数实现
     """
     if paraList == []:
-        uiObj.wSwipeAndAssert(**paraDict)
+        res, iCount, pCount = uiObj.wSwipeAndAssert(**paraDict)
+        if res:
+            uiObj._LOGGER.debug('横向滑动 {} 步，控件 {} 共出现 {} 次，与预期出现次数 {} 相符，滑动判断结束'
+                                .format(paraDict.get('step', 9),
+                                        getValidValueFromDict(paraDict),
+                                        iCount, pCount))
+        else:
+            raise AssertionError(12, ('横向', paraDict.get('step', 9),
+                                      getValidValueFromDict(paraDict),
+                                      iCount, pCount, '不相符'))
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 def hSwipeAndAssert(paraList, paraDict, control, uiObj):
     """纵向滑动，并判断某个元素出现次数实现
     """
     if paraList == []:
-        uiObj.hSwipeAndAssert(**paraDict)
+        res, iCount, pCount = uiObj.hSwipeAndAssert(**paraDict)
+        if res:
+            uiObj._LOGGER.debug('纵向滑动 {} 步，控件 {} 共出现 {} 次，与预期出现次数 {} 相符，滑动判断结束'
+                                .format(paraDict.get('step', 9),
+                                        getValidValueFromDict(paraDict),
+                                        iCount, pCount))
+        else:
+            raise AssertionError(12, ('纵向', paraDict.get('step', 9),
+                                      getValidValueFromDict(paraDict),
+                                      iCount, pCount, '不相符'))
     else:
-        raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(control))
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
+
+
+def isChecked(paraDict, control, uiObj):
+    """判断元素是否被选中实现
+    """
+    el = uiObj.getElementFromControl(**paraDict)
+    if el:
+        if el.get_attribute('checked') == 'true':
+            uiObj._LOGGER.debug('判断控件 {} 被选中，结束'.format(
+                getValidValueFromDict(paraDict)))
+        else:
+            raise AssertionError(11)
+    else:
+        raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
 @exceptionHandle
@@ -546,7 +594,7 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
     elif realAction == 'hSwipe&&Assert':
         hSwipeAndAssert(paraList, paraDict, control, uiObj)
     else:
-        raise ValueError('不存在的动作类型:{}'.format(realAction))
+        raise ValueError('不存在的动作类型: {}'.format(realAction))
 
 
 def expectTypeHandle(paraDict, expect, uiObj):
@@ -561,7 +609,7 @@ def expectTypeHandle(paraDict, expect, uiObj):
         elif 'Id' in paraDict:
             uiObj.isExistById(**paraDict)
         else:
-            raise ValueError('期望参数:{}中的控件类型不合法'.format(expect))
+            raise ValueError('期望参数: {} 中的控件类型不合法'.format(expect))
         expectVal = True
     except AssertionError as e:
         pass
@@ -582,7 +630,7 @@ def expectParaParse(expectPara, expect):
         elif '=' in eachPara:
             paraKey, paraValue = eachPara.strip().split('=')
         else:
-            raise ValueError('表格参数:{}不合法,提醒:可能存在空格或中文符号'.format(expect))
+            raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
         paraDict[paraKey] = paraValue
     return paraDict
 
@@ -840,7 +888,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
             # 主app和广告业务逻辑不同
             if testClassName == 'ad':
                 if len(features) == ingoreFeaturesNum:
-                    print('警告: 模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
+                    print('警告: 模块: {} 的所有功能点都被你忽略，默认你忽略了此模块。'
                           .format(moduleName))
                     rpObj.realIngoreModule.append('{}-{}'.format(testClassName,
                                                                  moduleName))
@@ -849,7 +897,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                     ingoreFeature.extend(tempIngoreFeature)
             else:
                 if len(features) == ingoreFeaturesNum+1:
-                    print('警告: 模块:{}的所有功能点都被你忽略，默认你忽略了此模块。'
+                    print('警告: 模块: {} 的所有功能点都被你忽略，默认你忽略了此模块。'
                           .format(moduleName))
                     rpObj.realIngoreModule.append('{}-{}'.format(testClassName,
                                                                  moduleName))

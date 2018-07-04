@@ -467,9 +467,9 @@ class UITest(BaseOn, TA):
         else:
             self._LOGGER.debug('滑动结束，共滑动 {}次'.format(kwargs.get('step', 9)))
         if iCount == kwargs.get('pCount'):
-            return (True, iCount)
+            return (True, iCount, kwargs.get('pCount'))
         else:
-            return (False, iCount)
+            return (False, iCount, kwargs.get('pCount'))
 
     def hSwipeAndAssert(self, *args, **kwargs):
         """上下滑动并判断元素个数
@@ -504,9 +504,9 @@ class UITest(BaseOn, TA):
         else:
             self._LOGGER.debug('滑动结束，共滑动 {}次'.format(kwargs.get('step', 9)))
         if iCount == kwargs.get('pCount'):
-            return (True, iCount)
+            return (True, iCount, kwargs.get('pCount'))
         else:
-            return (False, iCount)
+            return (False, iCount, kwargs.get('pCount'))
     # def longPressByElement(self, el, duration=1000):
     #     '''
     #     长按元素
@@ -567,6 +567,42 @@ class UITest(BaseOn, TA):
         timeArray = time.localtime(currenttime)
         formatTime = time.strftime("%Y-%m-%d-%H:%M:%S", timeArray)
         return formatTime
+
+    def getElementFromControl(self, *args, **kwargs):
+        """返回元素对象
+        """
+        el = None
+        if kwargs.get('text') is not None:
+            if kwargs.get('ins') is None:
+                el = self.__select_text_Android(kwargs.get('text'),
+                                                kwargs.get('rule', 'e'))
+            else:
+                el = self.__select_text_ins_Android(kwargs.get('text'),
+                                                    kwargs.get('ins'),
+                                                    kwargs.get('rule', 'e'))
+            if not el:
+                raise AssertionError(1)
+        elif kwargs.get('desc') is not None:
+            if kwargs.get('ins') is None:
+                el = self.__select_desc_Android(kwargs.get('desc'),
+                                                kwargs.get('rule', 'e'))
+            else:
+                el = self.__select_desc_ins_Android(kwargs.get('desc'),
+                                                    kwargs.get('ins'),
+                                                    kwargs.get('rule', 'e'))
+            if not el:
+                raise AssertionError(2)
+        elif kwargs.get('Id') is not None:
+            if kwargs.get('ins') is None:
+                el = self.__select_Id_Android(kwargs.get('Id'))
+            else:
+                el = self.__select_Id_ins_Android(kwargs.get('desc'),
+                                                  kwargs.get('ins'))
+            if not el:
+                raise AssertionError(3)
+        else:
+            pass
+        return el
 
     @baseOn.unifyParaCode
     def __select_text_Android(self, text, rule):
