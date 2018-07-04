@@ -359,7 +359,7 @@ def writeSimResultInfo(filename, simResult):
     f.write('<br/>')
 
 def writeLinkedHtml(targetName,pngAdds, recordAdds):
-    linkfolder = os.path.abspath('..') +'/testLOG/linkedHtml/'
+    linkfolder = os.path.abspath('..') +'/testLOG/linkedHtmls/'
     if not os.path.exists(linkfolder):
         os.makedirs(linkfolder)
    
