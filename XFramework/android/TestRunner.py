@@ -444,7 +444,6 @@ def typewrite(paraDict, control, data, uiObj):
         elif 'desc' in paraDict:
             uiObj.setValueByDesc(**paraDict)
         elif 'Id' in paraDict:
-            print paraDict
             uiObj.setValueById(**paraDict)
         else:
             raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
