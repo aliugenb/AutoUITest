@@ -44,6 +44,8 @@ class ResultPara(object):
     childPQ = Queue()
     # 设置中止子进程标志队列
     childPK = Queue()
+    # log 路径名
+    logPath = None
 
 
 def getValidValueFromStr(control):
@@ -133,8 +135,10 @@ def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.txt'):
     """
     if filePath is None:
         filePath = os.path.join(os.pardir, 'testLOG')
+    else:
+        filePath = os.path.join(os.pardir, 'testLOG', filePath)
     realPath = os.path.join(filePath, fileName)
-    with open(realPath, 'a+') as f:
+    with open(realPath, 'a') as f:
         f.write(lineContent)
 
 
@@ -247,17 +251,17 @@ def transferProperty(target, key, source):
         setattr(target, key, source.get(key))
 
 
-def detailPrint(detailName, targetList):
+def detailPrint(detailName, targetList, filePath=None):
     """适配输出测试结果
     """
     if len(targetList) != 0:
         print('{}:'.format(detailName))
-        writeResultToTxt('{}:\n'.format(detailName))
+        writeResultToTxt('{}:\n'.format(detailName), filePath)
         for i in targetList:
             print('\t{}'.format(i))
-            writeResultToTxt('\t{}\n'.format(i))
+            writeResultToTxt('\t{}\n'.format(i), filePath)
         print('='*60)
-        writeResultToTxt('{}\n'.format('='*60))
+        writeResultToTxt('{}\n'.format('='*60), filePath)
 
 
 def setPara(stepEvent, stepAction):
@@ -795,14 +799,14 @@ def showReport(rpObj):
                           rpObj.exceptionCount
                           )
     print(totalResult)
-    writeResultToTxt('{}\n'.format(totalResult))
-    detailPrint(u'失败用例', rpObj.failList)
-    detailPrint(u'中止用例', rpObj.abortList)
-    detailPrint(u'异常用例', rpObj.exceptionList)
+    writeResultToTxt('{}\n'.format(totalResult), rpObj.logPath)
+    detailPrint(u'失败用例', rpObj.failList, rpObj.logPath)
+    detailPrint(u'中止用例', rpObj.abortList, rpObj.logPath)
+    detailPrint(u'异常用例', rpObj.exceptionList, rpObj.logPath)
     if rpObj.realIngoreModule != []:
-        detailPrint(u'忽略模块', rpObj.realIngoreModule)
+        detailPrint(u'忽略模块', rpObj.realIngoreModule, rpObj.logPath)
     if rpObj.ingoreFeature != []:
-        detailPrint(u'忽略功能点', rpObj.ingoreFeature)
+        detailPrint(u'忽略功能点', rpObj.ingoreFeature, rpObj.logPath)
 
 
 def popOutHandle(pre_firstEventSuit, uiObj, imgDict):
@@ -878,7 +882,9 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
     # 定义子进程
     childP = None
     # 安卓测试机本身 log 存放地址
-    androidLogField = os.path.join(os.pardir, 'testLOG', 'androidLog')
+    androidLogField = os.path.join(os.pardir, 'testLOG',
+                                   rpObj.logPath, 'androidLog')
+    os.mkdir(androidLogField)
     # 处理大类
     for eachTestClass in allTestClass:
         # 获取每个测试大类名称

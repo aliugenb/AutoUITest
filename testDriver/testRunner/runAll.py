@@ -1,11 +1,10 @@
 # -*- coding:utf-8 -*-
 import os
+import sys
 import xlrd
 import json
+import time
 from functools import wraps
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 import common
 common.pathGet()
 from XFramework.android.baseOn import BaseOn as androidBO
@@ -163,6 +162,13 @@ def getImgDict(casePath, targetImgSuit, srcImgName):
     return imgDict
 
 
+def envInit():
+    """清除手机中上次测试遗留的内容
+    """
+    os.popen('adb shell rm -rf sdcard/AutoTest/screencap')
+    os.popen('adb shell rm -rf sdcard/AutoTest/screenrecord')
+
+
 if __name__ == '__main__':
     # 判读是否是服务器
     # isServer = os.path.exists(os.path.join(os.pardir), '')
@@ -182,8 +188,12 @@ if __name__ == '__main__':
     realAllTestClass = getRealTestClass(allTestClass)
     # 测试驱动
     if configData['platformName'] == 'Android':
+        # 删除遗留文件
+        envInit()
         # 获取log文件生成路径
-        logPath = LG.setLogPath()
+        rp.logPath = time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime())
+        os.mkdir(os.path.join(os.pardir, 'testLOG', rp.logPath))
+        logPath = LG.setLogPath(rp.logPath)
         # 为driver动态添加logger
         androidBO._LOGGER = LG.logCreater(logPath)
         # 创建 driver 实例
@@ -202,6 +212,13 @@ if __name__ == '__main__':
             while not rp.childPQ.empty():
                 childPid = rp.childPQ.get_nowait()
                 os.popen('kill -9 {}'.format(childPid))
+            # 处理 log 信息
+            os.popen('adb pull sdcard/AutoTest/screencap {}'
+                     .format(os.path.join(os.pardir, 'testLOG', rp.logPath)))
+            os.popen('adb pull sdcard/AutoTest/screenrecord {}'
+                     .format(os.path.join(os.pardir, 'testLOG', rp.logPath)))
+            if os.path.exists(os.path.join(os.pardir, 'testCase', 'bg_temp.png')):
+                os.remove(os.path.join(os.pardir, 'testCase', 'bg_temp.png'))
             sys.exit(0)
     # elif configData['platformName'] == 'iOS':
     #     iosBO._LOGGER = LG.logCreater(logPath)
