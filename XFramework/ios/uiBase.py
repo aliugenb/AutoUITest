@@ -139,16 +139,42 @@ class UITest(BaseOn, TA):
             raise AssertionError(3)
         
     @setDefaultPara  
-    def setValueByXpath(self, input_text, xpath, *args, **kwargs):
+    def setValueById(self, input_text, Id, *args, **kwargs):
         """
-        通过控件的xpath输入文本
+        通过控件的Id输入文本
         input_text为你想输入文本
         """    
+        try:
+            self.__select_Id_iOS(Id).click()
+            self.__select_id_iOS(Id).send_keys(input_text)
+            self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
+        except AttributeError as e:            
+            raise AssertionError(3)
+
+    @setDefaultPara
+    def setValueByName(self, input_text, name, *args, **kwargs):
+        """
+            通过控件的name输入文本
+            input_text为你想输入文本
+            """
+        try:
+            self.__select_name_iOS(name).click()
+            self.__select_name_iOS(name).send_keys(input_text)
+            self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
+        except AttributeError as e:
+            raise AssertionError(3)
+
+    @setDefaultPara
+    def setValueByXpath(self, input_text, xpath, *args, **kwargs):
+        """
+            通过控件的xpath输入文本
+            input_text为你想输入文本
+            """
         try:
             self.__select_xpath_iOS(xpath).click()
             self.__select_xpath_iOS(xpath).send_keys(input_text)
             self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
-        except AttributeError as e:            
+        except AttributeError as e:
             raise AssertionError(3)
 
     @setDefaultPara
