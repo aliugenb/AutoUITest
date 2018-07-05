@@ -27,10 +27,9 @@ def getTestPreconditon(casePath):
     files = os.listdir(casePath)
     for eachFile in files:
         suffixType = '.{}'.format(eachFile.split('.')[-1])
-        if suffixType in cdt.EXCEL_TYPE:
-            if '~$' not in eachFile:
+        if suffixType in cdt.EXCEL_TYPE and '~$' not in eachFile:
                 fileName = eachFile
-        if suffixType in cdt.IMG_TYPE:
+        if suffixType in cdt.IMG_TYPE and 'bg_temp' not in eachFile:
             srcImgName = eachFile
         if os.path.isdir(os.path.join(casePath, eachFile)):
             targetImgField = eachFile
@@ -144,7 +143,7 @@ def getImgDict(casePath, targetImgSuit, srcImgName):
         srcImgSize = androidTR.getImgSize(os.path.join(casePath,
                                                        srcImgName))
         # 获取自适配系数
-        kx1, ky1 = androidTR.adaptiveCoefficient(infoDict)
+        kx1, ky1 = androidTR.adaptiveCoefficient(infoDict, srcImgName)
         # 获取图片比例相关系数
         kx2, ky2 = androidTR.getCorrelationCoefficients(srcImgSize,
                                                         (rx, ry),
@@ -153,10 +152,10 @@ def getImgDict(casePath, targetImgSuit, srcImgName):
         imgDict = {'testImgPath': testImgPath,
                    'testImgPathName': testImgPathName,
                    'srcImgSize': srcImgSize,
-                   'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
+                   'srcImgName': srcImgName,
                    'acPara': (kx1, ky1),
                    'ccPara': (kx2, ky2),
-                   'realSrcImgName': srcImgName,
+                   'realSrcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
                    'srcImgPath': casePath,
                    'screenDetail': infoDict}
     else:
@@ -165,6 +164,8 @@ def getImgDict(casePath, targetImgSuit, srcImgName):
 
 
 if __name__ == '__main__':
+    # 判读是否是服务器
+    # isServer = os.path.exists(os.path.join(os.pardir), '')
     # 获取手机参数信息
     configData = getConfigPara('config.json')
     # 获取需要测试的大类集合

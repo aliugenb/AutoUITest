@@ -150,7 +150,7 @@ def getScreenDetail():
     """
     infoDict = {}
     needList = []
-    if 'win' in sys.platform:
+    if re.match('^win', sys.platform):
         command = 'adb shell dumpsys window displays | findstr app='
     else:
         command = CC.GET_SCREEN_DETAIL
@@ -170,12 +170,18 @@ def getScreenDetail():
     return infoDict
 
 
-def adaptiveCoefficient(infoDict):
+def adaptiveCoefficient(infoDict, srcImgName):
     """获取当前手机屏幕参数，并转化为标准参数系数
     """
+    # 获取图片来源
+    imgName = srcImgName.strip().split('.')[0]
+    if re.match('^.+_[0-9]+x[0-9]+x[0-9]+$', imgName):
+        imgW, imgH, imgD = [int(i) for i in imgName.split('_')[-1].split('x')]
+    else:
+        imgW, imgH, imgD = (1080, 1920, 440)
     cx, cy = [int(i) for i in infoDict.get('app').split('x')]
-    kx1 = float(cx*int(infoDict.get('density')))/(1080*440)
-    ky1 = float(cy*int(infoDict.get('density')))/(1920*440)
+    kx1 = float(cx*int(infoDict.get('density')))/(imgW*imgD)
+    ky1 = float(cy*int(infoDict.get('density')))/(imgH*imgD)
     return kx1, ky1
 
 
@@ -196,10 +202,10 @@ def adaptiveImageSize(infoDict, imgDict):
     ix, iy = [int(i) for i in infoDict.get('cur').split('x')]
     if iy > cy:
         oImg = cv.imread(os.path.join(imgDict['srcImgPath'],
-                                      imgDict['realSrcImgName']))
+                                      'bg_temp.png'))
         rImg = oImg[0:cy, 0:cx]
         cv.imwrite(os.path.join(imgDict['srcImgPath'],
-                                imgDict['realSrcImgName']), rImg)
+                                'bg_temp.png'), rImg)
 
 
 def changeImgSize(filePath, practicalSize, acPara):
@@ -214,13 +220,13 @@ def changeImgSize(filePath, practicalSize, acPara):
 def getCompareImg(uiObj, imgDict):
     """将手机的当前页面截图，并把尺寸转化为和源图片一致
     """
-    uiObj.screencap(imgDict['srcImgName'], CC.PHONE_PIC_COMPARE_PATH)
+    uiObj.screencap('bg_temp', CC.PHONE_PIC_COMPARE_PATH)
     uiObj.pullFile('{}/{}'.format(CC.PHONE_PIC_COMPARE_PATH,
-                                  imgDict['realSrcImgName']),
+                                  'bg_temp.png'),
                    imgDict['srcImgPath'])
     adaptiveImageSize(imgDict.get('screenDetail'), imgDict)
     changeImgSize(os.path.join(imgDict['srcImgPath'],
-                               imgDict['realSrcImgName']),
+                               'bg_temp.png'),
                   imgDict['srcImgSize'],
                   imgDict['acPara'])
 
@@ -340,7 +346,7 @@ def getPosOfPic(targetImgName, imgDict, uiObj):
         getCompareImg(uiObj, imgDict)
         reInfo = uiObj.getTargetImgPos(os.path.join(
                                             imgDict['srcImgPath'],
-                                            imgDict['realSrcImgName']),
+                                            'bg_temp.png'),
                                        targetImgName)
         if reInfo is not None:
             break
@@ -438,6 +444,7 @@ def typewrite(paraDict, control, data, uiObj):
         elif 'desc' in paraDict:
             uiObj.setValueByDesc(**paraDict)
         elif 'Id' in paraDict:
+            print paraDict
             uiObj.setValueById(**paraDict)
         else:
             raise ValueError('表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
