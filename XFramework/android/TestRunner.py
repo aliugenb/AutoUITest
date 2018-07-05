@@ -165,8 +165,9 @@ def getScreenDetail():
             val = el.strip().split('=')
             infoDict[val[0]] = val[1]
         else:
-            val = el.strip().split('dpi')
-            infoDict['density'] = val[0]
+            if not infoDict.get('density'):
+                val = el.strip().split('dpi')
+                infoDict['density'] = val[0]
     return infoDict
 
 
@@ -178,7 +179,7 @@ def adaptiveCoefficient(infoDict, srcImgName):
     if re.match('^.+_[0-9]+x[0-9]+x[0-9]+$', imgName):
         imgW, imgH, imgD = [int(i) for i in imgName.split('_')[-1].split('x')]
     else:
-        imgW, imgH, imgD = (1080, 1920, 440)
+        imgW, imgH, imgD = (1080, 1920, 480)
     cx, cy = [int(i) for i in infoDict.get('app').split('x')]
     kx1 = float(cx*int(infoDict.get('density')))/(imgW*imgD)
     ky1 = float(cy*int(infoDict.get('density')))/(imgH*imgD)
