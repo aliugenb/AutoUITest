@@ -255,12 +255,12 @@ def detailPrint(detailName, targetList, filePath=None):
     """适配输出测试结果
     """
     if len(targetList) != 0:
-        print('{}:'.format(detailName))
+        print(u'{}:'.format(detailName))
         writeResultToTxt('{}:\n'.format(detailName))
         for i in targetList:
-            print('\t{}'.format(i))
+            print(u'\t{}'.format(i))
             writeResultToTxt('\t{}\n'.format(i))
-        print('='*60)
+        print(u'='*60)
         writeResultToTxt('{}\n'.format('='*60))
 
 
