@@ -379,14 +379,24 @@ def click(paraList, paraDict, control, uiObj):
     """点击实现
     """
     if 'text' in paraDict:
-        uiObj.clickByText(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByTextInstance(**paraDict)
+        else:
+            uiObj.clickByText(**paraDict)
     elif 'desc' in paraDict:
-        uiObj.clickByDesc(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByDescInstance(**paraDict)
+        else:
+            uiObj.clickByDesc(**paraDict)
     elif 'Id' in paraDict:
-        uiObj.clickById(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByIdInstance(**paraDict)
+        else:
+            uiObj.clickById(**paraDict)
     elif len(paraList) == 1 and '-' in paraList[0]:
         uiObj.clickByPos(*(paraList[0].split('-')))
-        uiObj._LOGGER.debug(u'点击坐标: {}-{} 结束'.format(*(paraList[0].split('-'))))
+        uiObj._LOGGER.debug(u'点击坐标: {}-{} 结束'
+                            .format(*(paraList[0].split('-'))))
     elif len(paraList) == 2:
         uiObj.clickByPos(*(paraList))
         uiObj._LOGGER.debug(u'点击坐标: {},{} 结束'.format(*(paraList)))
