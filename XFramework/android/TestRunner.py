@@ -739,7 +739,7 @@ def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
                 if isOptional == '1.0':
                     pass
                 else:
-                    uiObj._LOGGER.error(e)
+                    uiObj._LOGGER.error(e.encoding('utf-8'))
                     raise
 
 
