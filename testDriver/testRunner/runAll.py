@@ -170,15 +170,15 @@ def envInit():
     os.popen('adb shell rm -rf sdcard/AutoTest/screencap')
     os.popen('adb shell rm -rf sdcard/AutoTest/screenrecord')
     if re.match('^win', sys.platform):
-        os.popen('rd /q {}'.format(os.path.join(os.pardir,
-                                                'testLOG',
-                                                'androidLog')))
-        os.popen('del /q {}'.format(os.path.join(os.pardir,
-                                                 'testLOG',
-                                                 'simpleResult.txt')))
-        os.popen('del /q {}'.format(os.path.join(os.pardir,
-                                                 'testLOG',
-                                                 'total_log.txt')))
+        os.popen('rd /s/q {}'.format(os.path.join(os.pardir,
+                                                  'testLOG',
+                                                  'androidLog')))
+        os.popen('del /s/q {}'.format(os.path.join(os.pardir,
+                                                   'testLOG',
+                                                   'simpleResult.txt')))
+        os.popen('del /s/q {}'.format(os.path.join(os.pardir,
+                                                   'testLOG',
+                                                   'total_log.txt')))
     else:
         os.popen('rm -rf {}'.format(os.path.join(os.pardir,
                                                  'testLOG',
@@ -198,15 +198,18 @@ def logHandle(filePath):
              .format(os.path.join(os.pardir, 'testResult', filePath)))
     os.popen('adb pull sdcard/AutoTest/screenrecord {}'
              .format(os.path.join(os.pardir, 'testResult', filePath)))
-    shutil.copytree(os.path.join(os.pardir, 'testLOG', 'androidLog'),
-                    os.path.join(os.pardir, 'testResult',
-                                 filePath, 'androidLog'))
-    shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'simpleResult.txt'),
-                    os.path.join(os.pardir, 'testResult',
-                                 filePath, 'simpleResult.txt'))
-    shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'total_log.txt'),
-                    os.path.join(os.pardir, 'testResult',
-                                 filePath, 'total_log.txt'))
+    try:
+        shutil.copytree(os.path.join(os.pardir, 'testLOG', 'androidLog'),
+                        os.path.join(os.pardir, 'testResult',
+                                     filePath, 'androidLog'))
+        shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'simpleResult.txt'),
+                        os.path.join(os.pardir, 'testResult',
+                                     filePath, 'simpleResult.txt'))
+        shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'total_log.txt'),
+                        os.path.join(os.pardir, 'testResult',
+                                     filePath, 'total_log.txt'))
+    except IOError as e:
+        print(u'警告: {}'.format(str(e)))
     if os.path.exists(os.path.join(os.pardir, 'testCase', 'bg_temp.png')):
         os.remove(os.path.join(os.pardir, 'testCase', 'bg_temp.png'))
 
