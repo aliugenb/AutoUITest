@@ -4,8 +4,7 @@ import chardet
 import re
 from dateutil import parser
 
-class LogFileHandle():
-    
+class LogFileHandle():    
     def  getLogTime(self,logfile):
         #logfile='/Users/nali/Documents/Task/20180105144105_log.txt'
         count = -1
@@ -40,7 +39,6 @@ class LogFileHandle():
                         #print projectPath
                         for line in open(projectPath):
                             projectInfo.append(line.split('\n',1)[0])
-
                     else:
                         pass
             projectName = projectInfo[0]
@@ -57,8 +55,7 @@ class LogFileHandle():
                 if filename.endswith('txt'):
                     if filename == 'simpleResult.txt':
                         simResultPath=os.path.join(path,filename)
-                        #print projectPath
-                        
+                        #print projectPath                        
                         for line in open(simResultPath):
                             simResultInfo.append(line)
 
@@ -71,14 +68,8 @@ class LogFileHandle():
         g=os.walk(root)
         for path, dir, filelist in g:
             for filename in filelist:
-                if filename.endswith('txt'):
-                    if filename == 'project.txt' :
-                        pass
-                    elif filename == 'simpleResult.txt':
-                        pass
-                    else:
-                        print '找到log文件'
-                        fileNames.append(os.path.join(path, filename))
+                if 'total_log' in filename:
+                    fileNames.append(os.path.join(path, filename))
         return fileNames    
    
     def getModuleTestTime(self, logfile):
@@ -200,7 +191,7 @@ class Handler:
                 command = 'adb shell getprop ro.build.version.release'
                 platformVersion = os.popen(command).read().strip()
                 if platformVersion == '':
-                        print '获取手机名称失败'
+                        print '获取手机平台失败'
                         raise RuntimeError
                 return platformVersion
         
@@ -280,10 +271,8 @@ def getModuleTimestamps(slines,  elines, tempTimes):
             caseTestDur.append(durtime)
         '''
         for x in range(len(caseTestDur)):
-            print i,x, caseTestDur[x]'''
-            
-        caseTestDurs.extend(caseTestDur)
-    
+            print i,x, caseTestDur[x]'''            
+        caseTestDurs.extend(caseTestDur)    
     return caseTestDurs
 
 
@@ -363,37 +352,85 @@ def writeSimResultInfo(filename, simResult):
     f.write('<br/>')
     f.write('<br/>')
 
-def writeTestBottom():
-    f.write('<br/>')    
+def writeLinkedHtml(root,targetName):
+    #创建/testLOG/linkedHtmls文件夹
+   
+    
+    linkfolder = root +'/linkedHtmls/'
+    if not os.path.exists(linkfolder):
+        os.makedirs(linkfolder)
+        
+    #创建/testLOG/linkedHtmls/*.html
+    linkedFilepath = os.path.join(linkfolder, targetName+'.html')   
+       
+    lf = open(linkedFilepath,'a')
+    lf.write('<meta charset="UTF-8">') 
+     
+    
+    recordFiles = root+'/screenrecord/'+targetName
+    print recordFiles
+    if  os.path.exists(recordFiles):
+        # 文件夹存在，写入截图信息
+        pngPath ='../screencap/'+targetName+'_fail.png'
+        lf.write('<table border="1">') 
+        lf.write('<h1><font face="verdana"><b>失败截图</b></font></h1>')
+        lf.write('<hr>')
+        lf.write('<tr><td><img src='+pngPath+' alt="temp" height="55%"/></td></tr>')
+        lf.write('<table>') 
+        
+        # 获取录像文件夹下的信息，并按照顺序输出
+        tempFilenames = os.listdir(recordFiles)
+        filenames = []
+        for i in range(len(tempFilenames)):
+            if  '.mp4' in tempFilenames[i]:
+                filenames.append(tempFilenames[i])
+        lf.write('<table>')
+        lf.write('<h1><font face="verdana"><b>失败录像</b></font></h1>')
+        lf.write('<hr>')
+        for i in range(len(filenames)):
+            adds = '../screenrecord/'+targetName+'/'+str(i+1)+'.mp4'
+            print adds
+            lf.write('<tr><td><video src=' +adds+' controls="controls" height="55%"></td></tr>')        
+      
+        lf.write('</table>')
+        
+    else:
+        pass
+    
+def writeTestBottom(filename):
+    f = open(filename,'a')
+    f.write('<br/>') 
+    f.write('<br/>') 
+    f.write('<br/>') 
+    f.write('<br/>')   
     f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
     
-
-def writeTestDetail(filename, modulesContents):
+    
+def writeTestDetail(root,filename, modulesContents):
     for i in range(len(modulesContents)):
         temp =  modulesContents[i]
         modulesContents[i]= temp.strip().split(':', 1)[1]
      
     f = open(filename,'a')
     #f.write('<table border="1" class="dataframe">') 
-    f.write('<table width="100%" border="1"  class="dataframe">') 
-    f.write('<thead><tr style="text-align: center;background: #ccc"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图</th><th>重要日志</th>')  
+    f.write('<table width="100%" border="1" class="dataframe">') 
+    f.write('<thead><tr style="text-align: center;background: #ccc"><th>测试耗时</th><th>用例名</th><th>模块名</th><th>子模块名</th><th>测试结果</th><th>备注</th><th>失败截图录像</th><th>重要日志</th>')  
     for i in range(len(zip(caseTestDurs,  modulesContents))):
-        pngName = modulesContents[i].split(':',2)[0].strip()
+        sourceName = modulesContents[i].split(':',2)[0].strip()
         #print pngName
-        newpngName = delSpeChar(pngName)
+        targetName = delSpeChar(sourceName)
         #print newpngName
-        pngAdds = './screencap/'+newpngName+'_fail.png'
+        #pngAdds = '/screencap/'+targetName+'_fail.png'
+        logAdds= './androidLog/'+targetName+'.txt'
+        recordAdds= '/screenrecord/'+targetName
+        linkedFilepath = './linkedHtmls/'+targetName+'.html'
         #print pngAdds
         
         modulesContents[i]= modulesContents[i].strip().split('-', 2)
-        # '****************'
-        for j in  range(len(modulesContents[i])):
-            print modulesContents[i][j]
         testresultComment=modulesContents[i][2].strip().split(':',1)[1]
         if '(' in testresultComment:
             testresult = testresultComment.split('(',1)[0]
             comment = testresultComment.split('(',1)[1][:-1]
-            print pngAdds           
             f.write('<tr style="text-align:center; color:#FF0000;">')
             f.write('<th>'+caseTestDurs[i] +'</th>')
             f.write('<th>'+modulesContents[i][0] +'</th>')
@@ -401,8 +438,9 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+ modulesContents[i][2].strip().split(':',1)[0]+'</th>')             
             f.write('<th >'+ testresult+'</th>')
             f.write('<th >'+ comment +'</th>')
-            f.write('<th ><a target=_blank href=" '+pngAdds+'">查看</a></th>')
-            f.write('<th>'+' '+'</th>')
+            f.write('<th ><a target=_blank href=" '+linkedFilepath+'">查看</a></th>')
+            f.write('<th ><a target=_blank href=" '+logAdds+'">查看</a></th>')
+            writeLinkedHtml(root, targetName)
             f.write('</tr>')                
         else:
             f.write('<tr style="text-align: center;">')
@@ -415,8 +453,7 @@ def writeTestDetail(filename, modulesContents):
             f.write('<th>'+' '+'</th>')
             f.write('<th>'+' '+'</th>')
             f.write('</tr>')
-    f.write('</table>')
-   
+    f.write('</table>')   
     
 def renameHtmlFile(root, testTime):
     testTime1 = testTime[0].replace('-','')
@@ -431,19 +468,20 @@ def renameHtmlFile(root, testTime):
 if __name__=="__main__":
     #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
     #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
-  
-    # <服务器获取root代码段
+   
+    #<服务器获取root代码段
     root1= os.path.abspath('..')
     root = root1+'/testLOG'
     print 'root:', root
     # 服务器获取root代码段>
-    '''
+    '''    
     # <本地获取root代码段
-    root = '/Users/nali/Downloads/137'
+    root = '/Users/nali/Downloads/346'
     # 本地获取root代码段>
     '''
+    
     tempHtmlname = os.path.join(root, 'test.html')
-    print tempHtmlname
+    #print tempHtmlname
            
     lfh = LogFileHandle()
     
@@ -451,6 +489,7 @@ if __name__=="__main__":
     filename = lfh.getLogFiles(root)
     if len(filename)==0:
         print "ERROR:不存在log文件"
+        sys.exit(1)
     else:  
         print filename
         filename = filename[0]    
@@ -476,12 +515,14 @@ if __name__=="__main__":
     #得到测试项目信息
     projectInfo = lfh.getProjectInfo(root)
     
+    
     #得到测试设备的信息<       
     h = Handler()
     deviceName = h.getDeviceName()
     platformVersion = h.getPlatformVersion()
     deviceId = h.getDeviceId()
     #得到测试设备的信息>
+    
             
     testTime = lfh.getLogTime(filename) 
     simResult = lfh.getSimResultInfo(root)
@@ -489,11 +530,12 @@ if __name__=="__main__":
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
     writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
-    #writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
+    writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
    
     writeSimResultInfo(tempHtmlname, simResult)
-    writeTestDetail(tempHtmlname, modulesContents)
+    writeTestDetail(root,tempHtmlname, modulesContents)
+    writeTestBottom(tempHtmlname)
 
     #已测试开始时间重命名test.html
     #renameHtmlFile(root, testTime)

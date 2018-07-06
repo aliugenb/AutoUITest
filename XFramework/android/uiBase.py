@@ -467,9 +467,9 @@ class UITest(BaseOn, TA):
         else:
             self._LOGGER.debug('滑动结束，共滑动 {}次'.format(kwargs.get('step', 9)))
         if iCount == kwargs.get('pCount'):
-            return (True, iCount)
+            return (True, iCount, kwargs.get('pCount'))
         else:
-            return (False, iCount)
+            return (False, iCount, kwargs.get('pCount'))
 
     def hSwipeAndAssert(self, *args, **kwargs):
         """上下滑动并判断元素个数
@@ -504,33 +504,35 @@ class UITest(BaseOn, TA):
         else:
             self._LOGGER.debug('滑动结束，共滑动 {}次'.format(kwargs.get('step', 9)))
         if iCount == kwargs.get('pCount'):
-            return (True, iCount)
+            return (True, iCount, kwargs.get('pCount'))
         else:
-            return (False, iCount)
+            return (False, iCount, kwargs.get('pCount'))
     # def longPressByElement(self, el, duration=1000):
     #     '''
     #     长按元素
     #     '''
     #     self.long_press()
 
-    def dragByElement(self, rule='e', *args, **kwargs):
+    def dragByElement(self, *args, **kwargs):
         '''
         元素拖动
         '''
         if 'el_start' in kwargs and 'el_end' in kwargs:
             # 得到移动起始位置的元素
             if 'ins_start' not in kwargs:
-                el_s = self.__getElement(kwargs['el_start'], rule)
+                el_s = self.__getElement(kwargs['el_start'],
+                                         kwargs.get('rule_start', 'e'))
             else:
                 el_s = self.__getElement(kwargs['el_start'],
-                                         rule,
+                                         kwargs.get('rule_start', 'e'),
                                          kwargs['ins_start'])
             # 得到移动结束位置的元素
             if 'ins_end' not in kwargs:
-                el_e = self.__getElement(kwargs['el_end'], rule)
+                el_e = self.__getElement(kwargs['el_end'],
+                                         kwargs.get('rule_end', 'e'))
             else:
                 el_e = self.__getElement(kwargs['el_end'],
-                                         rule,
+                                         kwargs.get('rule_end', 'e'),
                                          kwargs['ins_end'])
             # 执行移动
             self.long_press(el_s).move_to(el_e).release().perform()
@@ -565,6 +567,42 @@ class UITest(BaseOn, TA):
         timeArray = time.localtime(currenttime)
         formatTime = time.strftime("%Y-%m-%d-%H:%M:%S", timeArray)
         return formatTime
+
+    def getElementFromControl(self, *args, **kwargs):
+        """返回元素对象
+        """
+        el = None
+        if kwargs.get('text') is not None:
+            if kwargs.get('ins') is None:
+                el = self.__select_text_Android(kwargs.get('text'),
+                                                kwargs.get('rule', 'e'))
+            else:
+                el = self.__select_text_ins_Android(kwargs.get('text'),
+                                                    kwargs.get('ins'),
+                                                    kwargs.get('rule', 'e'))
+            if not el:
+                raise AssertionError(1)
+        elif kwargs.get('desc') is not None:
+            if kwargs.get('ins') is None:
+                el = self.__select_desc_Android(kwargs.get('desc'),
+                                                kwargs.get('rule', 'e'))
+            else:
+                el = self.__select_desc_ins_Android(kwargs.get('desc'),
+                                                    kwargs.get('ins'),
+                                                    kwargs.get('rule', 'e'))
+            if not el:
+                raise AssertionError(2)
+        elif kwargs.get('Id') is not None:
+            if kwargs.get('ins') is None:
+                el = self.__select_Id_Android(kwargs.get('Id'))
+            else:
+                el = self.__select_Id_ins_Android(kwargs.get('desc'),
+                                                  kwargs.get('ins'))
+            if not el:
+                raise AssertionError(3)
+        else:
+            pass
+        return el
 
     @baseOn.unifyParaCode
     def __select_text_Android(self, text, rule):
@@ -673,14 +711,15 @@ class UITest(BaseOn, TA):
         '''
         通过用户传参获取元素
         '''
-        el_T = self.__select_text_Android(el, rule)
-        el_D = self.__select_desc_Android(el, rule)
         if not ins:
+            el_T = self.__select_text_Android(el, rule)
+            el_D = self.__select_desc_Android(el, rule)
             el_I = self.__select_Id_Android(el)
         else:
+            el_T = self.__select_text_ins_Android(el, ins, rule)
+            el_D = self.__select_desc_ins_Android(el, ins, rule)
             el_I = self.__select_Id_ins_Android(el, ins)
 
         el_list = [el_T, el_D, el_I]
         el_list_n = self.clearAllAppointEl(el_list, False)
-        el = el_list_n[0]
-        return el
+        return el_list_n[0]

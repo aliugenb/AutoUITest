@@ -94,12 +94,15 @@ class UITest(BaseOn, TA):
         if str(kwargs['flowTag']) == '1':
             try:
                 self.sleep(kwargs['totalTime'], refresh_time=kwargs['refresh_time'], name=name)
+                print 1
             except AssertionError as e:
+                print 2
                 pass
         try:
             self.__select_name_iOS(name).click()
             self._LOGGER.debug(u'点击text: ' + name + u'，结束')
         except AttributeError as e:
+            print e
             raise AssertionError(2)  
         
     @setDefaultPara    
@@ -136,16 +139,42 @@ class UITest(BaseOn, TA):
             raise AssertionError(3)
         
     @setDefaultPara  
-    def setValueByXpath(self, input_text, xpath, *args, **kwargs):
+    def setValueById(self, input_text, Id, *args, **kwargs):
         """
-        通过控件的xpath输入文本
+        通过控件的Id输入文本
         input_text为你想输入文本
         """    
+        try:
+            self.__select_Id_iOS(Id).click()
+            self.__select_id_iOS(Id).send_keys(input_text)
+            self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
+        except AttributeError as e:            
+            raise AssertionError(3)
+
+    @setDefaultPara
+    def setValueByName(self, input_text, name, *args, **kwargs):
+        """
+            通过控件的name输入文本
+            input_text为你想输入文本
+            """
+        try:
+            self.__select_name_iOS(name).click()
+            self.__select_name_iOS(name).send_keys(input_text)
+            self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
+        except AttributeError as e:
+            raise AssertionError(3)
+
+    @setDefaultPara
+    def setValueByXpath(self, input_text, xpath, *args, **kwargs):
+        """
+            通过控件的xpath输入文本
+            input_text为你想输入文本
+            """
         try:
             self.__select_xpath_iOS(xpath).click()
             self.__select_xpath_iOS(xpath).send_keys(input_text)
             self._LOGGER.debug(u'T文本: ' + input_text + u'，输入结束')
-        except AttributeError as e:            
+        except AttributeError as e:
             raise AssertionError(3)
 
     @setDefaultPara
@@ -294,7 +323,7 @@ class UITest(BaseOn, TA):
         iOS:name
         """
         try:
-            el = self.driver.find_elements_by_name(name)
+            el = self.driver.find_element_by_name(name)
             return el
         except selenium.common.exceptions.NoSuchElementException as e:
             return False

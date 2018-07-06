@@ -14,7 +14,7 @@ class AppiumTests(unittest.TestCase):
         desired_caps = {}
         #desired_caps['appium-version'] = '1.6.5'
         desired_caps['platformName'] = 'iOS'
-        desired_caps['platformVersion'] = '10.1'
+        desired_caps['platformVersion'] = '11.4'
         desired_caps['deviceName'] = 'iPhone 5s'
         desired_caps['app']=app
         #desired_caps['udid']='2e58ffd37a53a8a3920f51b4ab73fe5e6a363d22'
@@ -33,11 +33,12 @@ class AppiumTests(unittest.TestCase):
 
     def test_lock(self):
         sleep(10)
-        note1 = self.driver.find_element('name', '允许')
+        note1 = self.driver.find_element_by_id('允许')
+        #note1 = self.driver.find_element('name', '允许')
         if note1:
             note1.click()
             print '点击允许'
-        sleep(2)
+        sleep(10)
         note2 = self.driver.find_element('id','以后再说')
         if note2:
             note2.click()
@@ -53,10 +54,9 @@ class AppiumTests(unittest.TestCase):
         sleep(2)
          
         username = self.driver.find_element_by_xpath('//XCUIElementTypeApplication[@name="喜马拉雅FM"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeScrollView/XCUIElementTypeOther[2]/XCUIElementTypeOther[1]/XCUIElementTypeTextField')       
-        #username = self.driver.find_element_by_ios_predicate('value == "请输入手机号"')
+        #username = self.driver.find_element_by_ios_predicate('label == "请输入手机号"')
         if username:
-            print username
-            print '存在value=请输入手机号'
+            print '存在label=请输入手机号'
             username.click()
             print '光标定位到用户名输入框'            
             sleep(2)
@@ -64,14 +64,15 @@ class AppiumTests(unittest.TestCase):
             print '*************'
             
         password = self.driver.find_element_by_xpath('//XCUIElementTypeApplication[@name="喜马拉雅FM"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeScrollView/XCUIElementTypeOther[2]/XCUIElementTypeOther[2]/XCUIElementTypeSecureTextField')
-        #password = self.driver.find_element_by_ios_predicate('value == "请输入密码"')
+        #password = self.driver.find_element_by_ios_predicate('label == "请输入密码"')
         if password:
-            print '存在value=请输入密码'
+            print '存在label=请输入密码'
             password.click()
             print '光标定位到密码框'
             password.send_keys(u'a123456') 
             
-        siginbut = self.driver.find_element_by_ios_predicate('label == "登录"')
+        #siginbut = self.driver.find_element_by_ios_predicate('label == "登录"')
+        siginbut = self.driver.find_element('name', '登录')
         if siginbut:
             print '存在label=登录的button'
             siginbut.click()

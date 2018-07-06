@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 import os
-import sys
 import xlrd
 import json
 from functools import wraps
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import common
 common.pathGet()
 from XFramework.android.baseOn import BaseOn as androidBO
@@ -25,10 +27,9 @@ def getTestPreconditon(casePath):
     files = os.listdir(casePath)
     for eachFile in files:
         suffixType = '.{}'.format(eachFile.split('.')[-1])
-        if suffixType in cdt.EXCEL_TYPE:
-            if '~$' not in eachFile:
+        if suffixType in cdt.EXCEL_TYPE and '~$' not in eachFile:
                 fileName = eachFile
-        if suffixType in cdt.IMG_TYPE:
+        if suffixType in cdt.IMG_TYPE and 'bg_temp' not in eachFile:
             srcImgName = eachFile
         if os.path.isdir(os.path.join(casePath, eachFile)):
             targetImgField = eachFile
@@ -122,18 +123,62 @@ def getConfigPara(configPath):
     return configDict
 
 
+def getImgDict(casePath, targetImgSuit, srcImgName):
+    """获取图片参数集合
+    """
+    imgDict = {}
+    if srcImgName != '' and targetImgSuit != '':
+        # 获取手机屏幕详情
+        infoDict = androidTR.getScreenDetail()
+        rx, ry = [int(i) for i in infoDict.get('app').split('x')]
+        # 解压测试图片所属压缩文件
+        if '.' in targetImgSuit:
+            cdt.unzipFile(casePath, targetImgSuit)
+            # 获取解压后的测试图片文件目录
+            testImgPathName = cdt.getFileNameWithoutSuffix(targetImgSuit)
+        else:
+            testImgPathName = targetImgSuit
+        testImgPath = os.path.join(casePath, testImgPathName)
+        # 获取源图片尺寸
+        srcImgSize = androidTR.getImgSize(os.path.join(casePath,
+                                                       srcImgName))
+        # 获取自适配系数
+        kx1, ky1 = androidTR.adaptiveCoefficient(infoDict, srcImgName)
+        # 获取图片比例相关系数
+        kx2, ky2 = androidTR.getCorrelationCoefficients(srcImgSize,
+                                                        (rx, ry),
+                                                        (kx1, ky1))
+        # 图片所需参数集合
+        imgDict = {'testImgPath': testImgPath,
+                   'testImgPathName': testImgPathName,
+                   'srcImgSize': srcImgSize,
+                   'srcImgName': srcImgName,
+                   'acPara': (kx1, ky1),
+                   'ccPara': (kx2, ky2),
+                   'realSrcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
+                   'srcImgPath': casePath,
+                   'screenDetail': infoDict}
+    else:
+        print("警告: 测试图片压缩文件和源图片未同时存在于上传文件中，默认你未使用图片点击功能！")
+    return imgDict
+
+
 if __name__ == '__main__':
+    # 判读是否是服务器
+    # isServer = os.path.exists(os.path.join(os.pardir), '')
     # 获取手机参数信息
     configData = getConfigPara('config.json')
     # 获取需要测试的大类集合
     allTestList = getTestClass('testList.txt')
     # 获取用例路径以及源图片名字
     casePath, caseName, srcImgName, targetImgSuit = getCaseInfo('testCase')
+    # 创建结果参数类实例
+    rp = androidTR.ResultPara()
     # 获取所有测试用例
-    allTestClass, realIngoreModule = cdt.getTestCaseSuit(os.path.join(
+    allTestClass, rp.realIngoreModule = cdt.getTestCaseSuit(os.path.join(
                                                                     casePath,
                                                                     caseName),
-                                                         allTestList)
+                                                            allTestList)
     realAllTestClass = getRealTestClass(allTestClass)
     # 测试驱动
     if configData['platformName'] == 'Android':
@@ -143,51 +188,19 @@ if __name__ == '__main__':
         androidBO._LOGGER = LG.logCreater(logPath)
         # 创建 driver 实例
         p = androidUT(configData)
-        imgDict = {}
-        if srcImgName != '' and targetImgSuit != '':
-            # 获取手机屏幕详情
-            infoDict = androidTR.getScreenDetail()
-            rx, ry = [int(i) for i in infoDict.get('app').split('x')]
-            # 解压测试图片所属压缩文件
-            if '.' in targetImgSuit:
-                cdt.unzipFile(casePath, targetImgSuit)
-                # 获取解压后的测试图片文件目录
-                testImgPathName = cdt.getFileNameWithoutSuffix(targetImgSuit)
-            else:
-                testImgPathName = targetImgSuit
-            testImgPath = os.path.join(casePath, testImgPathName)
-            # 获取源图片尺寸
-            srcImgSize = androidTR.getImgSize(os.path.join(casePath,
-                                                           srcImgName))
-            # 获取自适配系数
-            kx1, ky1 = androidTR.adaptiveCoefficient(infoDict)
-            # 获取图片比例相关系数
-            kx2, ky2 = androidTR.getCorrelationCoefficients(srcImgSize,
-                                                            (rx, ry),
-                                                            (kx1, ky1))
-            # 图片所需参数集合
-            imgDict = {'testImgPath': testImgPath,
-                       'testImgPathName': testImgPathName,
-                       'srcImgSize': srcImgSize,
-                       'srcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
-                       'acPara': (kx1, ky1),
-                       'ccPara': (kx2, ky2),
-                       'realSrcImgName': srcImgName,
-                       'srcImgPath': casePath,
-                       'screenDetail': infoDict}
-        else:
-            print("警告: 测试图片压缩文件和源图片未同时存在于上传文件中，默认你未使用图片点击功能！")
-
+        # 图片所需参数集合
+        imgDict = getImgDict(casePath, targetImgSuit, srcImgName)
+        # 开始测试
         try:
-            androidTR.testRunAllTest(realAllTestClass, realIngoreModule,
-                                     configData, p, imgDict)
+            androidTR.testRunAllTest(realAllTestClass,
+                                     configData, imgDict, p, rp)
         except (Exception, KeyboardInterrupt, SystemExit) as e:
-            p._LOGGER.info('Test End...')
             p._LOGGER.exception(e)
+            p._LOGGER.info('Test End...')
         finally:
             # 防止主程序意外退出，杀掉其下所有子进程
-            while not androidTR.childPQ.empty():
-                childPid = androidTR.childPQ.get()
+            while not rp.childPQ.empty():
+                childPid = rp.childPQ.get_nowait()
                 os.popen('kill -9 {}'.format(childPid))
             sys.exit(0)
     # elif configData['platformName'] == 'iOS':
