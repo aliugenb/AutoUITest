@@ -246,7 +246,7 @@ if __name__ == '__main__':
                                  configData, imgDict, p, rp)
     except (Exception, KeyboardInterrupt, SystemExit) as e:
         p._LOGGER.exception(e)
-        p._LOGGER.info('Test End...')
+        p._LOGGER.info(u'Test End...')
     finally:
         # 防止主程序意外退出，杀掉其下所有子进程
         while not rp.childPQ.empty():

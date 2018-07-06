@@ -931,8 +931,8 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                     continue
                 else:
                     rpObj.ingoreFeature.extend(tempIngoreFeature)
-            uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
-                                                            moduleName))
+            uiObj._LOGGER.info(u'{}_{} Test Start...'.format(testClassName,
+                                                             moduleName))
             # 处理功能点
             for eachFeature in realFeatures:
                 # 获取每个测试大类下测试模块有效测试功能点名称
@@ -947,8 +947,8 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         otherEventSuit.append(creatEvent(eachStep))
                     # 用例拼接名
                     rName = '{}-{}-{}'.format(testClassName,
-                                              moduleName,
-                                              featureName)
+                                               moduleName,
+                                               featureName)
                     # 转换非法字符
                     tName = replaceIllegalCharacter(rName)
                     # 开始测试
@@ -1031,7 +1031,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         else:
                             uiObj.clearApp()
                         time.sleep(5)
-            uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
+            uiObj._LOGGER.info(u'{}_{} Test End...'.format(testClassName,
                                                           moduleName))
     uiObj.set_ime()
     # 打印报告
