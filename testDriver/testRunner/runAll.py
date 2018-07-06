@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 import os
 import sys
+import re
 import xlrd
+import shutil
 import json
 import time
 from functools import wraps
@@ -167,6 +169,46 @@ def envInit():
     """
     os.popen('adb shell rm -rf sdcard/AutoTest/screencap')
     os.popen('adb shell rm -rf sdcard/AutoTest/screenrecord')
+    if re.match('^win', sys.platform):
+        os.popen('rd /q {}'.format(os.path.join(os.pardir,
+                                                'testLOG',
+                                                'androidLog')))
+        os.popen('del /q {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'simpleResult.txt')))
+        os.popen('del /q {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'total_log.txt')))
+    else:
+        os.popen('rm -rf {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'androidLog')))
+        os.popen('rm -rf {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'simpleResult.txt')))
+        os.popen('rm -rf {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'total_log.txt')))
+
+
+def logHandle(filePath):
+    """处理log信息
+    """
+    os.popen('adb pull sdcard/AutoTest/screencap {}'
+             .format(os.path.join(os.pardir, 'testResult', filePath)))
+    os.popen('adb pull sdcard/AutoTest/screenrecord {}'
+             .format(os.path.join(os.pardir, 'testResult', filePath)))
+    shutil.copytree(os.path.join(os.pardir, 'testLOG', 'androidLog'),
+                    os.path.join(os.pardir, 'testResult',
+                                 filePath, 'androidLog'))
+    shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'simpleResult.txt'),
+                    os.path.join(os.pardir, 'testResult',
+                                 filePath, 'simpleResult.txt'))
+    shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'total_log.txt'),
+                    os.path.join(os.pardir, 'testResult',
+                                 filePath, 'total_log.txt'))
+    if os.path.exists(os.path.join(os.pardir, 'testCase', 'bg_temp.png')):
+        os.remove(os.path.join(os.pardir, 'testCase', 'bg_temp.png'))
 
 
 if __name__ == '__main__':
@@ -186,45 +228,30 @@ if __name__ == '__main__':
                                                                     caseName),
                                                             allTestList)
     realAllTestClass = getRealTestClass(allTestClass)
-    # 测试驱动
-    if configData['platformName'] == 'Android':
-        # 删除遗留文件
-        envInit()
-        # 获取log文件生成路径
-        rp.logPath = time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime())
-        os.mkdir(os.path.join(os.pardir, 'testLOG', rp.logPath))
-        logPath = LG.setLogPath(rp.logPath)
-        # 为driver动态添加logger
-        androidBO._LOGGER = LG.logCreater(logPath)
-        # 创建 driver 实例
-        p = androidUT(configData)
-        # 图片所需参数集合
-        imgDict = getImgDict(casePath, targetImgSuit, srcImgName)
-        # 开始测试
-        try:
-            androidTR.testRunAllTest(realAllTestClass,
-                                     configData, imgDict, p, rp)
-        except (Exception, KeyboardInterrupt, SystemExit) as e:
-            p._LOGGER.exception(e)
-            p._LOGGER.info('Test End...')
-        finally:
-            # 防止主程序意外退出，杀掉其下所有子进程
-            while not rp.childPQ.empty():
-                childPid = rp.childPQ.get_nowait()
-                os.popen('kill -9 {}'.format(childPid))
-            # 处理 log 信息
-            os.popen('adb pull sdcard/AutoTest/screencap {}'
-                     .format(os.path.join(os.pardir, 'testLOG', rp.logPath)))
-            os.popen('adb pull sdcard/AutoTest/screenrecord {}'
-                     .format(os.path.join(os.pardir, 'testLOG', rp.logPath)))
-            if os.path.exists(os.path.join(os.pardir, 'testCase', 'bg_temp.png')):
-                os.remove(os.path.join(os.pardir, 'testCase', 'bg_temp.png'))
-            sys.exit(0)
-    # elif configData['platformName'] == 'iOS':
-    #     iosBO._LOGGER = LG.logCreater(logPath)
-    #     p = iosUT(configData)
-    #     iosTR.testRunAllTest(realAllTestClass, realIngoreModule,
-    #                          configData, p)
-    else:
-        print('移动平台参数设置错误，退出测试！')
-        sys.exit(1)
+    # 删除遗留文件
+    envInit()
+    # 获取log文件生成路径
+    rp.logPath = time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime())
+    os.mkdir(os.path.join(os.pardir, 'testResult', rp.logPath))
+    logPath = LG.setLogPath()
+    # 为driver动态添加logger
+    androidBO._LOGGER = LG.logCreater(logPath)
+    # 创建 driver 实例
+    p = androidUT(configData)
+    # 图片所需参数集合
+    imgDict = getImgDict(casePath, targetImgSuit, srcImgName)
+    # 开始测试
+    try:
+        androidTR.testRunAllTest(realAllTestClass,
+                                 configData, imgDict, p, rp)
+    except (Exception, KeyboardInterrupt, SystemExit) as e:
+        p._LOGGER.exception(e)
+        p._LOGGER.info('Test End...')
+    finally:
+        # 防止主程序意外退出，杀掉其下所有子进程
+        while not rp.childPQ.empty():
+            childPid = rp.childPQ.get_nowait()
+            os.popen('kill -9 {}'.format(childPid))
+        # 处理 log 信息
+        logHandle(rp.logPath)
+        sys.exit(0)
