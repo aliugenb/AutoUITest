@@ -103,7 +103,7 @@ def exceptionHandle(func):
                 raise AssertionError(u"文本: {} 输入失败，请确认!"
                                      .format(args[1]))
             elif flowTag == 5:
-                raise AssertionError('{}_fail'.format(args[1]))
+                raise AssertionError(u'{}_fail'.format(args[1]))
             elif flowTag == 6:
                 raise AssertionError(u'点击操作后，此元素 {} 的text值发生改变，fail'.format(
                                         reminderValue))
@@ -975,7 +975,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                             executeEvent(otherEventSuit, uiObj,
                                          3, imgDict)
                     except AssertionError as e:
-                        uiObj._LOGGER.info('{}: FAIL'.format(rName))
+                        uiObj._LOGGER.info(u'{}: FAIL'.format(rName))
                         rpObj.realFailTag = 1
                         rpObj.failList.append(rName)
                         rpObj.failCount += 1
