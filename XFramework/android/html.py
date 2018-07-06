@@ -371,7 +371,7 @@ def writeLinkedHtml(root,targetName):
     print recordFiles
     if  os.path.exists(recordFiles):
         # 文件夹存在，写入截图信息
-        pngPath ='../screencap/'+targetName+'_fail.png'
+        pngPath ='./screencap/'+targetName+'_fail.png'
         lf.write('<table border="1">') 
         lf.write('<h1><font face="verdana"><b>失败截图</b></font></h1>')
         lf.write('<hr>')
@@ -388,7 +388,7 @@ def writeLinkedHtml(root,targetName):
         lf.write('<h1><font face="verdana"><b>失败录像</b></font></h1>')
         lf.write('<hr>')
         for i in range(len(filenames)):
-            adds = '../screenrecord/'+targetName+'/'+str(i+1)+'.mp4'
+            adds = './screenrecord/'+targetName+'/'+str(i+1)+'.mp4'
             print adds
             lf.write('<tr><td><video src=' +adds+' controls="controls" height="55%"></td></tr>')        
       
