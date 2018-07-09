@@ -352,9 +352,10 @@ def writeSimResultInfo(filename, simResult):
     f.write('<br/>')
     f.write('<br/>')
 
-def writeLinkedHtml(root,targetName):
+def writeLinkedHtml(root,targetName,projectInfo):
     #创建/testLOG/linkedHtmls文件夹
    
+    root =root+'/'+projectInfo[3]+'/'
     
     linkfolder = root +'/linkedHtmls/'
     if not os.path.exists(linkfolder):
@@ -406,7 +407,7 @@ def writeTestBottom(filename):
     f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
     
     
-def writeTestDetail(root,filename, modulesContents):
+def writeTestDetail(root,filename, modulesContents，projectInfo):
     for i in range(len(modulesContents)):
         temp =  modulesContents[i]
         modulesContents[i]= temp.strip().split(':', 1)[1]
@@ -440,7 +441,7 @@ def writeTestDetail(root,filename, modulesContents):
             f.write('<th >'+ comment +'</th>')
             f.write('<th ><a target=_blank href=" '+linkedFilepath+'">查看</a></th>')
             f.write('<th ><a target=_blank href=" '+logAdds+'">查看</a></th>')
-            writeLinkedHtml(root, targetName)
+            writeLinkedHtml(root, targetName, projectInfo)
             f.write('</tr>')                
         else:
             f.write('<tr style="text-align: center;">')
