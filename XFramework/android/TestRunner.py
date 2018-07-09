@@ -6,7 +6,6 @@ import re
 import urllib2
 import cv2 as cv
 import subprocess
-from PIL import Image
 from multiprocessing import Process, Queue
 from functools import wraps
 import selenium
@@ -145,8 +144,8 @@ def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.txt'):
 def getImgSize(filePath):
     """获取图片像素大小
     """
-    reImg = Image.open(filePath)
-    return reImg.size
+    reImg = cv.imread(filePath, 0)
+    return (reImg.shape[1], reImg.shape[0])
 
 
 def getScreenDetail():
@@ -190,16 +189,6 @@ def adaptiveCoefficient(infoDict, srcImgName):
     return kx1, ky1
 
 
-def getCorrelationCoefficients(practicalSize, idealSize, acPara):
-    """获取截图像素和手机屏幕像素之比
-    """
-    practicalSizeX, practicalSizeY = practicalSize
-    idealSizeX, idealSizeY = idealSize
-    kx2 = idealSizeX/float(practicalSizeX/acPara[0])
-    ky2 = idealSizeY/float(practicalSizeY/acPara[1])
-    return kx2, ky2
-
-
 def adaptiveImageSize(infoDict, imgDict):
     """图片适配全面屏，将截图裁剪掉多余部分
     """
@@ -216,10 +205,10 @@ def adaptiveImageSize(infoDict, imgDict):
 def changeImgSize(filePath, practicalSize, acPara):
     """将手机截图图片大小压缩为指定图片的大小
     """
-    im = Image.open(filePath)
-    rp = (int(practicalSize[0]/acPara[0]), int(practicalSize[1]/acPara[1]))
-    new_im = im.resize(rp, Image.ANTIALIAS)
-    new_im.save(filePath)
+    im = cv.imread(filePath, 0)
+    rp = (int(practicalSize[0]*acPara[0]), int(practicalSize[1]*acPara[1]))
+    new_im = cv.resize(im, rp, interpolation=cv.INTER_LINEAR)
+    cv.imwrite(filePath, new_im)
 
 
 def getCompareImg(uiObj, imgDict):
@@ -236,11 +225,11 @@ def getCompareImg(uiObj, imgDict):
                   imgDict['acPara'])
 
 
-def getPosOnScreen(originalPos, coefficients):
+def getPosOnScreen(originalPos, bgSize, phoneSize):
     """获取屏幕上的坐标点
     """
-    realPosX = int(originalPos[0] * coefficients[0])
-    realPosY = int(originalPos[1] * coefficients[1])
+    realPosX = int(originalPos[0]*phoneSize[0]/float(bgSize[0]))
+    realPosY = int(originalPos[1]*phoneSize[1]/float(bgSize[1]))
     return realPosX, realPosY
 
 
@@ -343,19 +332,18 @@ def getPosOfPic(targetImgName, imgDict, uiObj):
     """获取测试图片所在位置
     """
     # 点击总次数
-    totalTime = 10
+    totalTime = 3
     # 实际已点次数
     countTime = 0
     # 10s内刷新匹配图片
     while countTime < totalTime:
         getCompareImg(uiObj, imgDict)
-        reInfo = uiObj.getTargetImgPos(os.path.join(
-                                            imgDict['srcImgPath'],
-                                            'bg_temp.png'),
-                                       targetImgName)
+        reInfo = uiObj.getTargetImgPosPlus(os.path.join(
+                                                imgDict['srcImgPath'],
+                                                'bg_temp.png'),
+                                           targetImgName)
         if reInfo is not None:
             break
-        time.sleep(1)
         countTime += 1
     return reInfo
 
@@ -417,7 +405,8 @@ def clickByPic(control, imgDict, uiObj):
     except IOError as e:
         raise AssertionError(9, e)
     if reInfo is not None:
-        realPos = getPosOnScreen(reInfo, imgDict['ccPara'])
+        realPos = getPosOnScreen(reInfo['matchResult'],
+                                 reInfo['imSize'], imgDict['screenSize'])
         uiObj.clickByPos(realPos[0], realPos[1])
         uiObj._LOGGER.debug(u'点击图片: {} ，结束'.format(control))
     else:
@@ -653,10 +642,10 @@ def expectParaParse(expectPara, expect):
         elif '!=' in eachPara:
             paraKey, paraValue = eachPara.strip().split('!=')
             paraDict['isIn'] = 1
-        elif '=' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('=')
         else:
             raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
+        if '=' in eachPara and '==' not in eachPara and '!=' not in eachPara:
+            paraKey, paraValue = eachPara.strip().split('=')
         paraDict[paraKey] = paraValue
     return paraDict
 
@@ -667,7 +656,10 @@ def getExpectList(expectParaList, expect, expectInfo, uiObj):
     condition = []
     for eachPara in expectParaList:
         paraDict = expectParaParse(eachPara, expect)
-        paraDict['instruction'] = expectInfo
+        if expectInfo:
+            paraDict['instruction'] = expectInfo
+        else:
+            raise ValueError(u'表格参数: {} 不合法,提醒: 判断描述未填写'.format(expect))
         tempData = expectTypeHandle(paraDict, expect, uiObj)
         condition.append(tempData)
     return condition
@@ -739,7 +731,7 @@ def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
                 if isOptional == '1.0':
                     pass
                 else:
-                    uiObj._LOGGER.error(unicode(e).encode('utf-8'))
+                    uiObj._LOGGER.error(u'{}'.format(str(e)))
                     raise
 
 

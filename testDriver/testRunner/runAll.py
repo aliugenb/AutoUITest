@@ -145,17 +145,13 @@ def getImgDict(casePath, targetImgSuit, srcImgName):
                                                        srcImgName))
         # 获取自适配系数
         kx1, ky1 = androidTR.adaptiveCoefficient(infoDict, srcImgName)
-        # 获取图片比例相关系数
-        kx2, ky2 = androidTR.getCorrelationCoefficients(srcImgSize,
-                                                        (rx, ry),
-                                                        (kx1, ky1))
         # 图片所需参数集合
         imgDict = {'testImgPath': testImgPath,
                    'testImgPathName': testImgPathName,
                    'srcImgSize': srcImgSize,
                    'srcImgName': srcImgName,
+                   'screenSize': (rx, ry),
                    'acPara': (kx1, ky1),
-                   'ccPara': (kx2, ky2),
                    'realSrcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
                    'srcImgPath': casePath,
                    'screenDetail': infoDict}
