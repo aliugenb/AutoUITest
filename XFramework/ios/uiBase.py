@@ -65,7 +65,7 @@ class UITest(BaseOn, TA):
         """
         通过坐标点击；duration为持续时间，单位ms
         """
-        self.driver.tap([(x, y)], duration)
+        self.driver.tap([(x, y)], 500)
         time.sleep(1)
         self._LOGGER.debug(u'点击坐标结束')
     
