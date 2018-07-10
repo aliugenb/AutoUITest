@@ -8,9 +8,9 @@ import json
 from functools import wraps
 import common
 common.pathGet()
-from XFramework.android.baseOn import BaseOn as androidBO
-from XFramework.android.uiBase import UITest as androidUT
-import XFramework.android.TestRunner as androidTR
+#from XFramework.android.baseOn import BaseOn as androidBO
+#from XFramework.android.uiBase import UITest as androidUT
+#import XFramework.android.TestRunner as androidTR
 from XFramework.ios.baseOn import BaseOn as iosBO
 from XFramework.ios.uiBase import UITest as iosUT
 import XFramework.ios.TestRunner as iosTR
