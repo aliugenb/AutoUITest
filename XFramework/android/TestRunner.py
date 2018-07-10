@@ -636,17 +636,22 @@ def expectParaParse(expectPara, expect):
     """
     allParaList = expectPara.strip().split(',')
     paraDict = {}
+    jFlag = 0
     for eachPara in allParaList:
         if '==' in eachPara:
             paraKey, paraValue = eachPara.strip().split('==')
+            jFlag = 1
         elif '!=' in eachPara:
             paraKey, paraValue = eachPara.strip().split('!=')
+            jFlag = 0
             paraDict['isIn'] = 1
+        elif '=' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('=')
         else:
             raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
-        if '=' in eachPara and '==' not in eachPara and '!=' not in eachPara:
-            paraKey, paraValue = eachPara.strip().split('=')
         paraDict[paraKey] = paraValue
+    if jFlag == 0:
+        raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
     return paraDict
 
 
