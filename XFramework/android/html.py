@@ -535,7 +535,7 @@ if __name__=="__main__":
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
    
     writeSimResultInfo(tempHtmlname, simResult)
-    writeTestDetail(root,tempHtmlname, modulesContents)
+    writeTestDetail(root,tempHtmlname, modulesContents, projectInfo)
     writeTestBottom(tempHtmlname)
 
     #已测试开始时间重命名test.html
