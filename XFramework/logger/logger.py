@@ -2,6 +2,15 @@
 import os, sys, logging, time
 
 
+level_styles = {
+                'critical': {'color': 'red', 'bold': True},
+                'debug': {'color': 'green'},
+                'error': {'color': 'white', 'background': 'red'},
+                'info': {},
+                'warning': {'color': 'black', 'background': 'yellow'}
+                }
+
+
 def setLogPath(filePath=None, fileName='total_log.txt'):
     '''
     设置LOG生成路径和文件名
@@ -46,8 +55,17 @@ def logCreater(filePath):
     consoleHandler.setLevel(logging.DEBUG)
     # 输出格式
     formatter = logging.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - <%(funcName)s> %(levelname)s: %(message)s")
+    # 检测是否有手机
+    f = os.popen('adb devices').read().strip()
+    fl = f.split('\n')
+    if len(fl) == 1:
+        formatter1 = logging.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - <%(funcName)s> %(levelname)s: %(message)s")
+    else:
+        from coloredlogs import ColoredFormatter
+        formatter1 = ColoredFormatter('%(asctime)s - %(filename)s[line:%(lineno)d] - <%(funcName)s> %(levelname)s: %(message)s',
+                                      level_styles=level_styles)
     fileHandler.setFormatter(formatter)
-    consoleHandler.setFormatter(formatter)
+    consoleHandler.setFormatter(formatter1)
     # 将处理器添加到logger
     logger.addHandler(fileHandler)
     logger.addHandler(consoleHandler)
