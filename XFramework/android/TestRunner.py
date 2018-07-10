@@ -6,7 +6,6 @@ import re
 import urllib2
 import cv2 as cv
 import subprocess
-from PIL import Image
 from multiprocessing import Process, Queue
 from functools import wraps
 import selenium
@@ -44,6 +43,8 @@ class ResultPara(object):
     childPQ = Queue()
     # 设置中止子进程标志队列
     childPK = Queue()
+    # log 路径名
+    logPath = None
 
 
 def getValidValueFromStr(control):
@@ -101,7 +102,7 @@ def exceptionHandle(func):
                 raise AssertionError(u"文本: {} 输入失败，请确认!"
                                      .format(args[1]))
             elif flowTag == 5:
-                raise AssertionError('{}_fail'.format(args[1]))
+                raise AssertionError(u'{}_fail'.format(args[1]))
             elif flowTag == 6:
                 raise AssertionError(u'点击操作后，此元素 {} 的text值发生改变，fail'.format(
                                         reminderValue))
@@ -133,16 +134,18 @@ def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.txt'):
     """
     if filePath is None:
         filePath = os.path.join(os.pardir, 'testLOG')
+    else:
+        filePath = os.path.join(os.pardir, 'testLOG', filePath)
     realPath = os.path.join(filePath, fileName)
-    with open(realPath, 'a+') as f:
+    with open(realPath, 'a') as f:
         f.write(lineContent)
 
 
 def getImgSize(filePath):
     """获取图片像素大小
     """
-    reImg = Image.open(filePath)
-    return reImg.size
+    reImg = cv.imread(filePath, 0)
+    return (reImg.shape[1], reImg.shape[0])
 
 
 def getScreenDetail():
@@ -186,16 +189,6 @@ def adaptiveCoefficient(infoDict, srcImgName):
     return kx1, ky1
 
 
-def getCorrelationCoefficients(practicalSize, idealSize, acPara):
-    """获取截图像素和手机屏幕像素之比
-    """
-    practicalSizeX, practicalSizeY = practicalSize
-    idealSizeX, idealSizeY = idealSize
-    kx2 = idealSizeX/float(practicalSizeX/acPara[0])
-    ky2 = idealSizeY/float(practicalSizeY/acPara[1])
-    return kx2, ky2
-
-
 def adaptiveImageSize(infoDict, imgDict):
     """图片适配全面屏，将截图裁剪掉多余部分
     """
@@ -212,10 +205,10 @@ def adaptiveImageSize(infoDict, imgDict):
 def changeImgSize(filePath, practicalSize, acPara):
     """将手机截图图片大小压缩为指定图片的大小
     """
-    im = Image.open(filePath)
-    rp = (int(practicalSize[0]/acPara[0]), int(practicalSize[1]/acPara[1]))
-    new_im = im.resize(rp, Image.ANTIALIAS)
-    new_im.save(filePath)
+    im = cv.imread(filePath, 0)
+    rp = (int(practicalSize[0]*acPara[0]), int(practicalSize[1]*acPara[1]))
+    new_im = cv.resize(im, rp, interpolation=cv.INTER_LINEAR)
+    cv.imwrite(filePath, new_im)
 
 
 def getCompareImg(uiObj, imgDict):
@@ -232,11 +225,11 @@ def getCompareImg(uiObj, imgDict):
                   imgDict['acPara'])
 
 
-def getPosOnScreen(originalPos, coefficients):
+def getPosOnScreen(originalPos, bgSize, phoneSize):
     """获取屏幕上的坐标点
     """
-    realPosX = int(originalPos[0] * coefficients[0])
-    realPosY = int(originalPos[1] * coefficients[1])
+    realPosX = int(originalPos[0]*phoneSize[0]/float(bgSize[0]))
+    realPosY = int(originalPos[1]*phoneSize[1]/float(bgSize[1]))
     return realPosX, realPosY
 
 
@@ -247,16 +240,16 @@ def transferProperty(target, key, source):
         setattr(target, key, source.get(key))
 
 
-def detailPrint(detailName, targetList):
+def detailPrint(detailName, targetList, filePath=None):
     """适配输出测试结果
     """
     if len(targetList) != 0:
-        print('{}:'.format(detailName))
+        print(u'{}:'.format(detailName))
         writeResultToTxt('{}:\n'.format(detailName))
         for i in targetList:
-            print('\t{}'.format(i))
+            print(u'\t{}'.format(i))
             writeResultToTxt('\t{}\n'.format(i))
-        print('='*60)
+        print(u'='*60)
         writeResultToTxt('{}\n'.format('='*60))
 
 
@@ -339,19 +332,18 @@ def getPosOfPic(targetImgName, imgDict, uiObj):
     """获取测试图片所在位置
     """
     # 点击总次数
-    totalTime = 10
+    totalTime = 3
     # 实际已点次数
     countTime = 0
     # 10s内刷新匹配图片
     while countTime < totalTime:
         getCompareImg(uiObj, imgDict)
-        reInfo = uiObj.getTargetImgPos(os.path.join(
-                                            imgDict['srcImgPath'],
-                                            'bg_temp.png'),
-                                       targetImgName)
+        reInfo = uiObj.getTargetImgPosPlus(os.path.join(
+                                                imgDict['srcImgPath'],
+                                                'bg_temp.png'),
+                                           targetImgName)
         if reInfo is not None:
             break
-        time.sleep(1)
         countTime += 1
     return reInfo
 
@@ -375,14 +367,24 @@ def click(paraList, paraDict, control, uiObj):
     """点击实现
     """
     if 'text' in paraDict:
-        uiObj.clickByText(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByTextInstance(**paraDict)
+        else:
+            uiObj.clickByText(**paraDict)
     elif 'desc' in paraDict:
-        uiObj.clickByDesc(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByDescInstance(**paraDict)
+        else:
+            uiObj.clickByDesc(**paraDict)
     elif 'Id' in paraDict:
-        uiObj.clickById(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByIdInstance(**paraDict)
+        else:
+            uiObj.clickById(**paraDict)
     elif len(paraList) == 1 and '-' in paraList[0]:
         uiObj.clickByPos(*(paraList[0].split('-')))
-        uiObj._LOGGER.debug(u'点击坐标: {}-{} 结束'.format(*(paraList[0].split('-'))))
+        uiObj._LOGGER.debug(u'点击坐标: {}-{} 结束'
+                            .format(*(paraList[0].split('-'))))
     elif len(paraList) == 2:
         uiObj.clickByPos(*(paraList))
         uiObj._LOGGER.debug(u'点击坐标: {},{} 结束'.format(*(paraList)))
@@ -403,7 +405,8 @@ def clickByPic(control, imgDict, uiObj):
     except IOError as e:
         raise AssertionError(9, e)
     if reInfo is not None:
-        realPos = getPosOnScreen(reInfo, imgDict['ccPara'])
+        realPos = getPosOnScreen(reInfo['matchResult'],
+                                 reInfo['imSize'], imgDict['screenSize'])
         uiObj.clickByPos(realPos[0], realPos[1])
         uiObj._LOGGER.debug(u'点击图片: {} ，结束'.format(control))
     else:
@@ -639,10 +642,10 @@ def expectParaParse(expectPara, expect):
         elif '!=' in eachPara:
             paraKey, paraValue = eachPara.strip().split('!=')
             paraDict['isIn'] = 1
-        elif '=' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('=')
         else:
             raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
+        if '=' in eachPara and '==' not in eachPara and '!=' not in eachPara:
+            paraKey, paraValue = eachPara.strip().split('=')
         paraDict[paraKey] = paraValue
     return paraDict
 
@@ -653,7 +656,10 @@ def getExpectList(expectParaList, expect, expectInfo, uiObj):
     condition = []
     for eachPara in expectParaList:
         paraDict = expectParaParse(eachPara, expect)
-        paraDict['instruction'] = expectInfo
+        if expectInfo:
+            paraDict['instruction'] = expectInfo
+        else:
+            raise ValueError(u'表格参数: {} 不合法,提醒: 判断描述未填写'.format(expect))
         tempData = expectTypeHandle(paraDict, expect, uiObj)
         condition.append(tempData)
     return condition
@@ -725,7 +731,7 @@ def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
                 if isOptional == '1.0':
                     pass
                 else:
-                    uiObj._LOGGER.error(e)
+                    uiObj._LOGGER.error(u'{}'.format(str(e)))
                     raise
 
 
@@ -741,7 +747,7 @@ def getRecordCommandIter(sdcardPath):
     """
     recordCommandIter = (['adb', 'shell', 'screenrecord', '--time-limit',
                           '180', r'{}/{}.mp4'.format(sdcardPath, i)]
-                         for i in range(1, 1000))
+                         for i in range(1, 100))
     return recordCommandIter
 
 
@@ -879,6 +885,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
     childP = None
     # 安卓测试机本身 log 存放地址
     androidLogField = os.path.join(os.pardir, 'testLOG', 'androidLog')
+    os.mkdir(androidLogField)
     # 处理大类
     for eachTestClass in allTestClass:
         # 获取每个测试大类名称
@@ -916,8 +923,8 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                     continue
                 else:
                     rpObj.ingoreFeature.extend(tempIngoreFeature)
-            uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
-                                                            moduleName))
+            uiObj._LOGGER.info(u'{}_{} Test Start...'.format(testClassName,
+                                                             moduleName))
             # 处理功能点
             for eachFeature in realFeatures:
                 # 获取每个测试大类下测试模块有效测试功能点名称
@@ -932,8 +939,8 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         otherEventSuit.append(creatEvent(eachStep))
                     # 用例拼接名
                     rName = '{}-{}-{}'.format(testClassName,
-                                              moduleName,
-                                              featureName)
+                                               moduleName,
+                                               featureName)
                     # 转换非法字符
                     tName = replaceIllegalCharacter(rName)
                     # 开始测试
@@ -960,7 +967,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                             executeEvent(otherEventSuit, uiObj,
                                          3, imgDict)
                     except AssertionError as e:
-                        uiObj._LOGGER.info('{}: FAIL'.format(rName))
+                        uiObj._LOGGER.info(u'{}: FAIL'.format(rName))
                         rpObj.realFailTag = 1
                         rpObj.failList.append(rName)
                         rpObj.failCount += 1
@@ -1016,7 +1023,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         else:
                             uiObj.clearApp()
                         time.sleep(5)
-            uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
+            uiObj._LOGGER.info(u'{}_{} Test End...'.format(testClassName,
                                                           moduleName))
     uiObj.set_ime()
     # 打印报告

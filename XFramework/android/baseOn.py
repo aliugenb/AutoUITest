@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import eventlet
 from functools import wraps
 import random
 import re
@@ -352,14 +353,52 @@ class BaseOn(object):
     def getTargetImgPos(self, imgsrc, imgobj, similarity=0.5):
         """对比两个图片，返回目标图片在源图片上的所在位置坐标
         """
-        imsrc = cv.imread(imgsrc, 0)
+        if isinstance(imgsrc, str) or isinstance(imgsrc, unicode):
+            imsrc = cv.imread(imgsrc, 0)
+        else:
+            imsrc = imgsrc
         imobj = cv.imread(imgobj, 0)
         w, h = imobj.shape[::-1]
         res = cv.matchTemplate(imsrc, imobj, eval('cv.TM_CCOEFF_NORMED'))
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
+        # print u'{} 的相似度是: {}'.format(imgobj, max_val)
         if max_loc == (0, 0) or max_val < similarity:
             center_loc = None
         else:
             top_left = max_loc
             center_loc = (top_left[0] + w/2, top_left[1] + h/2)
-        return center_loc
+        return center_loc, max_val
+
+    def getNewImg(self, img, newSize):
+        """返回修改尺寸后的图片
+        """
+        return cv.resize(img, newSize, interpolation=cv.INTER_LINEAR)
+
+    def getTargetImgPosPlus(self, imgsrc, imgobj):
+        """图片对比加强
+        """
+        dataDict = {}
+        im = cv.imread(imgsrc, 0)
+        imgsrcList = [self.getNewImg(im, (int(im.shape[1]*(i/float(100))),
+                                          int(im.shape[0]*(i/float(100)))))
+                      for i in range(100, 150)]
+        imgsrcList2 = [self.getNewImg(im, (int(im.shape[1]/(i/float(100))),
+                                           int(im.shape[0]/(i/float(100)))))
+                       for i in range(101, 150)]
+        imgsrcList.extend(imgsrcList2)
+
+        def transferFunc(imgsrc):
+            return self.getTargetImgPos(imgsrc, imgobj, similarity=0.8), imgsrc
+        pool = eventlet.GreenPool(101)
+        for i, j in pool.imap(transferFunc, imgsrcList):
+            if i[0] is not None and i[1] not in dataDict:
+                dataDict[i[1]] = (i[0], (j.shape[1], j.shape[0]))
+        if dataDict:
+            resDict = {
+                       'similarity': max(dataDict.keys()),
+                       'matchResult': dataDict.get(max(dataDict.keys()))[0],
+                       'imSize': dataDict.get(max(dataDict.keys()))[1]
+                      }
+            return resDict
+        else:
+            return None

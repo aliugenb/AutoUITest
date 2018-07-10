@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 import os
-import xlrd
-import json
-from functools import wraps
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+import re
+import xlrd
+import shutil
+import json
+import time
+from functools import wraps
 import common
 common.pathGet()
 from XFramework.android.baseOn import BaseOn as androidBO
@@ -144,23 +145,69 @@ def getImgDict(casePath, targetImgSuit, srcImgName):
                                                        srcImgName))
         # 获取自适配系数
         kx1, ky1 = androidTR.adaptiveCoefficient(infoDict, srcImgName)
-        # 获取图片比例相关系数
-        kx2, ky2 = androidTR.getCorrelationCoefficients(srcImgSize,
-                                                        (rx, ry),
-                                                        (kx1, ky1))
         # 图片所需参数集合
         imgDict = {'testImgPath': testImgPath,
                    'testImgPathName': testImgPathName,
                    'srcImgSize': srcImgSize,
                    'srcImgName': srcImgName,
+                   'screenSize': (rx, ry),
                    'acPara': (kx1, ky1),
-                   'ccPara': (kx2, ky2),
                    'realSrcImgName': cdt.getFileNameWithoutSuffix(srcImgName),
                    'srcImgPath': casePath,
                    'screenDetail': infoDict}
     else:
         print("警告: 测试图片压缩文件和源图片未同时存在于上传文件中，默认你未使用图片点击功能！")
     return imgDict
+
+
+def envInit():
+    """清除手机中上次测试遗留的内容
+    """
+    os.popen('adb shell rm -rf sdcard/AutoTest/screencap')
+    os.popen('adb shell rm -rf sdcard/AutoTest/screenrecord')
+    if re.match('^win', sys.platform):
+        os.popen('rd /s/q {}'.format(os.path.join(os.pardir,
+                                                  'testLOG',
+                                                  'androidLog')))
+        os.popen('del /s/q {}'.format(os.path.join(os.pardir,
+                                                   'testLOG',
+                                                   'simpleResult.txt')))
+        os.popen('del /s/q {}'.format(os.path.join(os.pardir,
+                                                   'testLOG',
+                                                   'total_log.txt')))
+    else:
+        os.popen('rm -rf {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'androidLog')))
+        os.popen('rm -rf {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'simpleResult.txt')))
+        os.popen('rm -rf {}'.format(os.path.join(os.pardir,
+                                                 'testLOG',
+                                                 'total_log.txt')))
+
+
+def logHandle(filePath):
+    """处理log信息
+    """
+    os.popen('adb pull sdcard/AutoTest/screencap {}'
+             .format(os.path.join(os.pardir, 'testResult', filePath)))
+    os.popen('adb pull sdcard/AutoTest/screenrecord {}'
+             .format(os.path.join(os.pardir, 'testResult', filePath)))
+    try:
+        shutil.copytree(os.path.join(os.pardir, 'testLOG', 'androidLog'),
+                        os.path.join(os.pardir, 'testResult',
+                                     filePath, 'androidLog'))
+        shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'simpleResult.txt'),
+                        os.path.join(os.pardir, 'testResult',
+                                     filePath, 'simpleResult.txt'))
+        shutil.copyfile(os.path.join(os.pardir, 'testLOG', 'total_log.txt'),
+                        os.path.join(os.pardir, 'testResult',
+                                     filePath, 'total_log.txt'))
+    except IOError as e:
+        print(u'警告: {}'.format(str(e)))
+    if os.path.exists(os.path.join(os.pardir, 'testCase', 'bg_temp.png')):
+        os.remove(os.path.join(os.pardir, 'testCase', 'bg_temp.png'))
 
 
 if __name__ == '__main__':
@@ -180,34 +227,30 @@ if __name__ == '__main__':
                                                                     caseName),
                                                             allTestList)
     realAllTestClass = getRealTestClass(allTestClass)
-    # 测试驱动
-    if configData['platformName'] == 'Android':
-        # 获取log文件生成路径
-        logPath = LG.setLogPath()
-        # 为driver动态添加logger
-        androidBO._LOGGER = LG.logCreater(logPath)
-        # 创建 driver 实例
-        p = androidUT(configData)
-        # 图片所需参数集合
-        imgDict = getImgDict(casePath, targetImgSuit, srcImgName)
-        # 开始测试
-        try:
-            androidTR.testRunAllTest(realAllTestClass,
-                                     configData, imgDict, p, rp)
-        except (Exception, KeyboardInterrupt, SystemExit) as e:
-            p._LOGGER.exception(e)
-            p._LOGGER.info('Test End...')
-        finally:
-            # 防止主程序意外退出，杀掉其下所有子进程
-            while not rp.childPQ.empty():
-                childPid = rp.childPQ.get_nowait()
-                os.popen('kill -9 {}'.format(childPid))
-            sys.exit(0)
-    # elif configData['platformName'] == 'iOS':
-    #     iosBO._LOGGER = LG.logCreater(logPath)
-    #     p = iosUT(configData)
-    #     iosTR.testRunAllTest(realAllTestClass, realIngoreModule,
-    #                          configData, p)
-    else:
-        print('移动平台参数设置错误，退出测试！')
-        sys.exit(1)
+    # 删除遗留文件
+    envInit()
+    # 获取log文件生成路径
+    rp.logPath = time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime())
+    os.mkdir(os.path.join(os.pardir, 'testResult', rp.logPath))
+    logPath = LG.setLogPath()
+    # 为driver动态添加logger
+    androidBO._LOGGER = LG.logCreater(logPath)
+    # 创建 driver 实例
+    p = androidUT(configData)
+    # 图片所需参数集合
+    imgDict = getImgDict(casePath, targetImgSuit, srcImgName)
+    # 开始测试
+    try:
+        androidTR.testRunAllTest(realAllTestClass,
+                                 configData, imgDict, p, rp)
+    except (Exception, KeyboardInterrupt, SystemExit) as e:
+        p._LOGGER.exception(e)
+        p._LOGGER.info(u'Test End...')
+    finally:
+        # 防止主程序意外退出，杀掉其下所有子进程
+        while not rp.childPQ.empty():
+            childPid = rp.childPQ.get_nowait()
+            os.popen('kill -9 {}'.format(childPid))
+        # 处理 log 信息
+        logHandle(rp.logPath)
+        sys.exit(0)
