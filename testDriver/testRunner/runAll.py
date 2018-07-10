@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
 import os
-import sys
 import re
 import xlrd
 import shutil
 import json
 import time
 from functools import wraps
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import common
 common.pathGet()
 from XFramework.android.baseOn import BaseOn as androidBO
