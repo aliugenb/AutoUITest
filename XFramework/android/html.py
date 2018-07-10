@@ -407,7 +407,7 @@ def writeTestBottom(filename):
     f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
     
     
-def writeTestDetail(root,filename, modulesContents，projectInfo):
+def writeTestDetail(root,filename, modulesContents, projectInfo):
     for i in range(len(modulesContents)):
         temp =  modulesContents[i]
         modulesContents[i]= temp.strip().split(':', 1)[1]
