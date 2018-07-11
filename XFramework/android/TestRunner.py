@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import re
+import traceback
 import urllib2
 import cv2 as cv
 import subprocess
@@ -635,15 +636,15 @@ def expectParaParse(expectPara, expect):
     """期望类型列，参数解析
     """
     allParaList = expectPara.strip().split(',')
-    paraDict = {}
     jFlag = 0
+    paraDict = {}
     for eachPara in allParaList:
         if '==' in eachPara:
             paraKey, paraValue = eachPara.strip().split('==')
             jFlag = 1
         elif '!=' in eachPara:
             paraKey, paraValue = eachPara.strip().split('!=')
-            jFlag = 0
+            jFlag = 1
             paraDict['isIn'] = 1
         elif '=' in eachPara:
             paraKey, paraValue = eachPara.strip().split('=')
@@ -977,15 +978,18 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         rpObj.failList.append(rName)
                         rpObj.failCount += 1
                     except (IndexError, ValueError) as e:
-                        uiObj._LOGGER.info(
-                            u'{}: FAIL(注意: 功能点用例中存在不合法的参数！) 错误详情: {}'
-                            .format(rName, e.args[0]))
+                        uiObj._LOGGER.warning(
+                            u'{}: Abort(注意: 功能点用例中存在不合法的参数！)'
+                            .format(rName))
+                        traceback.print_exc()
                         rpObj.abortList.append(rName)
                         rpObj.abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
                             urllib2.URLError) as e:
-                        uiObj._LOGGER.info(u'{}:FAIL(causeByAppium).错误详情:{}'
-                                           .format(rName, str(e).strip()))
+                        uiObj._LOGGER.warning(
+                            u'{}: Exception(causeByAppium)'
+                            .format(rName))
+                        traceback.print_exc()
                         uiObj.appiumErrorHandle()
                         uiObj = UITest(configData)
                         time.sleep(10)
@@ -1029,7 +1033,5 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                             uiObj.clearApp()
                         time.sleep(5)
             uiObj._LOGGER.info(u'{}_{} Test End...'.format(testClassName,
-                                                          moduleName))
+                                                           moduleName))
     uiObj.set_ime()
-    # 打印报告
-    showReport(rpObj)
