@@ -13,6 +13,7 @@ import selenium
 from action import Action
 from uiBase import UITest
 from commandContainer import CommandContainer as CC
+import config as cf
 
 
 class ResultPara(object):
@@ -836,6 +837,26 @@ def popOutHandle(pre_firstEventSuit, uiObj, imgDict):
         uiObj._LOGGER.debug(u'点击app弹窗失败，请检测app控件名是否正确！')
 
 
+def newPopOutHandle(df, uiObj):
+    """处理首次启动的弹窗
+    """
+    if df == 'XIAOMI':
+        cf.xiaomi_init(uiObj)
+    elif df == 'HONOR':
+        cf.honor_init(uiObj)
+    elif df == 'HUAWEI':
+        cf.huawei_init(uiObj)
+    elif df == 'QIKU':
+        cf.qiku_init(uiObj)
+    elif df == 'OPPO':
+        cf.oppo_init(uiObj)
+    elif df == 'VIVO':
+        cf.vivo_init(uiObj)
+    else:
+        uiObj._LOGGER.warning(u'未适配的机型！使用默认的小米初始化方法！')
+        cf.xiaomi_init(uiObj)
+
+
 def firstStartHandle(steps):
     """首次启动事件处理
     """
@@ -945,8 +966,8 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         otherEventSuit.append(creatEvent(eachStep))
                     # 用例拼接名
                     rName = '{}-{}-{}'.format(testClassName,
-                                               moduleName,
-                                               featureName)
+                                              moduleName,
+                                              featureName)
                     # 转换非法字符
                     tName = replaceIllegalCharacter(rName)
                     # 开始测试
@@ -967,7 +988,11 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                             uiObj.startApp()
                             time.sleep(10)
                             # 循环点击权限弹窗
-                            popOutHandle(pre_firstEventSuit, uiObj, imgDict)
+                            if pre_firstEventSuit:
+                                popOutHandle(pre_firstEventSuit,
+                                             uiObj, imgDict)
+                            else:
+                                newPopOutHandle(df, uiObj)
                             executeEvent(nor_firstEventSuit, uiObj,
                                          3, imgDict)
                             executeEvent(otherEventSuit, uiObj,
