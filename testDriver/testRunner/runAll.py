@@ -214,8 +214,6 @@ def logHandle(filePath):
 
 
 if __name__ == '__main__':
-    # 判读是否是服务器
-    # isServer = os.path.exists(os.path.join(os.pardir), '')
     # 获取手机参数信息
     configData = getConfigPara('config.json')
     # 获取需要测试的大类集合
@@ -251,7 +249,7 @@ if __name__ == '__main__':
         p._LOGGER.info(u'Test End...')
     finally:
         # 打印报告
-        androidBO.showReport(rp)
+        androidTR.showReport(rp)
         # 防止主程序意外退出，杀掉其下所有子进程
         while not rp.childPQ.empty():
             childPid = rp.childPQ.get_nowait()
