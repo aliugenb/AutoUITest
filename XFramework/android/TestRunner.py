@@ -47,6 +47,10 @@ class ResultPara(object):
     childPK = Queue()
     # log 路径名
     logPath = None
+    # 首次初始化事件同
+    pre_firstEventSuit = []
+    # 首次初始化事件异
+    nor_firstEventSuit = []
 
 
 def getValidValueFromStr(control):
@@ -324,9 +328,12 @@ def getDecompressPath(control, imgDict):
         fields = os.listdir(imgDict['testImgPath'])
         targetPath = [field for field in fields
                       if '__' not in field and '.' not in field]
-        targetImgName = os.path.join(imgDict['testImgPath'],
-                                     targetPath[0],
-                                     '{}.png'.format(control))
+        try:
+            targetImgName = os.path.join(imgDict['testImgPath'],
+                                         targetPath[0],
+                                         '{}.png'.format(control))
+        except IndexError as e:
+            raise ValueError(u'找不到你给定的图片：{}，中止此条 case'.format(control))
     return targetImgName
 
 
@@ -824,12 +831,12 @@ def popOutHandle(pre_firstEventSuit, uiObj, imgDict):
     numCount = 10
     while numCount > 0:
         executeEvent(pre_firstEventSuit, uiObj, 0, imgDict)
-        if uiObj.isIdInPage('com.ximalaya.ting.android:id/main_count_down_text'):
+        if uiObj.isIdInPage('com.ximalaya.ting.android:id/main_count_down_text', totalTime=0):
             uiObj.clickById('com.ximalaya.ting.android:id/main_count_down_text')
         time.sleep(1)
-        if uiObj.isTextInPage('首页')\
-           and (not uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_btn_skip')
-                or not uiObj.isIdInPage('com.ximalaya.ting.android:id/main_btn_skip')):
+        if uiObj.isTextInPage('首页', totalTime=0)\
+           and (not uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_btn_skip', totalTime=0)
+                or not uiObj.isIdInPage('com.ximalaya.ting.android:id/main_btn_skip', totalTime=0)):
             break
         else:
             numCount -= 1
@@ -907,7 +914,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
     """执行所有用例
     """
     # 获取手机厂商
-    df = os.popen(CC.GET_PHONE_PRODUCER).read().upper()
+    df = os.popen(CC.GET_PHONE_PRODUCER).read().strip().upper()
     # 定义子进程
     childP = None
     # 安卓测试机本身 log 存放地址
@@ -932,7 +939,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
             realFeatures, tempIngoreFeature, ingoreFeaturesNum =\
                 ingorePartFilter(features, testClassName, moduleName)
             # 主app和广告业务逻辑不同
-            if testClassName == 'ad':
+            if testClassName == 'ad' or '首次启动app' not in features:
                 if len(features) == ingoreFeaturesNum:
                     print(u'警告: 模块: {} 的所有功能点都被你忽略，默认你忽略了此模块。'
                           .format(moduleName))
@@ -940,7 +947,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                                                                  moduleName))
                     continue
                 else:
-                    ingoreFeature.extend(tempIngoreFeature)
+                    rpObj.ingoreFeature.extend(tempIngoreFeature)
             else:
                 if len(features) == ingoreFeaturesNum+1:
                     print(u'警告: 模块: {} 的所有功能点都被你忽略，默认你忽略了此模块。'
@@ -960,7 +967,8 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                 otherEventSuit = []
                 if featureName == '首次启动app':
                     # 首次启动事件分割
-                    pre_firstEventSuit, nor_firstEventSuit = firstStartHandle(steps)
+                    rpObj.pre_firstEventSuit,\
+                     rpObj.nor_firstEventSuit = firstStartHandle(steps)
                 else:
                     for eachStep in steps:
                         otherEventSuit.append(creatEvent(eachStep))
@@ -988,13 +996,14 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                             uiObj.startApp()
                             time.sleep(10)
                             # 循环点击权限弹窗
-                            if pre_firstEventSuit:
-                                popOutHandle(pre_firstEventSuit,
+                            if rpObj.pre_firstEventSuit:
+                                popOutHandle(rpObj.pre_firstEventSuit,
                                              uiObj, imgDict)
                             else:
                                 newPopOutHandle(df, uiObj)
-                            executeEvent(nor_firstEventSuit, uiObj,
-                                         3, imgDict)
+                            if rpObj.nor_firstEventSuit:
+                                executeEvent(rpObj.nor_firstEventSuit, uiObj,
+                                             3, imgDict)
                             executeEvent(otherEventSuit, uiObj,
                                          3, imgDict)
                     except AssertionError as e:
