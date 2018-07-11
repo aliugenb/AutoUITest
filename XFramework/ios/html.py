@@ -54,14 +54,10 @@ class LogFileHandle():
         g=os.walk(root)
         for path, dir, filelist in g:
             for filename in filelist:
-                if filename.endswith('txt'):
-                    if filename == 'project.txt':
-                        pass        
-                    else:
-                        print '找到log文件'
-                        fileNames.append(os.path.join(path, filename))
-        return fileNames    
-   
+                if 'total_log' in filename:
+                    fileNames.append(os.path.join(path, filename))
+        return fileNames 
+    
     def getModuleTestTime(self, logfile):
         # 得到日志文件中每个子模块的测试时间
         # 如 other--个人页--aa
@@ -179,7 +175,7 @@ class Handler:
                 command = 'ideviceinfo -k ProductVersion'
                 platformVersion = os.popen(command).read().strip()
                 if platformVersion == '':
-                        print '获取手机名称失败'
+                        print '获取手机版本失败'
                         raise RuntimeError
                 return platformVersion
         
@@ -187,9 +183,9 @@ class Handler:
                 """
                 获取设备id
                 """
-                command = 'adb devices'
+                command = 'idevice_id -l'
                 #deviceIdInfo 得到devices命令
-                deviceId=os.popen(idevice_id -l).read().strip()
+                deviceId=os.popen(command).read().strip()
                 if deviceId == '':
                         print '获取设备UUid失败'
                         raise RuntimeError
@@ -313,6 +309,14 @@ def writeDeviceInfo(filename, deviceName, platformVersion, deviceId):
     f.write('</table>')
     f.write('<br/>')
     f.write('<br/>')
+    
+def writeTestBottom(filename):
+    f = open(filename,'a')
+    f.write('<br/>') 
+    f.write('<br/>') 
+    f.write('<br/>') 
+    f.write('<br/>')   
+    f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
 
 def writeTestResult(filename, startTime, endTime, durTime="60min"):
     durTime = getDurtime(startTime, endTime)
@@ -326,9 +330,6 @@ def writeTestResult(filename, startTime, endTime, durTime="60min"):
     f.write('</table>')
     f.write('<br/>')
     f.write('<br/>')
-def writeTestBottom():
-    f.write('<br/>')    
-    f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
     
 
 def writeTestDetail(filename, modulesContents):
@@ -386,10 +387,9 @@ def renameHtmlFile(root, testTime):
     os.rename(src, dst)
            
 if __name__=="__main__":
-    #root='/home/leo/workspace/jenkinsworkspace/workspace/Android_NewUI_Test/Newuiautotest/Android/LOG'
-    #root='/Users/nali/gitlab/Newuiautotest/Android/LOG'
+    #root='/Users/nali/gitlab/Newuiautotest/iOS/testLOG'
     root1= os.path.abspath('..')
-    root = root1+'/LOG'
+    root = root1+'/testLOG'
     print 'root:', root
     tempHtmlname = os.path.join(root, 'test.html')
     print tempHtmlname
@@ -397,7 +397,6 @@ if __name__=="__main__":
     lfh = LogFileHandle()
     
     # 得到log.txt文件
-    #filename='/Users/nali/gitlab/Newuiautotest/Android/LOG/total_log.txt'
     filename = lfh.getLogFiles(root)
     if len(filename)==0:
         print "ERROR:不存在log文件"
