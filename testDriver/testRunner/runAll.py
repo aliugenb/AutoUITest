@@ -5,6 +5,7 @@ import xlrd
 import shutil
 import json
 import time
+import traceback
 from functools import wraps
 import sys
 reload(sys)
@@ -246,13 +247,18 @@ if __name__ == '__main__':
         androidTR.testRunAllTest(realAllTestClass,
                                  configData, imgDict, p, rp)
     except (Exception, KeyboardInterrupt, SystemExit) as e:
-        p._LOGGER.exception(e)
+        traceback.print_exc()
         p._LOGGER.info(u'Test End...')
     finally:
+        # 打印报告
+        androidBO.showReport(rp)
         # 防止主程序意外退出，杀掉其下所有子进程
         while not rp.childPQ.empty():
             childPid = rp.childPQ.get_nowait()
             os.popen('kill -9 {}'.format(childPid))
         # 处理 log 信息
         logHandle(rp.logPath)
+        # 退出测试
+        if p:
+            p.testExit()
         sys.exit(0)
