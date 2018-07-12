@@ -361,7 +361,6 @@ class BaseOn(object):
         w, h = imobj.shape[::-1]
         res = cv.matchTemplate(imsrc, imobj, eval('cv.TM_CCOEFF_NORMED'))
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
-        # print u'{} 的相似度是: {}'.format(imgobj, max_val)
         if max_loc == (0, 0) or max_val < similarity:
             center_loc = None
         else:
