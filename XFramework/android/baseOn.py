@@ -381,15 +381,15 @@ class BaseOn(object):
         im = cv.imread(imgsrc, 0)
         imgsrcList = [self.getNewImg(im, (int(im.shape[1]*(i/float(100))),
                                           int(im.shape[0]*(i/float(100)))))
-                      for i in range(100, 150)]
+                      for i in range(100, 200)]
         imgsrcList2 = [self.getNewImg(im, (int(im.shape[1]/(i/float(100))),
                                            int(im.shape[0]/(i/float(100)))))
-                       for i in range(101, 150)]
+                       for i in range(101, 200)]
         imgsrcList.extend(imgsrcList2)
 
         def transferFunc(imgsrc):
             return self.getTargetImgPos(imgsrc, imgobj, similarity=0.8), imgsrc
-        pool = eventlet.GreenPool(101)
+        pool = eventlet.GreenPool(201)
         for i, j in pool.imap(transferFunc, imgsrcList):
             if i[0] is not None and i[1] not in dataDict:
                 dataDict[i[1]] = (i[0], (j.shape[1], j.shape[0]))
