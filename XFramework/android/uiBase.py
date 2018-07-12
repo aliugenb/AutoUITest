@@ -234,7 +234,7 @@ class UITest(BaseOn, TA):
             raise AssertionError(4)
 
     @setDefaultPara
-    def isTextInPage(self, text, rule='e', *args, **kwargs):
+    def isTextInPage(self, text, rule='e', isIn=0, *args, **kwargs):
         """
         判断text元素是否存在，有返回值
         """
@@ -244,13 +244,19 @@ class UITest(BaseOn, TA):
                            refresh_time=kwargs['refresh_time'], text=text)
             except AssertionError as e:
                 pass
-        if self.__select_text_Android(text, rule):
-            return True
+        if int(isIn) == 0:
+            if self.__select_text_Android(text, rule):
+                return True
+            else:
+                return False
         else:
-            return False
+            if self.__select_text_Android(text, rule):
+                return False
+            else:
+                return True
 
     @setDefaultPara
-    def isDescInPage(self, desc, rule='e', *args, **kwargs):
+    def isDescInPage(self, desc, rule='e', isIn=0, *args, **kwargs):
         """
         判断desc元素是否存在，有返回值
         """
@@ -260,13 +266,19 @@ class UITest(BaseOn, TA):
                            refresh_time=kwargs['refresh_time'], desc=desc)
             except AssertionError as e:
                 pass
-        if self.__select_desc_Android(desc, rule):
-            return True
+        if int(isIn) == 0:
+            if self.__select_desc_Android(desc, rule):
+                return True
+            else:
+                return False
         else:
-            return False
+            if self.__select_desc_Android(desc, rule):
+                return False
+            else:
+                return True
 
     @setDefaultPara
-    def isIdInPage(self, Id, *args, **kwargs):
+    def isIdInPage(self, Id, isIn=0, *args, **kwargs):
         """
         判断id元素是否存在，有返回值
         """
@@ -276,10 +288,16 @@ class UITest(BaseOn, TA):
                            refresh_time=kwargs['refresh_time'], Id=Id)
             except AssertionError as e:
                 pass
-        if self.__select_Id_Android(Id):
-            return True
+        if int(isIn) == 0:
+            if self.__select_Id_Android(Id):
+                return True
+            else:
+                return False
         else:
-            return False
+            if self.__select_Id_Android(Id):
+                return False
+            else:
+                return True
 
     @setDefaultPara
     def isExistByText(self, text, instruction, isIn=0, rule='e', *args, **kwargs):

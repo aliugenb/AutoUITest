@@ -239,6 +239,45 @@ def getPosOnScreen(originalPos, bgSize, phoneSize):
     return realPosX, realPosY
 
 
+def getDecompressPath(control, imgDict):
+    """获取解压缩文件所在位置
+    """
+    targetImgName = os.path.join(imgDict['testImgPath'],
+                                 '{}.png'.format(control))
+    # 防止压缩策略问题
+    if not os.path.exists(targetImgName):
+        fields = os.listdir(imgDict['testImgPath'])
+        targetPath = [field for field in fields
+                      if '__' not in field and '.' not in field]
+        try:
+            targetImgName = os.path.join(imgDict['testImgPath'],
+                                         targetPath[0],
+                                         '{}.png'.format(control))
+        except IndexError as e:
+            raise ValueError(u'找不到你给定的图片：{}，中止此条 case'.format(control))
+    return targetImgName
+
+
+def getPosOfPic(targetImgName, imgDict, uiObj):
+    """获取测试图片所在位置
+    """
+    # 点击总次数
+    totalTime = 3
+    # 实际已点次数
+    countTime = 0
+    # 10s内刷新匹配图片
+    while countTime < totalTime:
+        getCompareImg(uiObj, imgDict)
+        reInfo = uiObj.getTargetImgPosPlus(os.path.join(
+                                                imgDict['srcImgPath'],
+                                                'bg_temp.png'),
+                                           targetImgName)
+        if reInfo is not None:
+            break
+        countTime += 1
+    return reInfo
+
+
 def transferProperty(target, key, source):
     """动态的向某个类写入属性
     """
@@ -289,74 +328,6 @@ def creatEvent(stepAction):
     return stepEventList
 
 
-def preconditionHandle(pre, uiObj, totalTime):
-    """前提参数处理
-    """
-    preJudgeVal = False
-    if '==' in pre:
-        preElType, preEl = pre.strip().split('==')
-        if preElType == 'text':
-            preJudgeVal = uiObj.isTextInPage(preEl, totalTime=totalTime)
-        elif preElType == 'desc':
-            preJudgeVal = uiObj.isDescInPage(preEl, totalTime=totalTime)
-        elif preElType == 'Id':
-            preJudgeVal = uiObj.isIdInPage(preEl, totalTime=totalTime)
-        else:
-            raise ValueError(u'前提参数: {} 控件类型不合法,提醒:可能存在空格'.format(pre))
-    elif '!=' in pre:
-        preElType, preEl = pre.strip().split('!=')
-        if preElType == 'text':
-            preJudgeVal = not uiObj.isTextInPage(preEl, totalTime=totalTime)
-        elif preElType == 'desc':
-            preJudgeVal = not uiObj.isDescInPage(preEl, totalTime=totalTime)
-        elif preElType == 'Id':
-            preJudgeVal = not uiObj.isIdInPage(preEl, totalTime=totalTime)
-        else:
-            raise ValueError(u'前提参数: {} 控件类型不合法,提醒:可能存在空格'.format(pre))
-    else:
-        raise ValueError(u'前提参数: {} 不合法, 提醒:可能存在中文符号'.format(pre))
-    return preJudgeVal
-
-
-def getDecompressPath(control, imgDict):
-    """获取解压缩文件所在位置
-    """
-    targetImgName = os.path.join(imgDict['testImgPath'],
-                                 '{}.png'.format(control))
-    # 防止压缩策略问题
-    if not os.path.exists(targetImgName):
-        fields = os.listdir(imgDict['testImgPath'])
-        targetPath = [field for field in fields
-                      if '__' not in field and '.' not in field]
-        try:
-            targetImgName = os.path.join(imgDict['testImgPath'],
-                                         targetPath[0],
-                                         '{}.png'.format(control))
-        except IndexError as e:
-            raise ValueError(u'找不到你给定的图片：{}，中止此条 case'.format(control))
-    return targetImgName
-
-
-def getPosOfPic(targetImgName, imgDict, uiObj):
-    """获取测试图片所在位置
-    """
-    # 点击总次数
-    totalTime = 3
-    # 实际已点次数
-    countTime = 0
-    # 10s内刷新匹配图片
-    while countTime < totalTime:
-        getCompareImg(uiObj, imgDict)
-        reInfo = uiObj.getTargetImgPosPlus(os.path.join(
-                                                imgDict['srcImgPath'],
-                                                'bg_temp.png'),
-                                           targetImgName)
-        if reInfo is not None:
-            break
-        countTime += 1
-    return reInfo
-
-
 def paraParse(control):
     """控件类型列，参数解析
     """
@@ -370,6 +341,47 @@ def paraParse(control):
         else:
             paraList.append(eachPara)
     return paraList, paraDict
+
+
+def expectParaParse(expectPara, expect):
+    """期望类型列，参数解析
+    """
+    allParaList = expectPara.strip().split(',')
+    jFlag = 0
+    paraDict = {}
+    for eachPara in allParaList:
+        if '==' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('==')
+            jFlag = 1
+        elif '!=' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('!=')
+            jFlag = 1
+            paraDict['isIn'] = 1
+        elif '=' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('=')
+        else:
+            raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
+        paraDict[paraKey] = paraValue
+    if jFlag == 0:
+        raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
+    return paraDict
+
+
+def preconditionHandle(pre, uiObj, totalTime):
+    """前提参数处理
+    """
+    preJudgeVal = False
+    paraDict = expectParaParse(pre, pre)
+    paraDict['totalTime'] = totalTime
+    if 'text' in paraDict:
+        preJudgeVal = uiObj.isTextInPage(**paraDict)
+    elif 'desc' in paraDict:
+        preJudgeVal = uiObj.isDescInPage(**paraDict)
+    elif 'Id' in paraDict:
+        preJudgeVal = uiObj.isIdInPage(**paraDict)
+    else:
+        raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(pre))
+    return preJudgeVal
 
 
 def click(paraList, paraDict, control, uiObj):
@@ -640,30 +652,6 @@ def expectTypeHandle(paraDict, expect, uiObj):
     return expectVal
 
 
-def expectParaParse(expectPara, expect):
-    """期望类型列，参数解析
-    """
-    allParaList = expectPara.strip().split(',')
-    jFlag = 0
-    paraDict = {}
-    for eachPara in allParaList:
-        if '==' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('==')
-            jFlag = 1
-        elif '!=' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('!=')
-            jFlag = 1
-            paraDict['isIn'] = 1
-        elif '=' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('=')
-        else:
-            raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
-        paraDict[paraKey] = paraValue
-    if jFlag == 0:
-        raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
-    return paraDict
-
-
 def getExpectList(expectParaList, expect, expectInfo, uiObj):
     """获取期望列表
     """
@@ -844,26 +832,6 @@ def popOutHandle(pre_firstEventSuit, uiObj, imgDict):
         uiObj._LOGGER.debug(u'点击app弹窗失败，请检测app控件名是否正确！')
 
 
-def newPopOutHandle(df, uiObj):
-    """处理首次启动的弹窗
-    """
-    if df == 'XIAOMI':
-        cf.xiaomi_init(uiObj)
-    elif df == 'HONOR':
-        cf.honor_init(uiObj)
-    elif df == 'HUAWEI':
-        cf.huawei_init(uiObj)
-    elif df == 'QIKU':
-        cf.qiku_init(uiObj)
-    elif df == 'OPPO':
-        cf.oppo_init(uiObj)
-    elif df == 'VIVO':
-        cf.vivo_init(uiObj)
-    else:
-        uiObj._LOGGER.warning(u'未适配的机型！使用默认的小米初始化方法！')
-        cf.xiaomi_init(uiObj)
-
-
 def firstStartHandle(steps):
     """首次启动事件处理
     """
@@ -1000,7 +968,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                                 popOutHandle(rpObj.pre_firstEventSuit,
                                              uiObj, imgDict)
                             else:
-                                newPopOutHandle(df, uiObj)
+                                cf.start_init(df, uiObj)
                             if rpObj.nor_firstEventSuit:
                                 executeEvent(rpObj.nor_firstEventSuit, uiObj,
                                              3, imgDict)
