@@ -80,7 +80,7 @@ def initChooser(dn, uiObj):
 def start_init(dn, uiObj):
     """手机初始化
     """
-    numCount = 10
+    numCount = 12
     while numCount > 0:
         # 判断是否位于启动页广告，是则点击跳过
         if uiObj.isIdInPage('com.ximalaya.ting.android:id/main_count_down_text', totalTime=0):
