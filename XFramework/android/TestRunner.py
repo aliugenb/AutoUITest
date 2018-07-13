@@ -47,10 +47,6 @@ class ResultPara(object):
     childPK = Queue()
     # log 路径名
     logPath = None
-    # 首次初始化事件同
-    pre_firstEventSuit = []
-    # 首次初始化事件异
-    nor_firstEventSuit = []
 
 
 def getValidValueFromStr(control):
@@ -249,12 +245,12 @@ def getDecompressPath(control, imgDict):
         fields = os.listdir(imgDict['testImgPath'])
         targetPath = [field for field in fields
                       if '__' not in field and '.' not in field]
-        try:
+        if targetPath:
             targetImgName = os.path.join(imgDict['testImgPath'],
                                          targetPath[0],
                                          '{}.png'.format(control))
-        except IndexError as e:
-            raise ValueError(u'找不到你给定的图片：{}，中止此条 case'.format(control))
+        if not os.path.exists(targetImgName):
+            targetImgName = None
     return targetImgName
 
 
@@ -422,7 +418,10 @@ def clickByPic(control, imgDict, uiObj):
         # 获取测试图片位置
         targetImgName = getDecompressPath(control, imgDict)
         # 获取测试图片在当前界面所处位置
-        reInfo = getPosOfPic(targetImgName, imgDict, uiObj)
+        if targetImgName:
+            reInfo = getPosOfPic(targetImgName, imgDict, uiObj)
+        else:
+            raise ValueError(u'找不到你给定的图片：{}，中止此条 case'.format(control))
     except IOError as e:
         raise AssertionError(9, e)
     if reInfo is not None:
@@ -474,11 +473,35 @@ def typewrite(paraDict, control, data, uiObj):
             raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
-def scroll(paraDict, control, uiObj):
+def scroll(paraDict, control, imgDict, uiObj):
     """滚动实现
     """
+    targetImgName = getDecompressPath(control, imgDict)
     if 'text' in paraDict or 'desc' in paraDict or 'Id' in paraDict:
         uiObj.scrollByElement(**paraDict)
+    elif targetImgName:
+        # 获取滑动指令
+        screenX, screenY = uiObj.getScreenSize()
+        excCommand = uiObj.getSwipeCommand(str(screenX/2),
+                                           str(screenY*3/4),
+                                           str(screenX/2),
+                                           str(screenY/2),
+                                           kwargs.get('direction', 0))
+        # 已执行步骤数
+        stepCount = 0
+        while stepCount < kwargs.get('step', 50):
+            reInfo = uiObj.getTargetImgPosPlus(os.path.join(
+                                                    imgDict['srcImgPath'],
+                                                    'bg_temp.png'),
+                                               targetImgName)
+            # 判断传入的图片是否存在
+            if reInfo:
+                break
+            os.system(excCommand)
+            time.sleep(0.5)
+            stepCount += 1
+        else:
+            raise AssertionError(10, control)
     else:
         raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
@@ -612,7 +635,7 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
     elif realAction == 'typewrite':
         typewrite(paraDict, control, data, uiObj)
     elif realAction == 'scroll':
-        scroll(paraDict, control, uiObj)
+        scroll(paraDict, control, imgDict, uiObj)
     elif realAction == 'scroll&&click':
         scrollAndClick(paraDict, control, uiObj)
     elif realAction == 'sleep':
@@ -927,17 +950,15 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                     rpObj.ingoreFeature.extend(tempIngoreFeature)
             uiObj._LOGGER.info(u'{}_{} Test Start...'.format(testClassName,
                                                              moduleName))
-            # 处理功能点
             for eachFeature in realFeatures:
                 # 获取每个测试大类下测试模块有效测试功能点名称
                 featureName = eachFeature['featureName']
                 steps = eachFeature['featureSteps']
                 otherEventSuit = []
-                if featureName == '首次启动app':
+                if featureName == '首次启动app' or realFeatures.index(eachFeature) == 0:
                     # 首次启动事件分割
-                    rpObj.pre_firstEventSuit,\
-                     rpObj.nor_firstEventSuit = firstStartHandle(steps)
-                else:
+                    pre_firstEventSuit, nor_firstEventSuit = firstStartHandle(steps)
+                if featureName != '首次启动app':
                     for eachStep in steps:
                         otherEventSuit.append(creatEvent(eachStep))
                     # 用例拼接名
@@ -964,13 +985,13 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                             uiObj.startApp()
                             time.sleep(10)
                             # 循环点击权限弹窗
-                            if rpObj.pre_firstEventSuit:
-                                popOutHandle(rpObj.pre_firstEventSuit,
+                            if pre_firstEventSuit:
+                                popOutHandle(pre_firstEventSuit,
                                              uiObj, imgDict)
                             else:
                                 cf.start_init(df, uiObj)
-                            if rpObj.nor_firstEventSuit:
-                                executeEvent(rpObj.nor_firstEventSuit, uiObj,
+                            if nor_firstEventSuit:
+                                executeEvent(nor_firstEventSuit, uiObj,
                                              3, imgDict)
                             executeEvent(otherEventSuit, uiObj,
                                          3, imgDict)
