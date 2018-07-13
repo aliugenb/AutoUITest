@@ -23,7 +23,10 @@ def strDecode(oIter):
             if isinstance(value, str) and not isinstance(value, unicode):
                 # 获取value的编码方式
                 paraCode = chardet.detect(value)['encoding']
-                nv = value.decode(paraCode)
+                if paraCode:
+                    nv = value.decode(paraCode)
+                else:
+                    raise ValueError("参数错误，参数为 {} ，请核实".format(oIter))
                 oIter[key] = nv
         return oIter
     else:
@@ -31,7 +34,10 @@ def strDecode(oIter):
         for i in oIter:
             if isinstance(i, str) and not isinstance(i, unicode):
                 paraCode = chardet.detect(i)['encoding']
-                j = i.decode(paraCode)
+                if paraCode:
+                    j = i.decode(paraCode)
+                else:
+                    raise ValueError("参数错误，参数为 {} ，请核实".format(oIter))
                 oIter[count] = j
             count += 1
         return oIter
