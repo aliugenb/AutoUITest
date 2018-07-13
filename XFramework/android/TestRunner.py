@@ -1004,14 +1004,6 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                                                         featureName))
                         rpObj.passCount += 1
                     finally:
-                        # 结束录屏
-                        if childP is not None:
-                            rpObj.childPK.put_nowait('1')
-                            childP.join(3)
-                            if childP.is_alive():
-                                childP.terminate()
-                            emptyQueue(rpObj.childPQ)
-                            emptyQueue(rpObj.childPK)
                         # 检测是否为正常失败
                         if rpObj.realFailTag == 1:
                             # 截图
@@ -1022,8 +1014,24 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                                                          os.path.join(
                                                           androidLogField,
                                                           '{}.txt'.format(tName))))
+                            # 结束录屏
+                            if childP is not None:
+                                rpObj.childPK.put_nowait('1')
+                                childP.join(3)
+                                if childP.is_alive():
+                                    childP.terminate()
+                                emptyQueue(rpObj.childPQ)
+                                emptyQueue(rpObj.childPK)
                             rpObj.realFailTag = 0
                         else:
+                            # 结束录屏
+                            if childP is not None:
+                                rpObj.childPK.put_nowait('1')
+                                childP.join(3)
+                                if childP.is_alive():
+                                    childP.terminate()
+                                emptyQueue(rpObj.childPQ)
+                                emptyQueue(rpObj.childPK)
                             # 其他情况，删除录屏文件夹
                             os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
                                      .format(CC.PHONE_SHELL, tName))
