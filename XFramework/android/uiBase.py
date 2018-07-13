@@ -423,7 +423,7 @@ class UITest(BaseOn, TA):
                                           str(screenY*3/4),
                                           str(screenX/2),
                                           str(screenY/2),
-                                          kwargs.get('direction'))
+                                          kwargs.get('direction', 0))
         # 已执行步骤数
         stepCount = 0
         while stepCount < kwargs.get('step', 50):
@@ -440,7 +440,7 @@ class UITest(BaseOn, TA):
             else:
                 raise ValueError(u'核心参数未给出，或者参数形式有误，请参考文档后，再使用！')
             os.system(excCommand)
-            time.sleep(1)
+            time.sleep(0.5)
             stepCount += 1
         else:
             if 'text' in kwargs:
@@ -461,7 +461,7 @@ class UITest(BaseOn, TA):
                                           kwargs.get('posY', screenY/4),
                                           str(screenX/5),
                                           kwargs.get('posY', screenY/4),
-                                          kwargs.get('direction'))
+                                          kwargs.get('direction', 0))
         # 指定元素出现次数
         iCount = 0
         # 已执行步骤数
@@ -498,7 +498,7 @@ class UITest(BaseOn, TA):
                                           str(screenY*3/4),
                                           kwargs.get('posX', screenX/2),
                                           str(screenY*3/10),
-                                          kwargs.get('direction'))
+                                          kwargs.get('direction', 0))
         # 指定元素出现次数
         iCount = 0
         # 已执行步骤数

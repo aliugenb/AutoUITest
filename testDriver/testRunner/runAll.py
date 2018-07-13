@@ -246,6 +246,7 @@ if __name__ == '__main__':
                                  configData, imgDict, p, rp)
     except (Exception, KeyboardInterrupt, SystemExit) as e:
         traceback.print_exc()
+        rp.totalCount -= 1
         p._LOGGER.info(u'Test End...')
     finally:
         # 退出测试
