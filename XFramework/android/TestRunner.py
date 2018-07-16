@@ -950,12 +950,15 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                     rpObj.ingoreFeature.extend(tempIngoreFeature)
             uiObj._LOGGER.info(u'{}_{} Test Start...'.format(testClassName,
                                                              moduleName))
+            # 初始化app事件列表
+            pre_firstEventSuit = []
+            nor_firstEventSuit = []
             for eachFeature in realFeatures:
                 # 获取每个测试大类下测试模块有效测试功能点名称
                 featureName = eachFeature['featureName']
                 steps = eachFeature['featureSteps']
                 otherEventSuit = []
-                if featureName == '首次启动app' or realFeatures.index(eachFeature) == 0:
+                if realFeatures.index('首次启动app') == 0:
                     # 首次启动事件分割
                     pre_firstEventSuit, nor_firstEventSuit = firstStartHandle(steps)
                 if featureName != '首次启动app':
