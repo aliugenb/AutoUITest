@@ -80,8 +80,11 @@ def initChooser(dn, uiObj):
 def start_init(dn, uiObj):
     """手机初始化
     """
-    numCount = 12
+    numCount = 13
     while numCount > 0:
+        # 判断是否有权限提示汇总弹框
+        if uiObj.isIdInPage('com.ximalaya.ting.android:id/host_iv_confirm', totalTime=0):
+            uiObj.clickById('com.ximalaya.ting.android:id/host_iv_confirm')
         # 判断是否位于启动页广告，是则点击跳过
         if uiObj.isIdInPage('com.ximalaya.ting.android:id/main_count_down_text', totalTime=0):
             uiObj.clickById('com.ximalaya.ting.android:id/main_count_down_text')
