@@ -958,10 +958,10 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                 featureName = eachFeature['featureName']
                 steps = eachFeature['featureSteps']
                 otherEventSuit = []
-                if realFeatures.index('首次启动app') == 0:
+                if featureName == '首次启动app':
                     # 首次启动事件分割
                     pre_firstEventSuit, nor_firstEventSuit = firstStartHandle(steps)
-                if featureName != '首次启动app':
+                else:
                     for eachStep in steps:
                         otherEventSuit.append(creatEvent(eachStep))
                     # 用例拼接名
