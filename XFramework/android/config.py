@@ -108,7 +108,6 @@ def start_init(dn, uiObj):
         # 判断是否有选择兴趣页，有则点击跳过
         if uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_btn_skip', totalTime=0):
             uiObj.clickById('com.ximalaya.ting.android.main.application:id/main_btn_skip')
-        time.sleep(1)
         # 判断是否无弹框，无弹框则打破循环进入测试
         if uiObj.isTextInPage('首页', totalTime=0)\
            and (not uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_btn_skip', totalTime=0)
