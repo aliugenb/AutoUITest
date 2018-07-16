@@ -96,9 +96,6 @@ def start_init(dn, uiObj):
         # 判断是否有初次见面，有则点击关闭
         if uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_close', totalTime=0):
             uiObj.clickById('com.ximalaya.ting.android.main.application:id/main_close')
-        if uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_button', totalTime=0):
-            uiObj.clickById('com.ximalaya.ting.android.main.application:id/main_subscribe')
-            uiObj.clickById('com.ximalaya.ting.android.main.application:id/main_button')
         # 判断是否有升级提醒，有则点击忽略
         if uiObj.isIdInPage('com.ximalaya.ting.android:id/neutral_btn', totalTime=0):
             uiObj.clickById('com.ximalaya.ting.android:id/neutral_btn')
