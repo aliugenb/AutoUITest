@@ -176,8 +176,7 @@ class BaseOn(object):
 
     @classmethod
     def getDeviceName(cls):
-        """
-        获取手机名字
+        """获取手机名字
         """
         command = CC.GET_PHONE_NAME
         dn = os.popen(command).read().strip()
@@ -188,8 +187,7 @@ class BaseOn(object):
 
     @classmethod
     def getPlatformVersion(cls):
-        """
-        获取平台版本
+        """获取平台版本
         """
         command = CC.GET_PHONE_VERSION
         pv = os.popen(command).read().strip()
@@ -197,6 +195,20 @@ class BaseOn(object):
             cls._LOGGER.critical(u'获取平台版本失败')
             raise RuntimeError
         return pv
+
+    @classmethod
+    def getDeviceID(cls):
+        """获取手机deviceID
+        """
+        command = CC.GET_PHONE_VERSION
+        fl = os.popen(command).read().strip().split('\n')
+        if len(fl) > 1:
+            rfl = fl[1:len(fl)]
+            dl = [dn.split('device')[0].strip() for dn in rfl]
+        else:
+            print('No devices!')
+            sys.exit(1)
+        return dl
 
     def searchAppPro(self, pkgName=CC.XIMALAYA_PKG):
         comand = '{} {}'.format(CC.SEARCH_APP_PRO, pkgName)

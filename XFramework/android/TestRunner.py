@@ -486,10 +486,10 @@ def scroll(paraDict, control, imgDict, uiObj):
                                            str(screenY*3/4),
                                            str(screenX/2),
                                            str(screenY/2),
-                                           kwargs.get('direction', 0))
+                                           paraDict.get('direction', 0))
         # 已执行步骤数
         stepCount = 0
-        while stepCount < kwargs.get('step', 50):
+        while stepCount < paraDict.get('step', 50):
             reInfo = uiObj.getTargetImgPosPlus(os.path.join(
                                                     imgDict['srcImgPath'],
                                                     'bg_temp.png'),

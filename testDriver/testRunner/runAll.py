@@ -7,6 +7,7 @@ import json
 import time
 import traceback
 from functools import wraps
+import selenium
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -250,8 +251,10 @@ if __name__ == '__main__':
         p._LOGGER.info(u'Test End...')
     finally:
         # 退出测试
-        if p:
+        try:
             p.testExit()
+        except selenium.common.exceptions.WebDriverException as e:
+            pass
         # 防止主程序意外退出，杀掉其下所有子进程
         while not rp.childPQ.empty():
             childPid = rp.childPQ.get_nowait()
