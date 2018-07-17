@@ -200,7 +200,7 @@ class BaseOn(object):
     def getDeviceID(cls):
         """获取手机deviceID
         """
-        command = CC.GET_PHONE_VERSION
+        command = CC.PHONE_DEVICES
         fl = os.popen(command).read().strip().split('\n')
         if len(fl) > 1:
             rfl = fl[1:len(fl)]

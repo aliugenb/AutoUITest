@@ -1006,17 +1006,17 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         rpObj.failList.append(rName)
                         rpObj.failCount += 1
                     except (IndexError, ValueError) as e:
-                        uiObj._LOGGER.warning(
-                            u'errorInfo: {}\n{}: {}'
-                            .format(e, rName, 'Abort(注意: 功能点用例中存在不合法的参数！)'))
+                        uiObj._LOGGER.error(u'errorInfo: {}'.format(e))
+                        uiObj._LOGGER.warning(u'{}: Abort(注意: 功能点用例中存在不合法的参数！)'
+                                              .format(rName))
                         traceback.print_exc()
                         rpObj.abortList.append(rName)
                         rpObj.abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
                             urllib2.URLError) as e:
-                        uiObj._LOGGER.warning(
-                            u'errorInfo: {}\n{}: {}'
-                            .format(e, rName, 'Exception(causeByAppium)'))
+                        uiObj._LOGGER.error(u'errorInfo: {}'.format(e))
+                        uiObj._LOGGER.warning(u'{}: Exception(causeByAppium)'
+                                              .format(rName))
                         traceback.print_exc()
                         uiObj.appiumErrorHandle()
                         uiObj = UITest(configData)
