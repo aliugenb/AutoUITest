@@ -490,12 +490,14 @@ def scroll(paraDict, control, imgDict, uiObj):
         # 已执行步骤数
         stepCount = 0
         while stepCount < paraDict.get('step', 50):
+            getCompareImg(uiObj, imgDict)
             reInfo = uiObj.getTargetImgPosPlus(os.path.join(
                                                     imgDict['srcImgPath'],
                                                     'bg_temp.png'),
                                                targetImgName)
             # 判断传入的图片是否存在
             if reInfo:
+                uiObj._LOGGER.debug('滑动找图片结束')
                 break
             os.system(excCommand)
             time.sleep(0.5)
