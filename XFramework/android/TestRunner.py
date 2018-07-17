@@ -869,7 +869,7 @@ def firstStartHandle(steps):
     for i in firstEventSuit:
         if len(i) >= 2:
             if i[0].precondition != '' and\
-             i[1].optional != '':
+             i[1].optional != '' and not nor_firstEventSuit:
                 pre_firstEventSuit.append(i)
             else:
                 nor_firstEventSuit.append(i)
