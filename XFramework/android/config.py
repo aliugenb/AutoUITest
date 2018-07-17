@@ -80,7 +80,7 @@ def initChooser(dn, uiObj):
 def start_init(dn, uiObj):
     """手机初始化
     """
-    numCount = 15
+    numCount = 20
     while numCount > 0:
         # 判断是否有权限提示汇总弹框
         if uiObj.isIdInPage('com.ximalaya.ting.android:id/host_iv_confirm', totalTime=0):
