@@ -71,7 +71,7 @@ class UITest(BaseOn, TA):
             print 'iphone is not Available capture devices'
             os._exit()
                        
-        cmd = CC.XRECORD_iPhone+' --id='+phoneUdid +' --out=' +CC.MOVIE_SAVEPATH+' --force'
+        cmd = CC.XRECORD_iPhone+' --id='+phoneUdid +' --out=' +CC.MOVIE_SAVEPATH+film_name+' .mp4  --force'
         os.popen(cmd).read().strip()
         
             
