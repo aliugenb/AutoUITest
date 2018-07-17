@@ -12,11 +12,18 @@ class CommandContainer(object):
     PHONE_NAME = 'ideviceinfo -k ProductType'
     #获取手机截图：
     SCREENCAP = 'idevicescreenshot'
-    
+   
+        
     PROJECTPATH = os.path.abspath(os.path.join(os.getcwd(), "../.."))
-    PIC_SAVEPATH = PROJECTPATH +'/testDriver/screencap/' 
-
-    XIMALAYA_PKG = 'com.gemd.iting'
+    PIC_SAVEPATH = PROJECTPATH +'/testDriver/screencap/'
+    MOVIE_SAVEPATH = PROJECTPATH +'/testDriver/screenrecord/'
     
+    XRECORD_PATH=PROJECTPATH +'/xrecord/bin/'
+    #获取xrecord设备连接：
+    XRECORD_DEVICES= 'xrecord --quicktime --list'
+    XRECORD_iPhone= 'xrecord --quicktime --id'
+   
+
+    XIMALAYA_PKG = 'com.gemd.iting'  
 
     SPECIAL_CHARACTER_LIST = r'[\\/:*?" <>|]'
