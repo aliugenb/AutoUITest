@@ -15,8 +15,8 @@ class CommandContainer(object):
    
         
     PROJECTPATH = os.path.abspath(os.path.join(os.getcwd(), "../.."))
-    PIC_SAVEPATH = PROJECTPATH +'/testDriver/screencap/'
-    MOVIE_SAVEPATH = PROJECTPATH +'/testDriver/screenrecord/'
+    PIC_SAVEPATH = PROJECTPATH +'/testDriver/testLOG/screencap/'
+    MOVIE_SAVEPATH = PROJECTPATH +'/testDriver/testLOG/screenrecord/'
     
     XRECORD_PATH=PROJECTPATH +'/xrecord/bin/'
     #获取xrecord设备连接：
