@@ -56,8 +56,10 @@ class UITest(BaseOn, TA):
         """
         截图
         """
-        pic_path = CC.PIC_SAVEPATH+pic_name+'.png'    
+        pic_path = CC.PIC_SAVEPATH+pic_name+'.png'  
+        print pic_path
         cmd = CC.SCREENCAP+' '+pic_path
+        print cmd
         os.popen(cmd).read().strip()
         
     def screenrecord(self, film_name):
