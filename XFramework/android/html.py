@@ -45,6 +45,7 @@ class LogFileHandle():
             versionBranch = projectInfo[1]
             jenkinsAddress = projectInfo[2]
             savedNum = projectInfo[3]
+            person = projectInfo[4]
             return projectInfo
         
     def getSimResultInfo(self, root): 
@@ -304,7 +305,7 @@ def writeHtmlHead(filename):
     f.write('<meta charset="UTF-8">')       
     f.write('<h1 align="center"><b>喜马拉雅FM-Android-UI自动化测试报告v2.0</b></h1>')
 
-def writeAppInfo(filename, projectName, versionBranch, jenkinsAddress):
+def writeAppInfo(filename, projectNamprojectName, versionBranch, jenkinsAddress,person):
     f = open(filename,'a')
     f.write('<font style="color: green"><b>App版本信息</b></font>')
     f.write('<hr>')
@@ -312,6 +313,7 @@ def writeAppInfo(filename, projectName, versionBranch, jenkinsAddress):
     f.write('<tr align="left"><th>项目名称：'+projectName+'</th></tr>')
     f.write('<tr align="left"><th>版本分支：'+versionBranch+'</th></tr>')
     f.write('<tr align="left"><th>jenkins测试项目地址：<a  href="'+ jenkinsAddress + '"target = _blank >'+jenkinsAddress+'</a></th></tr>')
+   f.write('<tr align="left"><th>构建人：'+person+'</th></tr>')
     f.write('</table>')
     f.write('<br/>')
     f.write('<br/>')
@@ -530,7 +532,7 @@ if __name__=="__main__":
 
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
-    writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
+    writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2],projectInfo[4])
     writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
    
