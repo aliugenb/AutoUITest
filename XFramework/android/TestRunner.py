@@ -476,7 +476,11 @@ def typewrite(paraDict, control, data, uiObj):
 def scroll(paraDict, control, imgDict, uiObj):
     """滚动实现
     """
-    targetImgName = getDecompressPath(control, imgDict)
+    # 检测是否有图片路径
+    if imgDict.get('testImgPath'):
+        targetImgName = getDecompressPath(control, imgDict)
+    else:
+        targetImgName = None
     if 'text' in paraDict or 'desc' in paraDict or 'Id' in paraDict:
         uiObj.scrollByElement(**paraDict)
     elif targetImgName:
@@ -569,6 +573,7 @@ def back(uiObj):
     """返回实现
     """
     uiObj.pressBack()
+    uiObj._LOGGER.debug('返回，结束')
 
 
 def wSwipeAndAssert(paraList, paraDict, control, uiObj):
