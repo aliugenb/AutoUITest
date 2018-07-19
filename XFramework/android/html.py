@@ -498,9 +498,15 @@ if __name__=="__main__":
     elif os.path.getsize(filename[0])==0:
         print "ERROR:log文件为空内容"
         sys.exit(1)
-    else:  
-        print filename
-        filename = filename[0]    
+    else:
+        with open(filename[0], 'r') as f:
+            lines = f.readlines()
+            if "Test End..." not in lines[-1]:
+                print "ERROR:log文件结束异常"
+                sys.exit(1) 
+            else:
+                print filename
+                filename = filename[0]     
     
     #得到模块的测试开始时间，结束时间
     stimes =  lfh.getModuleTestTime(filename)[0]
