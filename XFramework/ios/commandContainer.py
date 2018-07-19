@@ -22,6 +22,8 @@ class CommandContainer(object):
     #获取xrecord设备连接：
     XRECORD_DEVICES= 'xrecord --quicktime --list'
     XRECORD_iPhone= 'xrecord --quicktime --id'
+    #获取log
+    IOSLOG='idevicesyslog'
    
 
     XIMALAYA_PKG = 'com.gemd.iting'  
