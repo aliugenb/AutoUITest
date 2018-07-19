@@ -407,6 +407,8 @@ def writeTestBottom(filename):
     f.write('<br/>') 
     f.write('<br/>')   
     f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
+    f.write('<br/>')
+    f.write('<br/>')
     
     
 def writeTestDetail(root,filename, modulesContents, projectInfo):
@@ -492,6 +494,9 @@ if __name__=="__main__":
     filename = lfh.getLogFiles(root)
     if len(filename)==0:
         print "ERROR:不存在log文件"
+        sys.exit(1)
+    elif os.path.getsize(filename[0])==0:
+        print "ERROR:log文件为空内容"
         sys.exit(1)
     else:  
         print filename
