@@ -312,7 +312,7 @@ def writeHtmlHead(filename):
     f.write('<meta charset="UTF-8">')       
     f.write('<h1 align="center"><b>喜马拉雅FM-Android-UI自动化测试报告v2.0</b></h1>')
 
-def writeAppInfo(filename, projectNamprojectName, versionBranch, jenkinsAddress,person):
+def writeAppInfo(filename, projectName, versionBranch, jenkinsAddress,person):
     f = open(filename,'a')
     f.write('<font style="color: green"><b>App版本信息</b></font>')
     f.write('<hr>')
