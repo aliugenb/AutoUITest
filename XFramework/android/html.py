@@ -135,10 +135,14 @@ class LogFileHandle():
                 tempContents.append(' end')
                 
             else:
-                #print line  
-                contents = line.strip().split('>',1)[1]
-                #print contents
-                tempContents.append(contents)
+                #空行处理过滤
+                if line=="":
+                    print 'This is a blank row'
+                else:                
+                    #print line  
+                    contents = line.strip().split('>',1)[1]
+                    #print contents
+                    tempContents.append(contents)
                 
         for i in range(len(tempContents)-1):
             if "ERROR" in tempContents[i]:                               
@@ -168,8 +172,11 @@ class LogFileHandle():
                 tempTimes.append(endtimestamp)
             
             else:
-                moduleTimestamp = line.strip().split(',', 1)[0]
-                tempTimes.append(moduleTimestamp)
+                if line=="":
+                    print 'This is a blank row'
+                else:
+                    moduleTimestamp = line.strip().split(',', 1)[0]
+                    tempTimes.append(moduleTimestamp)
         return tempTimes
     
 class Handler:
