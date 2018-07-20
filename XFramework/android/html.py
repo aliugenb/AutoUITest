@@ -313,7 +313,7 @@ def writeAppInfo(filename, projectNamprojectName, versionBranch, jenkinsAddress,
     f.write('<tr align="left"><th>项目名称：'+projectName+'</th></tr>')
     f.write('<tr align="left"><th>版本分支：'+versionBranch+'</th></tr>')
     f.write('<tr align="left"><th>jenkins测试项目地址：<a  href="'+ jenkinsAddress + '"target = _blank >'+jenkinsAddress+'</a></th></tr>')
-   f.write('<tr align="left"><th>构建人：'+person+'</th></tr>')
+    f.write('<tr align="left"><th>构建人：'+person+'</th></tr>')
     f.write('</table>')
     f.write('<br/>')
     f.write('<br/>')
