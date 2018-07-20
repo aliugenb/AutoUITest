@@ -3,16 +3,17 @@ import os
 import sys
 import time
 import re
+import traceback
 import urllib2
 import cv2 as cv
 import subprocess
-from PIL import Image
 from multiprocessing import Process, Queue
 from functools import wraps
 import selenium
 from action import Action
 from uiBase import UITest
 from commandContainer import CommandContainer as CC
+import config as cf
 
 
 class ResultPara(object):
@@ -44,6 +45,8 @@ class ResultPara(object):
     childPQ = Queue()
     # 设置中止子进程标志队列
     childPK = Queue()
+    # log 路径名
+    logPath = None
 
 
 def getValidValueFromStr(control):
@@ -101,7 +104,7 @@ def exceptionHandle(func):
                 raise AssertionError(u"文本: {} 输入失败，请确认!"
                                      .format(args[1]))
             elif flowTag == 5:
-                raise AssertionError('{}_fail'.format(args[1]))
+                raise AssertionError(u'{}_fail'.format(args[1]))
             elif flowTag == 6:
                 raise AssertionError(u'点击操作后，此元素 {} 的text值发生改变，fail'.format(
                                         reminderValue))
@@ -133,16 +136,18 @@ def writeResultToTxt(lineContent, filePath=None, fileName='simpleResult.txt'):
     """
     if filePath is None:
         filePath = os.path.join(os.pardir, 'testLOG')
+    else:
+        filePath = os.path.join(os.pardir, 'testLOG', filePath)
     realPath = os.path.join(filePath, fileName)
-    with open(realPath, 'a+') as f:
+    with open(realPath, 'a') as f:
         f.write(lineContent)
 
 
 def getImgSize(filePath):
     """获取图片像素大小
     """
-    reImg = Image.open(filePath)
-    return reImg.size
+    reImg = cv.imread(filePath, 0)
+    return (reImg.shape[1], reImg.shape[0])
 
 
 def getScreenDetail():
@@ -186,16 +191,6 @@ def adaptiveCoefficient(infoDict, srcImgName):
     return kx1, ky1
 
 
-def getCorrelationCoefficients(practicalSize, idealSize, acPara):
-    """获取截图像素和手机屏幕像素之比
-    """
-    practicalSizeX, practicalSizeY = practicalSize
-    idealSizeX, idealSizeY = idealSize
-    kx2 = idealSizeX/float(practicalSizeX/acPara[0])
-    ky2 = idealSizeY/float(practicalSizeY/acPara[1])
-    return kx2, ky2
-
-
 def adaptiveImageSize(infoDict, imgDict):
     """图片适配全面屏，将截图裁剪掉多余部分
     """
@@ -212,10 +207,10 @@ def adaptiveImageSize(infoDict, imgDict):
 def changeImgSize(filePath, practicalSize, acPara):
     """将手机截图图片大小压缩为指定图片的大小
     """
-    im = Image.open(filePath)
-    rp = (int(practicalSize[0]/acPara[0]), int(practicalSize[1]/acPara[1]))
-    new_im = im.resize(rp, Image.ANTIALIAS)
-    new_im.save(filePath)
+    im = cv.imread(filePath, 0)
+    rp = (int(practicalSize[0]*acPara[0]), int(practicalSize[1]*acPara[1]))
+    new_im = cv.resize(im, rp, interpolation=cv.INTER_LINEAR)
+    cv.imwrite(filePath, new_im)
 
 
 def getCompareImg(uiObj, imgDict):
@@ -232,12 +227,51 @@ def getCompareImg(uiObj, imgDict):
                   imgDict['acPara'])
 
 
-def getPosOnScreen(originalPos, coefficients):
+def getPosOnScreen(originalPos, bgSize, phoneSize):
     """获取屏幕上的坐标点
     """
-    realPosX = int(originalPos[0] * coefficients[0])
-    realPosY = int(originalPos[1] * coefficients[1])
+    realPosX = int(originalPos[0]*phoneSize[0]/float(bgSize[0]))
+    realPosY = int(originalPos[1]*phoneSize[1]/float(bgSize[1]))
     return realPosX, realPosY
+
+
+def getDecompressPath(control, imgDict):
+    """获取解压缩文件所在位置
+    """
+    targetImgName = os.path.join(imgDict['testImgPath'],
+                                 '{}.png'.format(control))
+    # 防止压缩策略问题
+    if not os.path.exists(targetImgName):
+        fields = os.listdir(imgDict['testImgPath'])
+        targetPath = [field for field in fields
+                      if '__' not in field and '.' not in field]
+        if targetPath:
+            targetImgName = os.path.join(imgDict['testImgPath'],
+                                         targetPath[0],
+                                         '{}.png'.format(control))
+        if not os.path.exists(targetImgName):
+            targetImgName = None
+    return targetImgName
+
+
+def getPosOfPic(targetImgName, imgDict, uiObj):
+    """获取测试图片所在位置
+    """
+    # 点击总次数
+    totalTime = 3
+    # 实际已点次数
+    countTime = 0
+    # 10s内刷新匹配图片
+    while countTime < totalTime:
+        getCompareImg(uiObj, imgDict)
+        reInfo = uiObj.getTargetImgPosPlus(os.path.join(
+                                                imgDict['srcImgPath'],
+                                                'bg_temp.png'),
+                                           targetImgName)
+        if reInfo is not None:
+            break
+        countTime += 1
+    return reInfo
 
 
 def transferProperty(target, key, source):
@@ -247,16 +281,16 @@ def transferProperty(target, key, source):
         setattr(target, key, source.get(key))
 
 
-def detailPrint(detailName, targetList):
+def detailPrint(detailName, targetList, filePath=None):
     """适配输出测试结果
     """
     if len(targetList) != 0:
-        print('{}:'.format(detailName))
+        print(u'{}:'.format(detailName))
         writeResultToTxt('{}:\n'.format(detailName))
         for i in targetList:
-            print('\t{}'.format(i))
+            print(u'\t{}'.format(i))
             writeResultToTxt('\t{}\n'.format(i))
-        print('='*60)
+        print(u'='*60)
         writeResultToTxt('{}\n'.format('='*60))
 
 
@@ -290,72 +324,6 @@ def creatEvent(stepAction):
     return stepEventList
 
 
-def preconditionHandle(pre, uiObj, totalTime):
-    """前提参数处理
-    """
-    preJudgeVal = False
-    if '==' in pre:
-        preElType, preEl = pre.strip().split('==')
-        if preElType == 'text':
-            preJudgeVal = uiObj.isTextInPage(preEl, totalTime=totalTime)
-        elif preElType == 'desc':
-            preJudgeVal = uiObj.isDescInPage(preEl, totalTime=totalTime)
-        elif preElType == 'Id':
-            preJudgeVal = uiObj.isIdInPage(preEl, totalTime=totalTime)
-        else:
-            raise ValueError(u'前提参数: {} 控件类型不合法,提醒:可能存在空格'.format(pre))
-    elif '!=' in pre:
-        preElType, preEl = pre.strip().split('!=')
-        if preElType == 'text':
-            preJudgeVal = not uiObj.isTextInPage(preEl, totalTime=totalTime)
-        elif preElType == 'desc':
-            preJudgeVal = not uiObj.isDescInPage(preEl, totalTime=totalTime)
-        elif preElType == 'Id':
-            preJudgeVal = not uiObj.isIdInPage(preEl, totalTime=totalTime)
-        else:
-            raise ValueError(u'前提参数: {} 控件类型不合法,提醒:可能存在空格'.format(pre))
-    else:
-        raise ValueError(u'前提参数: {} 不合法, 提醒:可能存在中文符号'.format(pre))
-    return preJudgeVal
-
-
-def getDecompressPath(control, imgDict):
-    """获取解压缩文件所在位置
-    """
-    targetImgName = os.path.join(imgDict['testImgPath'],
-                                 '{}.png'.format(control))
-    # 防止压缩策略问题
-    if not os.path.exists(targetImgName):
-        fields = os.listdir(imgDict['testImgPath'])
-        targetPath = [field for field in fields
-                      if '__' not in field and '.' not in field]
-        targetImgName = os.path.join(imgDict['testImgPath'],
-                                     targetPath[0],
-                                     '{}.png'.format(control))
-    return targetImgName
-
-
-def getPosOfPic(targetImgName, imgDict, uiObj):
-    """获取测试图片所在位置
-    """
-    # 点击总次数
-    totalTime = 10
-    # 实际已点次数
-    countTime = 0
-    # 10s内刷新匹配图片
-    while countTime < totalTime:
-        getCompareImg(uiObj, imgDict)
-        reInfo = uiObj.getTargetImgPos(os.path.join(
-                                            imgDict['srcImgPath'],
-                                            'bg_temp.png'),
-                                       targetImgName)
-        if reInfo is not None:
-            break
-        time.sleep(1)
-        countTime += 1
-    return reInfo
-
-
 def paraParse(control):
     """控件类型列，参数解析
     """
@@ -371,18 +339,69 @@ def paraParse(control):
     return paraList, paraDict
 
 
+def expectParaParse(expectPara, expect):
+    """期望类型列，参数解析
+    """
+    allParaList = expectPara.strip().split(',')
+    jFlag = 0
+    paraDict = {}
+    for eachPara in allParaList:
+        if '==' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('==')
+            jFlag = 1
+        elif '!=' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('!=')
+            jFlag = 1
+            paraDict['isIn'] = 1
+        elif '=' in eachPara:
+            paraKey, paraValue = eachPara.strip().split('=')
+        else:
+            raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
+        paraDict[paraKey] = paraValue
+    if jFlag == 0:
+        raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
+    return paraDict
+
+
+def preconditionHandle(pre, uiObj, totalTime):
+    """前提参数处理
+    """
+    preJudgeVal = False
+    paraDict = expectParaParse(pre, pre)
+    paraDict['totalTime'] = totalTime
+    if 'text' in paraDict:
+        preJudgeVal = uiObj.isTextInPage(**paraDict)
+    elif 'desc' in paraDict:
+        preJudgeVal = uiObj.isDescInPage(**paraDict)
+    elif 'Id' in paraDict:
+        preJudgeVal = uiObj.isIdInPage(**paraDict)
+    else:
+        raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(pre))
+    return preJudgeVal
+
+
 def click(paraList, paraDict, control, uiObj):
     """点击实现
     """
     if 'text' in paraDict:
-        uiObj.clickByText(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByTextInstance(**paraDict)
+        else:
+            uiObj.clickByText(**paraDict)
     elif 'desc' in paraDict:
-        uiObj.clickByDesc(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByDescInstance(**paraDict)
+        else:
+            uiObj.clickByDesc(**paraDict)
     elif 'Id' in paraDict:
-        uiObj.clickById(**paraDict)
+        if paraDict.get('ins'):
+            uiObj.clickByIdInstance(**paraDict)
+        else:
+            uiObj.clickById(**paraDict)
     elif len(paraList) == 1 and '-' in paraList[0]:
         uiObj.clickByPos(*(paraList[0].split('-')))
-        uiObj._LOGGER.debug(u'点击坐标: {}-{} 结束'.format(*(paraList[0].split('-'))))
+        uiObj._LOGGER.debug(u'点击坐标: {}-{} 结束'
+                            .format(*(paraList[0].split('-'))))
     elif len(paraList) == 2:
         uiObj.clickByPos(*(paraList))
         uiObj._LOGGER.debug(u'点击坐标: {},{} 结束'.format(*(paraList)))
@@ -399,11 +418,15 @@ def clickByPic(control, imgDict, uiObj):
         # 获取测试图片位置
         targetImgName = getDecompressPath(control, imgDict)
         # 获取测试图片在当前界面所处位置
-        reInfo = getPosOfPic(targetImgName, imgDict, uiObj)
+        if targetImgName:
+            reInfo = getPosOfPic(targetImgName, imgDict, uiObj)
+        else:
+            raise ValueError(u'找不到你给定的图片：{}，中止此条 case'.format(control))
     except IOError as e:
         raise AssertionError(9, e)
     if reInfo is not None:
-        realPos = getPosOnScreen(reInfo, imgDict['ccPara'])
+        realPos = getPosOnScreen(reInfo['matchResult'],
+                                 reInfo['imSize'], imgDict['screenSize'])
         uiObj.clickByPos(realPos[0], realPos[1])
         uiObj._LOGGER.debug(u'点击图片: {} ，结束'.format(control))
     else:
@@ -450,11 +473,41 @@ def typewrite(paraDict, control, data, uiObj):
             raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
 
-def scroll(paraDict, control, uiObj):
+def scroll(paraDict, control, imgDict, uiObj):
     """滚动实现
     """
+    # 检测是否有图片路径
+    if imgDict.get('testImgPath'):
+        targetImgName = getDecompressPath(control, imgDict)
+    else:
+        targetImgName = None
     if 'text' in paraDict or 'desc' in paraDict or 'Id' in paraDict:
         uiObj.scrollByElement(**paraDict)
+    elif targetImgName:
+        # 获取滑动指令
+        screenX, screenY = uiObj.getScreenSize()
+        excCommand = uiObj.getSwipeCommand(str(screenX/2),
+                                           str(screenY*3/4),
+                                           str(screenX/2),
+                                           str(screenY/2),
+                                           paraDict.get('direction', 0))
+        # 已执行步骤数
+        stepCount = 0
+        while stepCount < paraDict.get('step', 50):
+            getCompareImg(uiObj, imgDict)
+            reInfo = uiObj.getTargetImgPosPlus(os.path.join(
+                                                    imgDict['srcImgPath'],
+                                                    'bg_temp.png'),
+                                               targetImgName)
+            # 判断传入的图片是否存在
+            if reInfo:
+                uiObj._LOGGER.debug('滑动找图片结束')
+                break
+            os.system(excCommand)
+            time.sleep(0.5)
+            stepCount += 1
+        else:
+            raise AssertionError(10, control)
     else:
         raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(control))
 
@@ -520,6 +573,7 @@ def back(uiObj):
     """返回实现
     """
     uiObj.pressBack()
+    uiObj._LOGGER.debug('返回，结束')
 
 
 def wSwipeAndAssert(paraList, paraDict, control, uiObj):
@@ -588,7 +642,7 @@ def actionHandle(control, data, realAction, uiObj, imgDict):
     elif realAction == 'typewrite':
         typewrite(paraDict, control, data, uiObj)
     elif realAction == 'scroll':
-        scroll(paraDict, control, uiObj)
+        scroll(paraDict, control, imgDict, uiObj)
     elif realAction == 'scroll&&click':
         scrollAndClick(paraDict, control, uiObj)
     elif realAction == 'sleep':
@@ -628,32 +682,16 @@ def expectTypeHandle(paraDict, expect, uiObj):
     return expectVal
 
 
-def expectParaParse(expectPara, expect):
-    """期望类型列，参数解析
-    """
-    allParaList = expectPara.strip().split(',')
-    paraDict = {}
-    for eachPara in allParaList:
-        if '==' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('==')
-        elif '!=' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('!=')
-            paraDict['isIn'] = 1
-        elif '=' in eachPara:
-            paraKey, paraValue = eachPara.strip().split('=')
-        else:
-            raise ValueError(u'表格参数: {} 不合法,提醒:可能存在空格或中文符号'.format(expect))
-        paraDict[paraKey] = paraValue
-    return paraDict
-
-
 def getExpectList(expectParaList, expect, expectInfo, uiObj):
     """获取期望列表
     """
     condition = []
     for eachPara in expectParaList:
         paraDict = expectParaParse(eachPara, expect)
-        paraDict['instruction'] = expectInfo
+        if expectInfo:
+            paraDict['instruction'] = expectInfo
+        else:
+            raise ValueError(u'表格参数: {} 不合法,提醒: 判断描述未填写'.format(expect))
         tempData = expectTypeHandle(paraDict, expect, uiObj)
         condition.append(tempData)
     return condition
@@ -725,7 +763,7 @@ def executeEvent(stepEventSuit, uiObj, totalTime, imgDict):
                 if isOptional == '1.0':
                     pass
                 else:
-                    uiObj._LOGGER.error(e)
+                    uiObj._LOGGER.error(u'{}'.format(str(e)))
                     raise
 
 
@@ -741,7 +779,7 @@ def getRecordCommandIter(sdcardPath):
     """
     recordCommandIter = (['adb', 'shell', 'screenrecord', '--time-limit',
                           '180', r'{}/{}.mp4'.format(sdcardPath, i)]
-                         for i in range(1, 1000))
+                         for i in range(1, 100))
     return recordCommandIter
 
 
@@ -811,12 +849,12 @@ def popOutHandle(pre_firstEventSuit, uiObj, imgDict):
     numCount = 10
     while numCount > 0:
         executeEvent(pre_firstEventSuit, uiObj, 0, imgDict)
-        if uiObj.isIdInPage('com.ximalaya.ting.android:id/main_count_down_text'):
+        if uiObj.isIdInPage('com.ximalaya.ting.android:id/main_count_down_text', totalTime=0):
             uiObj.clickById('com.ximalaya.ting.android:id/main_count_down_text')
         time.sleep(1)
-        if uiObj.isTextInPage('首页')\
-           and (not uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_btn_skip')
-                or not uiObj.isIdInPage('com.ximalaya.ting.android:id/main_btn_skip')):
+        if uiObj.isTextInPage('首页', totalTime=0)\
+           and (not uiObj.isIdInPage('com.ximalaya.ting.android.main.application:id/main_btn_skip', totalTime=0)
+                or not uiObj.isIdInPage('com.ximalaya.ting.android:id/main_btn_skip', totalTime=0)):
             break
         else:
             numCount -= 1
@@ -836,7 +874,7 @@ def firstStartHandle(steps):
     for i in firstEventSuit:
         if len(i) >= 2:
             if i[0].precondition != '' and\
-             i[1].optional != '':
+             i[1].optional != '' and not nor_firstEventSuit:
                 pre_firstEventSuit.append(i)
             else:
                 nor_firstEventSuit.append(i)
@@ -874,11 +912,12 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
     """执行所有用例
     """
     # 获取手机厂商
-    df = os.popen(CC.GET_PHONE_PRODUCER).read().upper()
+    df = os.popen(CC.GET_PHONE_PRODUCER).read().strip().upper()
     # 定义子进程
     childP = None
     # 安卓测试机本身 log 存放地址
     androidLogField = os.path.join(os.pardir, 'testLOG', 'androidLog')
+    os.mkdir(androidLogField)
     # 处理大类
     for eachTestClass in allTestClass:
         # 获取每个测试大类名称
@@ -898,7 +937,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
             realFeatures, tempIngoreFeature, ingoreFeaturesNum =\
                 ingorePartFilter(features, testClassName, moduleName)
             # 主app和广告业务逻辑不同
-            if testClassName == 'ad':
+            if testClassName == 'ad' or '首次启动app' not in features:
                 if len(features) == ingoreFeaturesNum:
                     print(u'警告: 模块: {} 的所有功能点都被你忽略，默认你忽略了此模块。'
                           .format(moduleName))
@@ -906,7 +945,7 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                                                                  moduleName))
                     continue
                 else:
-                    ingoreFeature.extend(tempIngoreFeature)
+                    rpObj.ingoreFeature.extend(tempIngoreFeature)
             else:
                 if len(features) == ingoreFeaturesNum+1:
                     print(u'警告: 模块: {} 的所有功能点都被你忽略，默认你忽略了此模块。'
@@ -916,9 +955,11 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                     continue
                 else:
                     rpObj.ingoreFeature.extend(tempIngoreFeature)
-            uiObj._LOGGER.info('{}_{} Test Start...'.format(testClassName,
-                                                            moduleName))
-            # 处理功能点
+            uiObj._LOGGER.info(u'{}_{} Test Start...'.format(testClassName,
+                                                             moduleName))
+            # 初始化app事件列表
+            pre_firstEventSuit = []
+            nor_firstEventSuit = []
             for eachFeature in realFeatures:
                 # 获取每个测试大类下测试模块有效测试功能点名称
                 featureName = eachFeature['featureName']
@@ -954,26 +995,34 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                             uiObj.startApp()
                             time.sleep(10)
                             # 循环点击权限弹窗
-                            popOutHandle(pre_firstEventSuit, uiObj, imgDict)
-                            executeEvent(nor_firstEventSuit, uiObj,
-                                         3, imgDict)
+                            if pre_firstEventSuit:
+                                popOutHandle(pre_firstEventSuit,
+                                             uiObj, imgDict)
+                            else:
+                                cf.start_init(df, uiObj)
+                            if nor_firstEventSuit:
+                                executeEvent(nor_firstEventSuit, uiObj,
+                                             3, imgDict)
                             executeEvent(otherEventSuit, uiObj,
                                          3, imgDict)
                     except AssertionError as e:
-                        uiObj._LOGGER.info('{}: FAIL'.format(rName))
+                        uiObj._LOGGER.info(u'{}: FAIL'.format(rName))
                         rpObj.realFailTag = 1
                         rpObj.failList.append(rName)
                         rpObj.failCount += 1
                     except (IndexError, ValueError) as e:
-                        uiObj._LOGGER.info(
-                            u'{}: FAIL(注意: 功能点用例中存在不合法的参数！) 错误详情: {}'
-                            .format(rName, e.args[0]))
+                        uiObj._LOGGER.error(u'errorInfo: {}'.format(e))
+                        uiObj._LOGGER.warning(u'{}: Abort(注意: 功能点用例中存在不合法的参数！)'
+                                              .format(rName))
+                        traceback.print_exc()
                         rpObj.abortList.append(rName)
                         rpObj.abortCount += 1
                     except (selenium.common.exceptions.WebDriverException,
                             urllib2.URLError) as e:
-                        uiObj._LOGGER.info(u'{}:FAIL(causeByAppium).错误详情:{}'
-                                           .format(rName, str(e).strip()))
+                        uiObj._LOGGER.error(u'errorInfo: {}'.format(e))
+                        uiObj._LOGGER.warning(u'{}: Exception(causeByAppium)'
+                                              .format(rName))
+                        traceback.print_exc()
                         uiObj.appiumErrorHandle()
                         uiObj = UITest(configData)
                         time.sleep(10)
@@ -986,14 +1035,6 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                                                         featureName))
                         rpObj.passCount += 1
                     finally:
-                        # 结束录屏
-                        if childP is not None:
-                            rpObj.childPK.put_nowait('1')
-                            childP.join(3)
-                            if childP.is_alive():
-                                childP.terminate()
-                            emptyQueue(rpObj.childPQ)
-                            emptyQueue(rpObj.childPK)
                         # 检测是否为正常失败
                         if rpObj.realFailTag == 1:
                             # 截图
@@ -1004,8 +1045,24 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                                                          os.path.join(
                                                           androidLogField,
                                                           '{}.txt'.format(tName))))
+                            # 结束录屏
+                            if childP is not None:
+                                rpObj.childPK.put_nowait('1')
+                                childP.join(3)
+                                if childP.is_alive():
+                                    childP.terminate()
+                                emptyQueue(rpObj.childPQ)
+                                emptyQueue(rpObj.childPK)
                             rpObj.realFailTag = 0
                         else:
+                            # 结束录屏
+                            if childP is not None:
+                                rpObj.childPK.put_nowait('1')
+                                childP.join(3)
+                                if childP.is_alive():
+                                    childP.terminate()
+                                emptyQueue(rpObj.childPQ)
+                                emptyQueue(rpObj.childPK)
                             # 其他情况，删除录屏文件夹
                             os.popen('{} rm -rf sdcard/AutoTest/screenrecord/{}'
                                      .format(CC.PHONE_SHELL, tName))
@@ -1016,8 +1073,6 @@ def testRunAllTest(allTestClass, configData, imgDict, uiObj, rpObj):
                         else:
                             uiObj.clearApp()
                         time.sleep(5)
-            uiObj._LOGGER.info('{}_{} Test End...'.format(testClassName,
-                                                          moduleName))
+            uiObj._LOGGER.info(u'{}_{} Test End...'.format(testClassName,
+                                                           moduleName))
     uiObj.set_ime()
-    # 打印报告
-    showReport(rpObj)

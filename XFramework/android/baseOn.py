@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import eventlet
 from functools import wraps
 import random
 import re
@@ -22,7 +23,10 @@ def strDecode(oIter):
             if isinstance(value, str) and not isinstance(value, unicode):
                 # 获取value的编码方式
                 paraCode = chardet.detect(value)['encoding']
-                nv = value.decode(paraCode)
+                if paraCode:
+                    nv = value.decode(paraCode)
+                else:
+                    raise ValueError("参数错误，参数为 {} ，请核实".format(oIter))
                 oIter[key] = nv
         return oIter
     else:
@@ -30,7 +34,10 @@ def strDecode(oIter):
         for i in oIter:
             if isinstance(i, str) and not isinstance(i, unicode):
                 paraCode = chardet.detect(i)['encoding']
-                j = i.decode(paraCode)
+                if paraCode:
+                    j = i.decode(paraCode)
+                else:
+                    raise ValueError("参数错误，参数为 {} ，请核实".format(oIter))
                 oIter[count] = j
             count += 1
         return oIter
@@ -169,8 +176,7 @@ class BaseOn(object):
 
     @classmethod
     def getDeviceName(cls):
-        """
-        获取手机名字
+        """获取手机名字
         """
         command = CC.GET_PHONE_NAME
         dn = os.popen(command).read().strip()
@@ -181,8 +187,7 @@ class BaseOn(object):
 
     @classmethod
     def getPlatformVersion(cls):
-        """
-        获取平台版本
+        """获取平台版本
         """
         command = CC.GET_PHONE_VERSION
         pv = os.popen(command).read().strip()
@@ -190,6 +195,20 @@ class BaseOn(object):
             cls._LOGGER.critical(u'获取平台版本失败')
             raise RuntimeError
         return pv
+
+    @classmethod
+    def getDeviceID(cls):
+        """获取手机deviceID
+        """
+        command = CC.PHONE_DEVICES
+        fl = os.popen(command).read().strip().split('\n')
+        if len(fl) > 1:
+            rfl = fl[1:len(fl)]
+            dl = [dn.split('device')[0].strip() for dn in rfl]
+        else:
+            print('No devices!')
+            sys.exit(1)
+        return dl
 
     def searchAppPro(self, pkgName=CC.XIMALAYA_PKG):
         comand = '{} {}'.format(CC.SEARCH_APP_PRO, pkgName)
@@ -352,7 +371,10 @@ class BaseOn(object):
     def getTargetImgPos(self, imgsrc, imgobj, similarity=0.5):
         """对比两个图片，返回目标图片在源图片上的所在位置坐标
         """
-        imsrc = cv.imread(imgsrc, 0)
+        if isinstance(imgsrc, str) or isinstance(imgsrc, unicode):
+            imsrc = cv.imread(imgsrc, 0)
+        else:
+            imsrc = imgsrc
         imobj = cv.imread(imgobj, 0)
         w, h = imobj.shape[::-1]
         res = cv.matchTemplate(imsrc, imobj, eval('cv.TM_CCOEFF_NORMED'))
@@ -362,4 +384,38 @@ class BaseOn(object):
         else:
             top_left = max_loc
             center_loc = (top_left[0] + w/2, top_left[1] + h/2)
-        return center_loc
+        return center_loc, max_val
+
+    def getNewImg(self, img, newSize):
+        """返回修改尺寸后的图片
+        """
+        return cv.resize(img, newSize, interpolation=cv.INTER_LINEAR)
+
+    def getTargetImgPosPlus(self, imgsrc, imgobj):
+        """图片对比加强
+        """
+        dataDict = {}
+        im = cv.imread(imgsrc, 0)
+        imgsrcList = [self.getNewImg(im, (int(im.shape[1]*(i/float(100))),
+                                          int(im.shape[0]*(i/float(100)))))
+                      for i in range(100, 200)]
+        imgsrcList2 = [self.getNewImg(im, (int(im.shape[1]/(i/float(100))),
+                                           int(im.shape[0]/(i/float(100)))))
+                       for i in range(101, 200)]
+        imgsrcList.extend(imgsrcList2)
+
+        def transferFunc(imgsrc):
+            return self.getTargetImgPos(imgsrc, imgobj, similarity=0.8), imgsrc
+        pool = eventlet.GreenPool(201)
+        for i, j in pool.imap(transferFunc, imgsrcList):
+            if i[0] is not None and i[1] not in dataDict:
+                dataDict[i[1]] = (i[0], (j.shape[1], j.shape[0]))
+        if dataDict:
+            resDict = {
+                       'similarity': max(dataDict.keys()),
+                       'matchResult': dataDict.get(max(dataDict.keys()))[0],
+                       'imSize': dataDict.get(max(dataDict.keys()))[1]
+                      }
+            return resDict
+        else:
+            return None

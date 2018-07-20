@@ -45,6 +45,7 @@ class LogFileHandle():
             versionBranch = projectInfo[1]
             jenkinsAddress = projectInfo[2]
             savedNum = projectInfo[3]
+            person = projectInfo[4]
             return projectInfo
         
     def getSimResultInfo(self, root): 
@@ -134,10 +135,14 @@ class LogFileHandle():
                 tempContents.append(' end')
                 
             else:
-                #print line  
-                contents = line.strip().split('>',1)[1]
-                #print contents
-                tempContents.append(contents)
+                #空行处理过滤
+                if line=="":
+                    print 'This is a blank row'
+                else:                
+                    #print line  
+                    contents = line.strip().split('>',1)[1]
+                    #print contents
+                    tempContents.append(contents)
                 
         for i in range(len(tempContents)-1):
             if "ERROR" in tempContents[i]:                               
@@ -167,8 +172,11 @@ class LogFileHandle():
                 tempTimes.append(endtimestamp)
             
             else:
-                moduleTimestamp = line.strip().split(',', 1)[0]
-                tempTimes.append(moduleTimestamp)
+                if line=="":
+                    print 'This is a blank row'
+                else:
+                    moduleTimestamp = line.strip().split(',', 1)[0]
+                    tempTimes.append(moduleTimestamp)
         return tempTimes
     
 class Handler:
@@ -304,7 +312,7 @@ def writeHtmlHead(filename):
     f.write('<meta charset="UTF-8">')       
     f.write('<h1 align="center"><b>喜马拉雅FM-Android-UI自动化测试报告v2.0</b></h1>')
 
-def writeAppInfo(filename, projectName, versionBranch, jenkinsAddress):
+def writeAppInfo(filename, projectName, versionBranch, jenkinsAddress,person):
     f = open(filename,'a')
     f.write('<font style="color: green"><b>App版本信息</b></font>')
     f.write('<hr>')
@@ -312,6 +320,7 @@ def writeAppInfo(filename, projectName, versionBranch, jenkinsAddress):
     f.write('<tr align="left"><th>项目名称：'+projectName+'</th></tr>')
     f.write('<tr align="left"><th>版本分支：'+versionBranch+'</th></tr>')
     f.write('<tr align="left"><th>jenkins测试项目地址：<a  href="'+ jenkinsAddress + '"target = _blank >'+jenkinsAddress+'</a></th></tr>')
+    f.write('<tr align="left"><th>构建人：'+person+'</th></tr>')
     f.write('</table>')
     f.write('<br/>')
     f.write('<br/>')
@@ -352,9 +361,10 @@ def writeSimResultInfo(filename, simResult):
     f.write('<br/>')
     f.write('<br/>')
 
-def writeLinkedHtml(root,targetName):
+def writeLinkedHtml(root,targetName,projectInfo):
     #创建/testLOG/linkedHtmls文件夹
    
+    root =root+'/'+projectInfo[3]+'/'
     
     linkfolder = root +'/linkedHtmls/'
     if not os.path.exists(linkfolder):
@@ -368,7 +378,7 @@ def writeLinkedHtml(root,targetName):
      
     
     recordFiles = root+'/screenrecord/'+targetName
-    print recordFiles
+    #print recordFiles
     if  os.path.exists(recordFiles):
         # 文件夹存在，写入截图信息
         pngPath ='../screencap/'+targetName+'_fail.png'
@@ -404,9 +414,11 @@ def writeTestBottom(filename):
     f.write('<br/>') 
     f.write('<br/>')   
     f.write('<footer>Copyright (C) 喜马拉雅FM测试部 2018-2060, All Rights Reserved </footer>')
+    f.write('<br/>')
+    f.write('<br/>')
     
     
-def writeTestDetail(root,filename, modulesContents):
+def writeTestDetail(root,filename, modulesContents, projectInfo):
     for i in range(len(modulesContents)):
         temp =  modulesContents[i]
         modulesContents[i]= temp.strip().split(':', 1)[1]
@@ -440,7 +452,7 @@ def writeTestDetail(root,filename, modulesContents):
             f.write('<th >'+ comment +'</th>')
             f.write('<th ><a target=_blank href=" '+linkedFilepath+'">查看</a></th>')
             f.write('<th ><a target=_blank href=" '+logAdds+'">查看</a></th>')
-            writeLinkedHtml(root, targetName)
+            writeLinkedHtml(root, targetName, projectInfo)
             f.write('</tr>')                
         else:
             f.write('<tr style="text-align: center;">')
@@ -490,9 +502,18 @@ if __name__=="__main__":
     if len(filename)==0:
         print "ERROR:不存在log文件"
         sys.exit(1)
-    else:  
-        print filename
-        filename = filename[0]    
+    elif os.path.getsize(filename[0])==0:
+        print "ERROR:log文件为空内容"
+        sys.exit(1)
+    else:
+        with open(filename[0], 'r') as f:
+            lines = f.readlines()
+            if "Test End..." not in lines[-1]:
+                print "ERROR:log文件结束异常"
+                sys.exit(1) 
+            else:
+                print filename
+                filename = filename[0]     
     
     #得到模块的测试开始时间，结束时间
     stimes =  lfh.getModuleTestTime(filename)[0]
@@ -529,12 +550,12 @@ if __name__=="__main__":
 
     #写test.html文件信息
     writeHtmlHead(tempHtmlname)
-    writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2])
+    writeAppInfo(tempHtmlname,projectInfo[0], projectInfo[1], projectInfo[2],projectInfo[4])
     writeDeviceInfo(tempHtmlname, deviceName, platformVersion, deviceId)
     writeTestResult(tempHtmlname,testTime[0], testTime[1])
    
     writeSimResultInfo(tempHtmlname, simResult)
-    writeTestDetail(root,tempHtmlname, modulesContents)
+    writeTestDetail(root,tempHtmlname, modulesContents, projectInfo)
     writeTestBottom(tempHtmlname)
 
     #已测试开始时间重命名test.html

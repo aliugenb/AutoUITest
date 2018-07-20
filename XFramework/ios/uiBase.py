@@ -52,12 +52,28 @@ class UITest(BaseOn, TA):
         print size
         return size['width'], size['height']
     
-    def screencap(self, pic_name, PIC_SAVEPATH):
+    def screencap(self, pic_name):
         """
-        获取屏幕分辨率，返回横纵坐标
+        截图
         """
-        os.chdir(PIC_SAVEPATH)
-        cmd = CC.SCREENCAP+' '+pic_name+'.png'
+        pic_path = CC.PIC_SAVEPATH+pic_name+'.png'  
+        print pic_path
+        cmd = CC.SCREENCAP+' '+pic_path
+        print cmd
+        os.popen(cmd).read().strip()
+        
+    def screenrecord(self, film_name):
+        """
+        录屏
+        """
+        os.chdir(CC.XRECORD_PATH)
+        phoneUdid = os.popen(cmd).read().strip()
+        ava_cap_devices =  os.popen(CC.XRECORD_DEVICES).read().strip()         
+        if 'iPhone' not in ava_cap_devices:       
+            print 'iphone is not Available capture devices'
+            os._exit()
+                       
+        cmd = CC.XRECORD_iPhone+' --id='+phoneUdid +' --out=' +CC.MOVIE_SAVEPATH+film_name+' .mp4  --force'
         os.popen(cmd).read().strip()
         
             
@@ -65,7 +81,7 @@ class UITest(BaseOn, TA):
         """
         通过坐标点击；duration为持续时间，单位ms
         """
-        self.driver.tap([(x, y)], duration)
+        self.driver.tap([(x, y)], 500)
         time.sleep(1)
         self._LOGGER.debug(u'点击坐标结束')
     
